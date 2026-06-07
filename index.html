@@ -6,8 +6,6 @@
 <title>SOC Analyst — Guía Interactiva</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -25,10 +23,9 @@
     --purple:#b47cff;
     --cyan:#3dd6d0;
     --orange:#e88a3a;
-    --pink:#f07aaa;
     --radius:10px;
     --side:270px;
-    --font:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    --font:'Inter','Segoe UI',system-ui,sans-serif;
     --mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
   }
   html{scroll-behavior:smooth;font-size:15px}
@@ -41,17 +38,16 @@
   .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--side);background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;transition:transform .25s cubic-bezier(.4,0,.2,1)}
   .side-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg2);z-index:2}
   .side-hdr h1{font-size:.95rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  .side-hdr .badge{font-size:.55rem;background:var(--bg4);color:var(--text2);padding:2px 7px;border-radius:4px;font-weight:600;-webkit-text-fill-color:var(--text2)}
+  .side-hdr .badge{font-size:.55rem;background:var(--bg4);color:var(--text2);padding:2px 7px;border-radius:4px;font-weight:600}
   .side-search{padding:10px 12px;border-bottom:1px solid var(--border)}
   .side-search input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;transition:border-color .2s}
   .side-search input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(74,158,255,.15)}
   .side-search input::placeholder{color:var(--text2)}
-
-  .nav-grp-title{padding:10px 16px 4px 18px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:color .2s}
+  .nav-grp-title{padding:10px 16px 4px 18px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none}
   .nav-grp-title:hover{color:var(--text)}
   .nav-grp-title .arrow{font-size:.5rem;transition:transform .2s;color:var(--text2)}
   .nav-grp-title .arrow.open{transform:rotate(90deg)}
-  .nav-items{overflow:hidden;max-height:0;transition:max-height .3s ease}
+  .nav-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
   .nav-items.open{max-height:800px}
   .nav-link{display:flex;align-items:center;padding:5px 16px 5px 22px;font-size:.8rem;color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all .12s;cursor:pointer}
   .nav-link:hover{color:var(--text);background:var(--bg3)}
@@ -60,10 +56,11 @@
 
   .main{margin-left:var(--side);flex:1;min-height:100vh;max-width:100%}
   .topbar{position:sticky;top:0;height:50px;background:rgba(8,12,20,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;z-index:50;gap:14px}
-  .topbar .menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.25rem;cursor:pointer;padding:4px;border-radius:6px;transition:background .15s}
+  .topbar .menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.25rem;cursor:pointer;padding:4px;border-radius:6px}
   .topbar .menu-btn:hover{background:var(--bg3)}
   .topbar .bc{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:6px}
-  .topbar .bc span{color:var(--text)}.topbar .bc .dot{width:4px;height:4px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite}
+  .topbar .bc span{color:var(--text)}
+  .topbar .bc .dot{width:4px;height:4px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   .topbar .stats{display:flex;gap:14px;margin-left:auto;font-size:.72rem;color:var(--text2)}
   .topbar .stats span{display:flex;align-items:center;gap:4px}
@@ -71,9 +68,9 @@
   .content{padding:24px 32px;max-width:1100px}
   @media(max-width:900px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.topbar .menu-btn{display:block}.content{padding:16px}.topbar .stats{display:none}}
 
-  .section-card{margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s;scroll-margin-top:65px}
+  .section-card{margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;scroll-margin-top:65px}
   .section-card:hover{border-color:var(--bg4)}
-  .section-hdr{padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .15s;gap:12px}
+  .section-hdr{padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;gap:12px}
   .section-hdr:hover{background:var(--bg3)}
   .section-hdr .left{display:flex;align-items:center;gap:10px}
   .section-hdr .left .icon{font-size:1.2rem}
@@ -84,951 +81,658 @@
   .section-body{padding:0 20px 20px;display:none}
   .section-body.open{display:block;animation:fadeIn .25s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-
-  .section-intro{margin-bottom:16px}
-  .section-intro p{color:var(--text2);font-size:.85rem;max-width:750px;line-height:1.55}
-
+  .section-intro{margin-bottom:16px}.section-intro p{color:var(--text2);font-size:.85rem;max-width:750px}
   .grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:12px 0}
-  .grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:12px 0}
   .grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:12px 0}
-
-  .metric-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;transition:all .2s;cursor:default}
-  .metric-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
-  .metric-card .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);margin-bottom:4px}
-  .metric-card .value{font-size:1.6rem;font-weight:700;color:var(--text);font-family:var(--mono)}
-  .metric-card .sub{font-size:.72rem;color:var(--text2);margin-top:4px}
-  .metric-card .bar{height:3px;border-radius:2px;margin-top:10px;transition:width 1s ease}
-  .metric-card .bar.b-blue{background:linear-gradient(90deg,var(--accent),var(--purple))}
-  .metric-card .bar.b-green{background:linear-gradient(90deg,var(--green),var(--cyan))}
-  .metric-card .bar.b-yellow{background:linear-gradient(90deg,var(--yellow),var(--orange))}
-  .metric-card .bar.b-red{background:linear-gradient(90deg,var(--red),var(--orange))}
-
-  .info-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;transition:all .2s}
-  .info-card:hover{border-color:var(--bg4);transform:translateY(-1px)}
+  .info-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px}
   .info-card h4{font-size:.85rem;margin-bottom:5px;color:var(--text);display:flex;align-items:center;gap:6px}
   .info-card p{font-size:.78rem;color:var(--text2);line-height:1.5}
   .info-card .tags{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
-
   .tag{display:inline-block;font-size:.62rem;padding:2px 8px;border-radius:4px;font-weight:500}
-  .t-b{background:rgba(74,158,255,.14);color:var(--accent)}
-  .t-g{background:rgba(61,214,140,.14);color:var(--green)}
-  .t-y{background:rgba(232,179,57,.14);color:var(--yellow)}
-  .t-r{background:rgba(240,96,90,.14);color:var(--red)}
-  .t-p{background:rgba(180,124,255,.14);color:var(--purple)}
-  .t-o{background:rgba(232,138,58,.14);color:var(--orange)}
-  .t-c{background:rgba(61,214,208,.14);color:var(--cyan)}
-
+  .t-b{background:rgba(74,158,255,.14);color:var(--accent)}.t-g{background:rgba(61,214,140,.14);color:var(--green)}
+  .t-y{background:rgba(232,179,57,.14);color:var(--yellow)}.t-r{background:rgba(240,96,90,.14);color:var(--red)}
+  .t-p{background:rgba(180,124,255,.14);color:var(--purple)}.t-o{background:rgba(232,138,58,.14);color:var(--orange)}
   .cw{overflow-x:auto;margin:10px 0;border:1px solid var(--border);border-radius:var(--radius)}
   table{width:100%;border-collapse:collapse;font-size:.78rem}
   thead{background:var(--bg3)}
   th{padding:8px 12px;text-align:left;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);white-space:nowrap}
   td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
-  tr:last-child td{border-bottom:none}
-  tr:hover td{background:var(--bg3)}
-
-  pre{background:#050a12;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.77rem;line-height:1.55;margin:10px 0;position:relative;cursor:pointer;transition:border-color .2s}
+  tr:last-child td{border-bottom:none}tr:hover td{background:var(--bg3)}
+  pre{background:#050a12;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.77rem;line-height:1.55;margin:10px 0;position:relative;cursor:pointer}
   pre:hover{border-color:var(--text2)}
   pre .lb{position:absolute;top:5px;right:9px;font-size:.58rem;color:var(--text2);font-family:var(--font);text-transform:uppercase;opacity:.5;pointer-events:none}
   code{font-family:var(--mono);font-size:.82em;background:rgba(74,158,255,.08);padding:1px 5px;border-radius:3px;color:var(--accent)}
   pre code{background:none;padding:0;border-radius:0;color:#b4c7e0;font-size:.77rem}
-  .kw{color:var(--purple)}.str{color:var(--green)}.cm{color:#4a5a78;font-style:italic}.fn{color:var(--cyan)}.num{color:var(--yellow)}.op{color:var(--red)}.tp{color:var(--accent)}
-
   .callout{border-radius:8px;padding:14px 18px;margin:14px 0;border-left:3px solid;font-size:.82rem}
   .callout-i{background:rgba(74,158,255,.07);border-color:var(--accent)}
   .callout-w{background:rgba(232,179,57,.07);border-color:var(--yellow)}
   .callout-d{background:rgba(240,96,90,.07);border-color:var(--red)}
   .callout-g{background:rgba(61,214,140,.07);border-color:var(--green)}
-  .callout strong{display:block;margin-bottom:3px;font-size:.85rem}
-
-  .tabs{margin:10px 0}
-  .tab-bar{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:6px;border:1px solid var(--border);overflow-x:auto}
-  .tab-btn{padding:6px 14px;font-size:.75rem;font-weight:500;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--text2);transition:all .15s;white-space:nowrap;font-family:var(--font)}
-  .tab-btn:hover{color:var(--text);background:var(--bg3)}
-  .tab-btn.active{background:var(--accent);color:#fff}
-  .tab-content{margin-top:0}
-  .tab-pane{display:none}
-  .tab-pane.active{display:block;animation:fadeIn .2s ease}
-
+  .callout strong{display:block;margin-bottom:3px;font-size:.82rem}
   .pill{display:inline-block;padding:1px 9px;border-radius:10px;font-size:.68rem;font-weight:500}
   .p-c{background:rgba(240,96,90,.18);color:var(--red)}
   .p-h{background:rgba(232,179,57,.18);color:var(--yellow)}
   .p-m{background:rgba(74,158,255,.12);color:var(--accent)}
   .p-l{background:rgba(106,127,158,.14);color:var(--text2)}
-
   .hl{background:rgba(232,179,57,.25);padding:0 2px;border-radius:2px}
-
-  .chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin:12px 0;max-width:500px}
-  .chart-wrap h4{font-size:.8rem;color:var(--text2);margin-bottom:8px;text-align:center}
-
-  .mitre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:5px;margin:12px 0}
-  .mitre-cell{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px 4px;text-align:center;font-size:.68rem;line-height:1.3;transition:all .15s;cursor:default}
-  .mitre-cell:hover{border-color:var(--accent);transform:scale(1.04);z-index:1;box-shadow:0 4px 14px rgba(0,0,0,.4)}
-  .mitre-cell .tac{color:var(--accent);font-weight:600;font-size:.6rem;text-transform:uppercase;letter-spacing:.02em}
-  .mitre-cell .t{color:var(--text2);font-size:.6rem;margin-top:1px}
-
-  .timeline{position:relative;padding-left:22px;margin:12px 0}
-  .timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border)}
-  .tl-item{position:relative;margin-bottom:16px;animation:fadeIn .3s ease}
-  .tl-item::before{content:'';position:absolute;left:-19px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2)}
-  .tl-item .step{font-weight:600;color:var(--accent);font-size:.8rem}
-  .tl-item p{color:var(--text2);font-size:.8rem;margin-top:2px}
-
-  .accordion{margin:8px 0;border:1px solid var(--border);border-radius:6px;overflow:hidden}
-  .acc-hdr{padding:10px 14px;background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .15s;font-size:.82rem;font-weight:500;color:var(--text)}
-  .acc-hdr:hover{background:var(--bg4)}
-  .acc-hdr .arrow{transition:transform .2s;font-size:.7rem;color:var(--text2)}
-  .acc-hdr .arrow.open{transform:rotate(90deg)}
-  .acc-body{padding:0 14px;max-height:0;overflow:hidden;transition:all .25s ease}
-  .acc-body.open{padding:12px 14px;max-height:2000px}
-  .acc-body p{font-size:.78rem;color:var(--text2)}
-
-  .glow-text{color:var(--accent);text-shadow:0 0 20px rgba(74,158,255,.15)}
-
-  .subtitle{margin:18px 0 8px;font-size:.9rem;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:6px}
-
-  .empty-state{padding:30px;text-align:center;color:var(--text2);font-size:.85rem}
-
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
   .overlay.open{display:block}
 </style>
 </head>
 <body><div id="root"></div>
+<script>
+"use strict";
 
-<script type="text/babel">
 const { useState, useRef, useEffect, useCallback, useMemo } = React;
+const e = React.createElement;
 
-// Error boundary for render debugging
-window.addEventListener('error', function(e) {
-  document.getElementById('root').innerHTML =
-    '<div style="padding:40px;background:#0a0e14;color:#f0605a;font-family:monospace;min-height:100vh">' +
-    '<h2 style="color:#f0605a">⚠️ Error al cargar la aplicación</h2>' +
-    '<p style="color:#6a7f9e">' + (e.message || e.error?.message || 'Error desconocido') + '</p>' +
-    '<pre style="color:#8b9db0;margin-top:12px">' + (e.error?.stack || '') + '</pre></div>';
-});
-
-const sections = [
-  { id:'triage', icon:'🔍', title:'Triage de Alertas', badge:'5 pasos',
-    desc:'Proceso de clasificación, priorización y escalado de alertas. Cada paso debe tomar < 2 minutos.',
-    content:[
-      { type:'table',
-        headers:['#','Paso','Acción','Pregunta clave'],
-        rows:[
-          ['1','Validar','Revisar timestamp, fuente, tipo de evento','¿Es un evento real o error de parsing?'],
-          ['2','Clasificar','Tipo: malware, phishing, acceso no autorizado, DDoS, policy violation','¿Qué categoría de ataque?'],
-          ['3','Priorizar','Criticidad del activo × tipo de amenaza × evidencia','¿A quién afecta y qué tan grave es?'],
-          ['4','Contener','Si riesgo alto: aislar host, bloquear IP, suspender usuario','¿Puedo contener sin escalar?'],
-          ['5','Escalar/Cerrar','Con evidencia → L2. Falso positivo → documentar y cerrar','¿Necesito más recursos?']
-        ]},
-      { type:'callout', style:'w', title:'💡 En triage', body:'cada alerta es una hipótesis. Tu trabajo es juntar evidencia para probarla o descartarla. Si no hay evidencia suficiente en 5 min, escalá.' }
+// ===== DATA =====
+const SECTIONS = [
+  {id:'triage',icon:'\uD83D\uDD0D',title:'Triage de Alertas',badge:'5 pasos',desc:'Proceso de clasificaci\u00F3n, priorizaci\u00F3n y escalado de alertas.',
+   content:[
+    {type:'table',h:['#','Paso','Acci\u00F3n','Pregunta clave'],r:[
+      ['1','Validar','Revisar timestamp, fuente, tipo de evento','\u00BFEs un evento real o error de parsing?'],
+      ['2','Clasificar','Tipo: malware, phishing, acceso no autorizado, DDoS','\u00BFQu\u00E9 categor\u00EDa de ataque?'],
+      ['3','Priorizar','Criticidad del activo x tipo de amenaza x evidencia','\u00BFA qui\u00E9n afecta y qu\u00E9 tan grave es?'],
+      ['4','Contener','Si riesgo alto: aislar host, bloquear IP, suspender usuario','\u00BFPuedo contener sin escalar?'],
+      ['5','Escalar/Cerrar','Con evidencia s\u00F3lida -> L2. Falso positivo -> documentar','\u00BFNecesito m\u00E1s recursos?']
     ]},
-  { id:'severidad', icon:'🏷️', title:'Matriz de Severidad', badge:'Clasificación',
-    desc:'Clasificación estándar para priorizar alertas según activo y evidencia.',
-    content:[
-      { type:'table',
-        headers:['Severidad','Activo','Evidencia','Ejemplo','Acción'],
-        rows:[
-          ['CRITICAL','Crítico (DC, SQL, ERP)','Sólida','Ransomware en DC','Contener YA, escalar a IR'],
-          ['HIGH','Importante','Moderada-Fuerte','Lateral movement, C2','Aislar, escalar urgente'],
-          ['MEDIUM','Estándar','Parcial','Binary desde temp','Investigar en 24h'],
-          ['LOW','Bajo','Débil','Login IP inusual','Ticket, revisión semanal']
-        ]},
-      { type:'callout', style:'i', title:'📌 Decisión rápida', body:'Activo crítico + evidencia fuerte = CRITICAL. Activo crítico + evidencia débil = HIGH. Activo normal + evidencia fuerte = HIGH. Activo normal + evidencia débil = MEDIUM.' }
+    {type:'callout',s:'w',title:'\uD83D\uDCA1 En triage',body:'cada alerta es una hip\u00F3tesis. Tu trabajo es juntar evidencia para probarla o descartarla.'}
+   ]},
+  {id:'severidad',icon:'\uD83C\uDFF7\uFE0F',title:'Matriz de Severidad',badge:'Clasificaci\u00F3n',
+   content:[
+    {type:'table',h:['Severidad','Activo','Evidencia','Ejemplo','Acci\u00F3n'],r:[
+      ['CRITICAL','Cr\u00EDtico (DC, SQL, ERP)','S\u00F3lida','Ransomware en DC','Contener YA, escalar a IR'],
+      ['HIGH','Importante','Moderada-Fuerte','Lateral movement, C2','Aislar, escalar urgente'],
+      ['MEDIUM','Est\u00E1ndar','Parcial','Binary desde temp','Investigar en 24h'],
+      ['LOW','Bajo','D\u00E9bil','Login IP inusual','Ticket, revisi\u00F3n semanal']
+    ]}
+   ]},
+  {id:'evtx',icon:'\uD83D\uDCCB',title:'Windows EventLogs Clave',badge:'15 EventIDs',
+   desc:'EventIDs que todo SOC Analyst debe reconocer al instante.',
+   content:[
+    {type:'table',h:['EventID','Nombre','Qu\u00E9 detecta','Riesgo'],r:[
+      ['4624','Logon Success','Login fuera de horario, IP externa','Ver contexto'],
+      ['4625','Logon Failure','Password spraying, brute force','Media'],
+      ['4672','Admin Logon','Privilegios asignados (SeDebug)','Alta'],
+      ['4688','Process Creation','LOLBins, child process de Office','Cr\u00EDtica'],
+      ['4698','Scheduled Task','Creaci\u00F3n de tarea (persistencia)','Alta'],
+      ['4719','Audit Policy Change','Atacante desactivando logging','Cr\u00EDtica'],
+      ['4720','User Created','Creaci\u00F3n de cuenta nueva','Alta'],
+      ['4728','Group Member Added','Usuario agregado a Admin/Enterprise Admin','Cr\u00EDtica'],
+      ['4104','PS ScriptBlock','Script malicioso, download cradle','Cr\u00EDtica'],
+      ['5156','WFP Connection','Conexi\u00F3n saliente a IP sospechosa (C2)','Alta'],
+      ['7045','Service Installed','Instalaci\u00F3n de servicio (persistencia)','Alta']
+    ]}
+   ]},
+  {id:'sysmon',icon:'\uD83D\uDCE1',title:'Sysmon Events',badge:'10 EventIDs',
+   content:[
+    {type:'table',h:['EventID','Nombre','Uso','Riesgo'],r:[
+      ['1','Process Create','L\u00EDnea de comandos completa de cada proceso','Cr\u00EDtica'],
+      ['3','Network Connect','Conexi\u00F3n de red por proceso','Cr\u00EDtica'],
+      ['7','Image Load','DLL cargada (detecta DLL hijacking)','Alta'],
+      ['8','CreateRemoteThread','Inyecci\u00F3n de hilo en otro proceso','Cr\u00EDtica'],
+      ['10','Process Access','Acceso a LSASS (Mimikatz)','Cr\u00EDtica'],
+      ['11','File Create','Archivos en directorios sospechosos','Alta'],
+      ['12-14','Registry Events','Modificaci\u00F3n de Run keys','Alta'],
+      ['15','File Stream','Alternate Data Stream (ADS)','Alta'],
+      ['22','DNS Query','Consulta DNS desde el host','Alta']
+    ]}
+   ]},
+  {id:'win-cmd',icon:'\uD83D\uDCBB',title:'Comandos Forense Windows',badge:'PowerShell',
+   desc:'Comandos para ejecutar en caliente durante una investigaci\u00F3n.',
+   content:[
+    {type:'code',lang:'powershell',lines:[
+      '# Procesos con conexiones de red activas',
+      'Get-NetTCPConnection | Where-Object State -eq Established',
+      '# Scheduled tasks no-Microsoft',
+      'Get-ScheduledTask | Where-Object TaskPath -notlike "\\Microsoft\\*"',
+      '# Servicios con paths raros',
+      'Get-CimInstance Win32_Service | Where-Object PathName -match "(temp|users|appdata)"',
+      '# Run keys - persistencia',
+      'Get-ItemProperty -Path "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"',
+      '# Logins remotos RDP',
+      'Get-WinEvent -FilterHashtable @{LogName="Security";ID=4624;LogonType=10}'
+    ]}
+   ]},
+  {id:'lolbins',icon:'\u26A1',title:'Living Off the Land Binaries',badge:'LOLBins',
+   content:[
+    {type:'table',h:['Binario','Uso malicioso','Qu\u00E9 monitorear'],r:[
+      ['powershell.exe','Download cradle, ofuscaci\u00F3n -enc','4104 ScriptBlock, l\u00EDneas con -enc / IEX'],
+      ['rundll32.exe','Cargar DLL, ejecutar JavaScript','Child process sin parent Office. Conexiones de red.'],
+      ['regsvr32.exe','Ejecutar .sct (Squiblydoo)','regsvr32 /s /n /u /i: con argumento URL'],
+      ['mshta.exe','Ejecutar HTA malicioso','Mshta.exe desde temp/downloads'],
+      ['certutil.exe','Descargar payloads, decode base64','certutil -urlcache -f, certutil -decode'],
+      ['wmic.exe','Ejecuci\u00F3n remota','wmic process call create'],
+      ['bitsadmin.exe','Descarga via BITS','bitsadmin /transfer a dominio externo']
     ]},
-  { id:'evtx', icon:'📋', title:'Windows EventLogs Clave', badge:'15 EventIDs',
-    desc:'EventIDs que TODO SOC Analyst debe reconocer al instante.',
-    content:[
-      { type:'table',
-        headers:['EventID','Nombre','Qué detecta','Riesgo'],
-        rows:[
-          ['4624','Logon Success','Login fuera de horario, IP externa','Ver contexto'],
-          ['4625','Logon Failure','Password spraying, brute force','Media'],
-          ['4672','Admin Logon','Privilegios asignados (SeDebug, SeTakeOwnership)','Alta'],
-          ['4688','Process Creation','LOLBins, child process de Office','Crítica'],
-          ['4698','Scheduled Task','Creación de tarea (persistencia)','Alta'],
-          ['4719','Audit Policy Change','Atacante desactivando logging','Crítica'],
-          ['4720','User Created','Creación de cuenta nueva','Alta'],
-          ['4728','Group Member Added','Usuario agregado a Admin/Enterprise Admin','Crítica'],
-          ['4104','PS ScriptBlock','Script malicioso, ofuscación, download cradle','Crítica'],
-          ['5156','WFP Connection','Conexión saliente a IP sospechosa (C2)','Alta'],
-          ['7045','Service Installed','Instalación de servicio (persistencia)','Alta']
-        ]}
+    {type:'callout',s:'d',title:'\u26A0\uFE0F Regla',body:'CUALQUIER ejecuci\u00F3n de estos binarios desde %TEMP%, %APPDATA% o %USERPROFILE% merece investigaci\u00F3n inmediata.'}
+   ]},
+  {id:'linux-cmd',icon:'\uD83D\uDC27',title:'Comandos Forense Linux',badge:'Bash',
+   desc:'Para investigaci\u00F3n en caliente de endpoints Linux.',
+   content:[
+    {type:'code',lang:'bash',lines:[
+      '# Procesos ocultos',
+      'ps auxf',
+      'ls -la /proc/*/exe 2>/dev/null | grep -E "(deleted|tmp|dev/shm)"',
+      '# M\u00F3dulos de kernel (rootkits)',
+      'lsmod | sort',
+      '# Archivos modificados \u00FAltimas 24h',
+      'find / -xdev -mtime -1 -type f -not -path "/proc/*" -not -path "/sys/*" 2>/dev/null',
+      '# Persistencia via cron',
+      'ls -la /etc/cron* /var/spool/cron/crontabs/',
+      '# Conexiones de red activas',
+      'ss -tunap',
+      '# Archivos SUID (privilege escalation)',
+      'find / -perm -4000 -type f 2>/dev/null',
+      '# Comandos sospechosos en history',
+      'cat ~/.bash_history 2>/dev/null | grep -E "(wget|curl -o|nc |bash -i|python -c)"',
+      '# Archivos en /dev/shm',
+      'ls -la /dev/shm/',
+      '# \u00DAltimos logins',
+      'last -10'
+    ]}
+   ]},
+  {id:'linux-logs',icon:'\uD83D\uDCDD',title:'Logs Cr\u00EDticos en Linux',badge:'Ubicaciones',
+   content:[
+    {type:'table',h:['Archivo','Qu\u00E9 contiene','Comando r\u00E1pido'],r:[
+      ['/var/log/auth.log','Autenticaciones SSH, sudo, login','grep "Failed password" auth.log | awk \'{print $11}\' | sort | uniq -c | sort -rn'],
+      ['/var/log/syslog','Eventos del sistema','grep -i "error|fail|critical" syslog'],
+      ['/var/log/audit/audit.log','Auditd: execve, syscalls','ausearch -m execve -ts today'],
+      ['dmesg','Buffer de kernel','dmesg --level=err,warn']
+    ]}
+   ]},
+  {id:'network',icon:'\uD83C\uDF10',title:'An\u00E1lisis de Red',badge:'7 preguntas',
+   desc:'Indicadores de compromiso en tr\u00E1fico de red.',
+   content:[
+    {type:'grid',items:[
+      {i:'\uD83D\uDD04',t:'Beaconing',d:'Tr\u00E1fico peri\u00F3dico a IP externa (C2). Mismo intervalo, mismo payload size.',g:'C2',c:'r'},
+      {i:'\uD83C\uDF10',t:'DGA Domains',d:'Dominios aleatorios, TLDs raros (.xyz, .top, .gq). Alta entrop\u00EDa.',g:'C2',c:'r'},
+      {i:'\uD83D\uDCE4',t:'Data Exfil',d:'Tr\u00E1fico saliente an\u00F3malo en volumen, horario (3 AM), puerto no est\u00E1ndar.',g:'Exfil',c:'r'},
+      {i:'\uD83D\uDD01',t:'DNS Tunneling',d:'Subdominios largos de alta entrop\u00EDa. Respuestas DNS > 200B.',g:'T\u00FAnel',c:'o'},
+      {i:'\uD83D\uDD0D',t:'Port Scan',d:'M\u00FAltiples conexiones a distintos puertos en poco tiempo.',g:'Recon',c:'y'},
+      {i:'\uD83D\uDCE6',t:'Protocol Anomaly',d:'HTTP en puerto 22, SSH en 443, DNS sobre TCP sin consulta.',g:'An\u00F3malo',c:'o'}
     ]},
-  { id:'sysmon', icon:'📡', title:'Sysmon Events', badge:'10 EventIDs',
-    desc:'Sysmon — el mejor amigo del SOC Analyst.',
-    content:[
-      { type:'table',
-        headers:['EventID','Nombre','Uso','Riesgo'],
-        rows:[
-          ['1','Process Create','Línea de comandos completa de cada proceso','Crítica'],
-          ['3','Network Connect','Conexión de red por proceso','Crítica'],
-          ['7','Image Load','DLL cargada (detecta DLL hijacking)','Alta'],
-          ['8','CreateRemoteThread','Inyección de hilo en otro proceso','Crítica'],
-          ['10','Process Access','Acceso a LSASS (Mimikatz)','Crítica'],
-          ['11','File Create','Archivos en directorios sospechosos','Alta'],
-          ['12-14','Registry Events','Modificación de Run keys, servicios','Alta'],
-          ['15','File Stream','Alternate Data Stream (ADS)','Alta'],
-          ['17-18','Pipe Events','Named pipes (C2, lateral movement)','Media'],
-          ['22','DNS Query','Consulta DNS desde el host','Alta']
-        ]}
-    ]},
-  { id:'win-cmd', icon:'💻', title:'Comandos Forense Windows', badge:'PowerShell',
-    desc:'Comandos para ejecutar en caliente durante una investigación.',
-    content:[
-      { type:'code', lang:'powershell', lines:[
-        '# Procesos con conexiones de red activas',
-        'Get-NetTCPConnection | Where-Object State -eq Established',
+    {type:'table',h:['#','Pregunta','C\u00F3mo responder'],r:[
+      ['1','\u00BFConexiones a IPs maliciosas conocidas?','Correlacionar con OTX, VirusTotal, GreyNoise'],
+      ['2','\u00BFTr\u00E1fico en puertos no est\u00E1ndar?','Buscar servicios conocidos en puertos >1024'],
+      ['3','\u00BFPatr\u00F3n humano o automatizado?','Autom\u00E1tico = mismo intervalo + payload size'],
+      ['4','\u00BFCertificados TLS sospechosos?','Self-signed, expired, mismatch, issuer inusual'],
+      ['5','\u00BFDNS queries leg\u00EDtimos?','Alta entrop\u00EDa, TTLs inusuales, NXDOMAIN alto'],
+      ['6','\u00%BFTr\u00E1fico en horarios no laborales?','Conexiones fuera del horario del usuario'],
+      ['7','\u00BFHTTP User-Agent inusual?','Vac\u00EDo, Python-requests, curl sin navegador']
+    ]}
+   ]},
+  {id:'queries',icon:'\u26A1',title:'Queries \u00DAtiles',badge:'KQL / SPL / ESQL',
+   desc:'Queries pr\u00E1cticos para los SIEM m\u00E1s usados.',
+   content:[
+    {type:'tabs',tabs:[
+      {label:'KQL (Sentinel)',lang:'kql',lines:[
+        '# Office spawn -> proceso hijo (phishing)',
+        'let Office = dynamic(["winword.exe","excel.exe","outlook.exe"]);',
+        'let LOL = dynamic(["powershell.exe","cmd.exe","rundll32.exe","mshta.exe"]);',
+        'DeviceProcessEvents',
+        '| where InitiatingProcessFileName has_any Office and FileName has_any LOL',
+        '| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName',
         '',
-        '# Scheduled tasks no-Microsoft',
-        'Get-ScheduledTask | Where-Object TaskPath -notlike "\\Microsoft\\*"',
-        '',
-        '# Servicios con paths raros (temp/users/appdata)',
-        'Get-CimInstance Win32_Service | Where-Object PathName -match "(temp|users|appdata)"',
-        '',
-        '# Run keys — persistencia',
-        'Get-ItemProperty -Path "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"',
-        'Get-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"',
-        '',
-        '# Procesos hijos de Explorer',
-        'Get-CimInstance Win32_Process | Where-Object ParentProcessId -eq (Get-Process explorer).Id',
-        '',
-        '# Logins remotos RDP (LogonType 10)',
-        'Get-WinEvent -FilterHashtable @{LogName="Security";ID=4624;LogonType=10} | Format-Table TimeCreated,Properties[5],Properties[18]',
-        '',
-        '# Eventos de proceso en últimas 24h',
-        'Get-WinEvent -FilterHashtable @{LogName="Security";ID=4688;StartTime=(Get-Date).AddHours(-24)}'
-      ]}
-    ]},
-  { id:'lolbins', icon:'⚡', title:'Living Off the Land Binaries', badge:'LOLBins',
-    desc:'Binarios legítimos de Windows usados por atacantes para evadir detección.',
-    content:[
-      { type:'table',
-        headers:['Binario','Uso malicioso','Qué monitorear'],
-        rows:[
-          ['powershell.exe','Download cradle, ofuscación -enc','4104 ScriptBlock, líneas con -enc / IEX / DownloadString'],
-          ['rundll32.exe','Cargar DLL, ejecutar JavaScript','Child process sin parent Office. Conexiones de red.'],
-          ['regsvr32.exe','Ejecutar .sct (Squiblydoo)','regsvr32 /s /n /u /i: con argumento URL'],
-          ['mshta.exe','Ejecutar HTA malicioso','Mshta.exe desde temp/downloads'],
-          ['certutil.exe','Descargar payloads, decode base64','certutil -urlcache -f, certutil -decode'],
-          ['wmic.exe','Ejecución remota de procesos','wmic process call create'],
-          ['cscript.exe','Ejecutar VBScript/JScript','Script files en %TEMP% / %APPDATA%'],
-          ['bitsadmin.exe','Descarga via BITS','bitsadmin /transfer a dominio externo']
-        ]},
-      { type:'callout', style:'d', title:'⚠️ Regla', body:'CUALQUIER ejecución de estos binarios desde %TEMP%, %APPDATA% o %USERPROFILE% merece investigación inmediata.' }
-    ]},
-  { id:'linux-cmd', icon:'🐧', title:'Comandos Forense Linux', badge:'Bash',
-    desc:'Para investigación en caliente de endpoints Linux.',
-    content:[
-      { type:'code', lang:'bash', lines:[
-        '# Procesos ocultos (diferencia entre ps y /proc)',
-        'ps auxf',
-        'ls -la /proc/*/exe 2>/dev/null | grep -E "(deleted|tmp|dev/shm)"',
-        '',
-        '# Módulos de kernel (rootkits)',
-        'lsmod | sort',
-        '',
-        '# Archivos modificados últimas 24h (excluyendo sistema)',
-        'find / -xdev -mtime -1 -type f -not -path "/proc/*" -not -path "/sys/*" 2>/dev/null',
-        '',
-        '# Persistencia via cron',
-        'ls -la /etc/cron* /var/spool/cron/crontabs/',
-        '',
-        '# Conexiones de red activas',
-        'ss -tunap',
-        '',
-        '# Archivos SUID/SGID (privilege escalation)',
-        'find / -perm -4000 -type f 2>/dev/null',
-        'find / -perm -2000 -type f 2>/dev/null',
-        '',
-        '# Comandos sospechosos en history',
-        'cat ~/.bash_history 2>/dev/null | grep -E "(wget|curl -o|nc |bash -i|python -c|base64 -d)"',
-        '',
-        '# Archivos en /dev/shm (común para payloads)',
-        'ls -la /dev/shm/',
-        '',
-        '# Últimos logins',
-        'last -10',
-        'lastb -10  # Fallidos'
-      ]}
-    ]},
-  { id:'linux-logs', icon:'📝', title:'Logs Críticos en Linux', badge:'Ubicaciones',
-    desc:'Archivos de log del sistema Linux: qué buscar y dónde.',
-    content:[
-      { type:'table',
-        headers:['Archivo','Qué contiene','Comando rápido'],
-        rows:[
-          ['/var/log/auth.log','Autenticaciones SSH, sudo, login','grep "Failed password" auth.log | awk \'{print $11}\' | sort | uniq -c | sort -rn'],
-          ['/var/log/syslog','Eventos del sistema','grep -i "error|fail|critical" syslog'],
-          ['/var/log/kern.log','Mensajes del kernel','tail -50 kern.log'],
-          ['/var/log/audit/audit.log','Auditd: execve, syscalls','ausearch -m execve -ts today'],
-          ['dmesg','Buffer de kernel','dmesg --level=err,warn']
-        ]}
-    ]},
-  { id:'network', icon:'🌐', title:'Análisis de Red', badge:'7 preguntas',
-    desc:'Indicadores de compromiso en tráfico de red.',
-    content:[
-      { type:'grid', items:[
-        { icon:'🔄', title:'Beaconing', desc:'Tráfico periódico a IP externa (C2). Mismo intervalo, mismo payload size (~500B).', tag:'C2', tc:'r' },
-        { icon:'🌐', title:'DGA Domains', desc:'Dominios aleatorios, TLDs raros (.xyz, .top, .gq). Alta entropía.', tag:'C2', tc:'r' },
-        { icon:'📤', title:'Data Exfil', desc:'Tráfico saliente anómalo en volumen, horario (3 AM), puerto no estándar.', tag:'Exfil', tc:'r' },
-        { icon:'🔁', title:'DNS Tunneling', desc:'Subdominios largos de alta entropía. Respuestas DNS > 200B.', tag:'Túnel', tc:'o' },
-        { icon:'🔍', title:'Port Scan', desc:'Múltiples conexiones a distintos puertos en poco tiempo.', tag:'Recon', tc:'y' },
-        { icon:'📦', title:'Protocol Anomaly', desc:'HTTP en puerto 22, SSH en 443, DNS sobre TCP sin consulta.', tag:'Anómalo', tc:'o' }
+        '# Lateral movement via RDP',
+        'DeviceNetworkEvents',
+        '| where RemotePort == 3389 and ActionType == "ConnectionSuccess"',
+        '| summarize Count = count() by DeviceName, RemoteIP, LocalIP',
+        '| where Count > 3'
       ]},
-      { type:'table',
-        headers:['#','Pregunta','Cómo responder'],
-        rows:[
-          ['1','¿Conexiones a IPs maliciosas conocidas?','Correlacionar con OTX, VirusTotal, GreyNoise'],
-          ['2','¿Tráfico en puertos no estándar?','Buscar servicios conocidos en puertos >1024'],
-          ['3','¿Patrón humano o automatizado?','Automático = mismo intervalo + payload size'],
-          ['4','¿Certificados TLS sospechosos?','Self-signed, expired, mismatch, issuer inusual'],
-          ['5','¿DNS queries legítimos?','Alta entropía, TTLs inusuales, NXDOMAIN alto'],
-          ['6','¿Tráfico en horarios no laborales?','Conexiones fuera del horario del usuario'],
-          ['7','¿HTTP User-Agent inusual?','Vacío, Python-requests, curl sin navegador']
-        ]},
-      { type:'code', lang:'shell', lines:[
-        '# Capturar tráfico en vivo',
-        'tcpdump -i eth0 -n host 10.0.0.5 -w sospechoso.pcap',
-        '',
-        '# Leer PCAP filtrado por IP',
-        'tcpdump -nr capture.pcap host 185.220.101.42 -X',
-        '',
-        '# Estadísticas de conversaciones TCP',
-        'tshark -r capture.pcap -q -z conv,tcp',
-        '',
-        '# DNS queries únicos (buscar DGA)',
-        'tshark -r capture.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name | sort -u',
-        '',
-        '# HTTP requests',
-        'tshark -r capture.pcap -Y "http.request" -T fields -e http.host -e http.request.uri',
-        '',
-        '# Certificados TLS',
-        'tshark -r capture.pcap -Y "tls.handshake.type == 11" -T fields -e tls.handshake.certificate'
-      ]}
-    ]},
-  { id:'queries', icon:'⚡', title:'Queries Útiles', badge:'KQL · SPL · ESQL',
-    desc:'Queries prácticos para los SIEM más usados. Seleccioná el lenguaje con las tabs.',
-    content:[
-      { type:'tabs', tabs:[
-        { label:'🔷 KQL (Sentinel)', lang:'kql', lines:[
-          '# Office spawn → proceso hijo (phishing con macro)',
-          'let Office = dynamic(["winword.exe","excel.exe","outlook.exe","powerpnt.exe"]);',
-          'let LOL = dynamic(["powershell.exe","cmd.exe","rundll32.exe","mshta.exe","regsvr32.exe","wscript.exe"]);',
-          'DeviceProcessEvents',
-          '| where InitiatingProcessFileName has_any Office and FileName has_any LOL',
-          '| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName',
-          '',
-          '# Impossible travel detection',
-          'SigninLogs',
-          '| where ResultType == "0"',
-          '| sort by UserPrincipalName, CreatedDateTime asc',
-          '| partition by UserPrincipalName',
-          '    (| extend PrevLoc = previous(LocationDetails), PrevTime = previous(CreatedDateTime))',
-          '| where PrevTime != datetime("null")',
-          '| extend MinDiff = datetime_diff("minute", CreatedDateTime, PrevTime)',
-          '| where MinDiff > 0 and MinDiff < 60',
-          '',
-          '# Descargas desde Office',
-          'DeviceFileEvents',
-          '| where InitiatingProcessFileName in ("winword.exe","excel.exe","outlook.exe")',
-          '| where FileName matches regex @"\\.(exe|ps1|vbs|js|hta|bat|scr|dll)$"',
-          '| project Timestamp, DeviceName, FileName, FolderPath, InitiatingProcessFileName, SHA256',
-          '',
-          '# Lateral movement via RDP',
-          'DeviceNetworkEvents',
-          '| where RemotePort == 3389 and ActionType == "ConnectionSuccess"',
-          '| summarize Count = count() by DeviceName, RemoteIP, LocalIP',
-          '| where Count > 3'
-        ]},
-        { label:'🔶 SPL (Splunk)', lang:'spl', lines:[
-          '| Procesos hijos de Office',
-          'index=windows EventCode=4688 (ParentProcess="winword.exe" OR ParentProcess="excel.exe" OR ParentProcess="outlook.exe")',
-          '| table _time, host, Account_Name, ProcessName, ParentProcess, CommandLine',
-          '| sort - _time',
-          '',
-          '| Detectar descargas por certutil',
-          'index=windows EventCode=4688 ProcessName="certutil.exe" CommandLine="*-urlcache*"',
-          '| table _time, host, Account_Name, CommandLine',
-          '',
-          '| Password spraying',
-          'index=windows EventCode=4625',
-          '| bucket _time span=5m',
-          '| stats count by _time, Account_Name, Source_Network_Address',
-          '| where count > 10',
-          '| sort - count',
-          '',
-          '| DNS queries DGA (alta entropía)',
-          'index=dns',
-          '| eval length=len(query)',
-          '| eval entropy=len(query)-len(replace(query, "[a-z]", ""))',
-          '| where length > 20 AND entropy > 10',
-          '| table _time, src_ip, query'
-        ]},
-        { label:'🟢 ESQL (Elastic)', lang:'esql', lines:[
-          '// Procesos desde directorios temporales',
-          'FROM logs-endpoint.events.process-*',
-          '| WHERE STARTS_WITH(process.executable, "C:\\\\Users\\\\")',
-          '    AND process.executable LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"',
-          '| STAT count = COUNT() BY host.hostname, process.name, process.executable',
-          '| SORT count DESC',
-          '',
-          '// Conexiones salientes a puertos no estándar',
-          'FROM logs-endpoint.events.network-*',
-          '| WHERE destination.port NOT IN (80, 443, 22, 53, 3389, 25, 587, 993)',
-          '    AND network.direction == "outbound"',
-          '| STAT count = COUNT() BY host.hostname, process.name, destination.address, destination.port',
-          '| SORT count DESC'
-        ]}
-      ]}
-    ]},
-  { id:'containment', icon:'⛔', title:'Contención Rápida', badge:'7 escenarios',
-    desc:'Acciones inmediatas por tipo de incidente. La contención es PRIORIDAD sobre la investigación.',
-    content:[
-      { type:'table',
-        headers:['Escenario','Acción','Impacto','Tiempo'],
-        rows:[
-          ['Ransomware','Aislar host de red (EDR isolate)','Usuario pierde acceso','< 5 min'],
-          ['Cuenta comprometida','Deshabilitar cuenta, resetear pass, revocar tokens','Usuario sin acceso','< 2 min'],
-          ['C2 beaconing','Bloquear IP en firewall + aislar host','Posible pérdida conectividad','< 3 min'],
-          ['Phishing masivo','Bloquear remitente en gateway, eliminar correos','Pérdida correos legítimos','< 10 min'],
-          ['Data exfiltration','Bloquear tráfico saliente a IP + aislar host','Interrupción parcial de red','< 5 min'],
-          ['Malware detectado','Aislar host, bloquear hash en AV/EDR','Usuario sin acceso','< 5 min'],
-          ['Lateral movement','Aislar host origen y destino, revocar credenciales','Múltiples usuarios','< 10 min']
-        ]},
-      { type:'callout', style:'d', title:'🔥 Regla de oro', body:'En incidente confirmado, contené primero, investigá después. Un atacante con acceso es como una fuga de gas — cerrá la válvula antes de buscar el origen.' }
-    ]},
-  { id:'playbooks', icon:'📋', title:'Playbooks', badge:'Phishing · Ransomware',
-    desc:'Procedimientos estandarizados para escenarios comunes.',
-    content:[
-      { type:'accordion', items:[
-        { title:'🐟 Playbook: Phishing', lines:[
-          '1. RECOLECTAR: Pedir EML/MSG original. Headers, adjuntos, URLs.',
-          '2. HEADERS: SPF, DKIM, DMARC. IP de origen. ¿Coincide con el remitente?',
-          '3. URLs: Extraer TODAS. VirusTotal + URLScan.io. ¿Dominio malicioso?',
-          '4. ADJUNTOS: Hash SHA256 → VT. Tipo real (no confiar en extensión).',
-          '5. ACCIÓN: Si malicioso → bloquear remitente, eliminar correos, alertar.',
-          '6. ESCALAR: Si hubo click/ejecución → IR. Si solo recibió → cerrar.'
-        ]},
-        { title:'💣 Playbook: Ransomware', lines:[
-          '1. CONFIRMAR: Alertas EDR masivas. Notas de rescate. Extensiones cambiadas.',
-          '2. AISLAR: Aislar host de RED (NO apagar). Bloquear tráfico del segmento.',
-          '3. ALCANCE: ¿Solo 1 host? ¿Comparte almacenamiento? ¿Se propagó?',
-          '4. EVIDENCIA: Volcar RAM. Preservar logs EDR, red, firewall.',
-          '5. VECTOR: ¿RDP brute force? ¿Phishing? ¿VPN sin MFA?',
-          '6. RECOVERY: Restaurar desde backup (verificar integridad). NO pagar rescate.'
-        ]}
+      {label:'SPL (Splunk)',lang:'spl',lines:[
+        '# Procesos hijos de Office',
+        'index=windows EventCode=4688 (ParentProcess="winword.exe" OR ParentProcess="excel.exe" OR ParentProcess="outlook.exe")',
+        '| table _time, host, Account_Name, ProcessName, ParentProcess, CommandLine',
+        '# Password spraying',
+        'index=windows EventCode=4625',
+        '| bucket _time span=5m',
+        '| stats count by _time, Account_Name, Source_Network_Address',
+        '| where count > 10',
+        '# DNS queries DGA',
+        'index=dns',
+        '| eval entropy=len(query)-len(replace(query, "[a-z]", ""))',
+        '| where len(query) > 20 AND entropy > 10'
       ]},
-      { type:'callout', style:'d', title:'🚨 Ransomware: NO apagues el host', body:'Apagar destruye evidencia en RAM. Aislar de red SÍ, apagar NO. La evidencia en memoria puede contener el vector de entrada.' }
-    ]},
-  { id:'mitre', icon:'🎯', title:'MITRE ATT&CK', badge:'14 tácticas · 12 técnicas clave',
-    desc:'Framework para clasificar tácticas, técnicas y procedimientos de adversarios.',
-    content:[
-      { type:'mitre' },
-      { type:'table',
-        headers:['Técnica','Nombre','Táctica','Detección rápida'],
-        rows:[
-          ['T1566.001','Spearphishing Adjunto','Initial Access','Office spawning proceso hijo (cmd, ps, wscript)'],
-          ['T1059.001','PowerShell','Execution','4104 ScriptBlock, -enc, IEX, DownloadString'],
-          ['T1055.012','Process Hollowing','Defense Evasion','Primary thread suspendido, memory anomalies'],
-          ['T1003.001','LSASS Memory','Credential Access','ProDump, comsvcs.dll, Task Manager a LSASS'],
-          ['T1021.001','Remote Desktop','Lateral Movement','4624 LogonType 10 desde host no admin'],
-          ['T1048','Exfil Over C2','Exfiltration','Tráfico saliente anómalo en volumen/horario'],
-          ['T1071.001','Web Protocols','C2','HTTP/S a IP externa con intervalos regulares'],
-          ['T1486','Data Encrypted for Impact','Impact','Masivas modificaciones de archivos, extensión cambiada']
-        ]}
-    ]},
-  { id:'forensics', icon:'🔬', title:'Forensia de Memoria RAM', badge:'Volatility 3',
-    desc:'Comandos esenciales de Volatility 3 para análisis de memoria.',
-    content:[
-      { type:'code', lang:'shell', lines:[
-        '# Listar procesos (psscan detecta ocultos)',
-        'volatility -f memory.dmp windows.psscan',
-        'volatility -f memory.dmp windows.pslist',
+      {label:'ESQL (Elastic)',lang:'esql',lines:[
+        '// Procesos desde directorios temporales',
+        'FROM logs-endpoint.events.process-*',
+        '| WHERE STARTS_WITH(process.executable, "C:\\\\Users\\\\")',
+        '    AND process.executable LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"',
+        '| STAT count = COUNT() BY host.hostname, process.name',
         '',
-        '# Conexiones de red desde memoria',
-        'volatility -f memory.dmp windows.netscan',
-        '',
-        '# Línea de comandos de cada proceso',
-        'volatility -f memory.dmp windows.cmdline',
-        '',
-        '# DLLs cargadas en un proceso',
-        'volatility -f memory.dmp windows.dlllist --pid 1234',
-        '',
-        '# Código inyectado (malfind — busca shellcode)',
-        'volatility -f memory.dmp windows.malfind',
-        '',
-        '# Handles a procesos (detecta process hollowing)',
-        'volatility -f memory.dmp windows.handles --pid 1234 --object-type Process',
-        '',
-        '# Extraer un proceso volcado',
-        'volatility -f memory.dmp windows.memmap --pid 4321 --dump',
-        '',
-        '# Scan de archivos en memoria',
-        'volatility -f memory.dmp windows.filescan | grep -E "(\\.exe|\\.dll|\\.ps1|\\.vbs)$"'
-      ]}
-    ]},
-  { id:'malware', icon:'🦠', title:'Análisis de Malware', badge:'Triage rápido',
-    desc:'Pasos para el análisis inicial de una muestra desconocida.',
-    content:[
-      { type:'code', lang:'shell', lines:[
-        '# 1. Hashes (para buscar en VirusTotal)',
-        'sha256sum muestra.exe',
-        'md5sum muestra.exe',
-        '',
-        '# 2. Tipo de archivo real (no confiar en extensión)',
-        'file muestra.exe',
-        '',
-        '# 3. Strings: buscar IoCs embebidos',
-        'strings muestra.exe | grep -ioE \'https?://[^"\\\'<> ]+\'',
-        'strings muestra.exe | grep -oE \'\\b[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\b\' | sort -u',
-        '',
-        '# 4. Secciones PE (anormalmente grande = packed)',
-        'objdump -h muestra.exe | grep -E "\\.text|\\.data|\\.rdata"',
-        '',
-        '# 5. Imports sospechosos',
-        'pedump --imports muestra.exe | grep -E "(VirtualAlloc|CreateRemoteThread|WriteProcessMemory|URLDownload|WinExec)"',
-        '',
-        '# 6. Timestamp de compilación',
-        'exiftool muestra.exe | grep -i "time|date"',
-        '',
-        '# 7. Entropía (alta = packed/encrypted)',
-        'tr -d \'\\0\' < muestra.exe | ent 2>/dev/null | grep "Entropy"'
-      ]},
-      { type:'grid', items:[
-        { icon:'🏠', title:'Any.Run', desc:'Sandbox interactivo online. Ejecutá malware en el browser.', tag:'Sandbox', tc:'b' },
-        { icon:'🧪', title:'Hybrid Analysis', desc:'Sandbox CrowdStrike. Reportes de comportamiento.', tag:'Sandbox', tc:'p' },
-        { icon:'🔐', title:'Joe Sandbox', desc:'Análisis profundo. Evasión detection, MITRE mapping.', tag:'Sandbox', tc:'p' },
-        { icon:'📁', title:'Detect It Easy', desc:'Identificar packers, compiladores, protectores.', tag:'PE', tc:'y' }
-      ]}
-    ]},
-  { id:'tools', icon:'🛠️', title:'Toolbox del SOC Analyst', badge:'12 herramientas',
-    desc:'Herramientas esenciales organizadas por función.',
-    content:[
-      { type:'grid', items:[
-        { icon:'🔍', title:'Splunk / Sentinel / Elastic', desc:'SIEM principal. Conocé al menos UNO en profundidad.', tag:'SIEM', tc:'b' },
-        { icon:'🟢', title:'CrowdStrike / S1 / MDE', desc:'EDR. Hunting, isolation, IOA detection.', tag:'EDR', tc:'g' },
-        { icon:'🟠', title:'VirusTotal + GreyNoise', desc:'Enriquecimiento de IoCs. Archivos + IPs.', tag:'CTI', tc:'p' },
-        { icon:'📸', title:'URLScan.io', desc:'Análisis de URLs: screenshot, DOM, redirects.', tag:'CTI', tc:'p' },
-        { icon:'🔎', title:'Shodan / Censys', desc:'Buscar infraestructura C2, certificados, puertos.', tag:'OSINT', tc:'p' },
-        { icon:'🔧', title:'Wireshark / tshark', desc:'Análisis de PCAP. Imprescindible.', tag:'Red', tc:'o' },
-        { icon:'🧠', title:'Volatility 3', desc:'Análisis de memoria RAM. Rootkits, procesos ocultos.', tag:'Forensia', tc:'b' },
-        { icon:'🧬', title:'Velociraptor', desc:'DFIR a escala. Recolecta artefactos multi-endpoint.', tag:'Forensia', tc:'b' },
-        { icon:'📊', title:'Hayabusa', desc:'Análisis rápido de EventLogs Windows. Sigma rules.', tag:'Win', tc:'y' },
-        { icon:'🔩', title:'Procmon / Process Hacker', desc:'Monitoreo de procesos en vivo.', tag:'Win', tc:'y' },
-        { icon:'🗂️', title:'MISP / OTX', desc:'Threat intel sharing. IoCs curados.', tag:'CTI', tc:'p' },
-        { icon:'🔗', title:'CyberChef', desc:'Decode todo: base64, hex, XOR, URL, gzip.', tag:'Util', tc:'g' }
-      ]}
-    ]},
-  { id:'cheat', icon:'📄', title:'Cheat Sheet Rápido', badge:'Conversiones · Comandos',
-    desc:'Comandos sueltos de referencia rápida para el día a día.',
-    content:[
-      { type:'sub', title:'🪟 Windows' },
-      { type:'code', lang:'powershell', lines:[
-        'netstat -ano | findstr ESTABLISHED',
-        'Get-Process -Id 4321 | Select-Object *',
-        'Get-CimInstance Win32_Service | Select Name, PathName, StartName',
-        'Search-ADAccount -LockedOut | Select Name, SamAccountName',
-        'Get-CimInstance Win32_OperatingSystem | Select LastBootUpTime'
-      ]},
-      { type:'sub', title:'🐧 Linux' },
-      { type:'code', lang:'bash', lines:[
-        'find / -perm -4000 -type f 2>/dev/null   # SUID',
-        'ss -tunap | grep ESTAB',
-        'dpkg --verify   # Integridad paquetes (Debian)',
-        'last -10',
-        'find /tmp /dev/shm -type f -mtime -1 2>/dev/null',
-        'journalctl -u ssh.service --since "24 hours ago" | grep "Failed password"'
-      ]},
-      { type:'sub', title:'🌐 Red' },
-      { type:'code', lang:'shell', lines:[
-        'tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u',
-        'tshark -r cap.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name | sort | uniq -c | sort -rn',
-        'tshark -r cap.pcap -Y "http.request" -T fields -e http.host -e http.request.uri',
-        'tcpdump -i eth0 -n port 53   # capturar solo DNS'
-      ]},
-      { type:'sub', title:'🧮 Conversiones Rápidas' },
-      { type:'grid', items:[
-        { icon:'🧮', title:'Bytes a GB', desc:'bytes / 1073741824', tag:'', tc:'' },
-        { icon:'⏰', title:'Epoch a fecha', desc:'date -d @1700000000', tag:'', tc:'' },
-        { icon:'🔢', title:'Hex a Decimal', desc:'printf "%d" 0x7F', tag:'', tc:'' },
-        { icon:'🔄', title:'Base64 Decode', desc:'echo "dGVzdA==" | base64 -d', tag:'', tc:'' },
-        { icon:'🔐', title:'Hash rápido', desc:'sha256sum archivo', tag:'', tc:'' },
-        { icon:'🌐', title:'URL Decode', desc:\"python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'\", tag:'', tc:'' }
+        '// Conexiones salientes a puertos no est\u00E1ndar',
+        'FROM logs-endpoint.events.network-*',
+        '| WHERE destination.port NOT IN (80, 443, 22, 53, 3389)',
+        '| STAT count = COUNT() BY host.hostname, destination.address, destination.port'
       ]}
     ]}
+   ]},
+  {id:'containment',icon:'\u26D4',title:'Contenci\u00F3n R\u00E1pida',badge:'7 escenarios',
+   desc:'Acciones inmediatas por tipo de incidente. La contenci\u00F3n es PRIORIDAD sobre la investigaci\u00F3n.',
+   content:[
+    {type:'table',h:['Escenario','Acci\u00F3n','Impacto','Tiempo'],r:[
+      ['Ransomware','Aislar host de red (EDR isolate)','Usuario pierde acceso','< 5 min'],
+      ['Cuenta comprometida','Deshabilitar cuenta, resetear pass, revocar tokens','Usuario sin acceso','< 2 min'],
+      ['C2 beaconing','Bloquear IP en firewall + aislar host','Posible p\u00E9rdida conectividad','< 3 min'],
+      ['Phishing masivo','Bloquear remitente en gateway, eliminar correos','P\u00E9rdida correos leg\u00EDtimos','< 10 min'],
+      ['Data exfiltration','Bloquear tr\u00E1fico saliente a IP + aislar host','Interrupci\u00F3n parcial de red','< 5 min'],
+      ['Malware detectado','Aislar host, bloquear hash en AV/EDR','Usuario sin acceso','< 5 min'],
+      ['Lateral movement','Aislar host origen y destino, revocar credenciales','M\u00FAltiples usuarios','< 10 min']
+    ]},
+    {type:'callout',s:'d',title:'\uD83D\uDD25 Regla de oro',body:'En incidente confirmado, conten\u00E9 primero, investig\u00E1 despu\u00E9s.'}
+   ]},
+  {id:'playbooks',icon:'\uD83D\uDCCB',title:'Playbooks',badge:'Phishing / Ransomware',
+   content:[
+    {type:'accordion',items:[
+      {title:'\uD83D\uDC1F Phishing',lines:[
+        '1. RECOLECTAR: Pedir EML/MSG original. Headers, adjuntos, URLs.',
+        '2. HEADERS: SPF, DKIM, DMARC. IP de origen.',
+        '3. URLs: VirusTotal + URLScan.io.',
+        '4. ADJUNTOS: Hash SHA256 -> VT. Tipo real.',
+        '5. ACCI\u00D3N: Si malicioso -> bloquear remitente, eliminar correos.',
+        '6. ESCALAR: Si hubo click/ejecuci\u00F3n -> IR.'
+      ]},
+      {title:'\uD83D\uDCA3 Ransomware',lines:[
+        '1. CONFIRMAR: Alertas EDR masivas. Notas de rescate.',
+        '2. AISLAR: Aislar host de RED (NO apagar).',
+        '3. ALCANCE: \u00BFS\u00F3lo 1 host? \u00BFSe propag\u00F3?',
+        '4. EVIDENCIA: Volcar RAM. Preservar logs.',
+        '5. VECTOR: \u00BFRDP? Phishing? VPN sin MFA?',
+        '6. RECOVERY: Restaurar backup. NO pagar rescate.'
+      ]}
+    ]}
+   ]},
+  {id:'mitre',icon:'\uD83C\uDFAF',title:'MITRE ATT&CK',badge:'14 t\u00E1cticas',
+   content:[
+    {type:'mitre'},
+    {type:'table',h:['T\u00E9cnica','Nombre','T\u00E1ctica','Detecci\u00F3n r\u00E1pida'],r:[
+      ['T1566.001','Spearphishing Adjunto','Initial Access','Office spawning proceso hijo'],
+      ['T1059.001','PowerShell','Execution','4104 ScriptBlock, -enc, IEX'],
+      ['T1055.012','Process Hollowing','Defense Evasion','Primary thread suspendido'],
+      ['T1003.001','LSASS Memory','Credential Access','ProDump, comsvcs.dll a LSASS'],
+      ['T1021.001','Remote Desktop','Lateral Movement','4624 LogonType 10 desde host no admin'],
+      ['T1048','Exfil Over C2','Exfiltration','Tr\u00E1fico saliente an\u00F3malo'],
+      ['T1486','Data Encrypted for Impact','Impact','Masivas modificaciones de archivos']
+    ]}
+   ]},
+  {id:'forensics',icon:'\uD83D\uDD2C',title:'Forensia de Memoria RAM',badge:'Volatility 3',
+   content:[
+    {type:'code',lang:'shell',lines:[
+      '# Listar procesos (psscan detecta ocultos)',
+      'volatility -f memory.dmp windows.psscan',
+      '# Conexiones de red desde memoria',
+      'volatility -f memory.dmp windows.netscan',
+      '# L\u00EDnea de comandos de cada proceso',
+      'volatility -f memory.dmp windows.cmdline',
+      '# C\u00F3digo inyectado (malfind)',
+      'volatility -f memory.dmp windows.malfind',
+      '# Handles a procesos (process hollowing)',
+      'volatility -f memory.dmp windows.handles --pid 1234 --object-type Process',
+      '# Scan de archivos en memoria',
+      'volatility -f memory.dmp windows.filescan | grep -E "(\\.exe|\\.dll)"'
+    ]}
+   ]},
+  {id:'malware',icon:'\uD83E\uDDA0',title:'An\u00E1lisis de Malware',badge:'Triage r\u00E1pido',
+   content:[
+    {type:'code',lang:'shell',lines:[
+      '# 1. Hashes (para VirusTotal)',
+      'sha256sum muestra.exe',
+      '# 2. Tipo de archivo real',
+      'file muestra.exe',
+      '# 3. Strings: buscar URLs, IPs',
+      'strings muestra.exe | grep -ioE \'https?://[^"\\\'<> ]+\'',
+      'strings muestra.exe | grep -oE \'\\\\b[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\b\' | sort -u',
+      '# 4. Secciones PE (packed?)',
+      'objdump -h muestra.exe | grep -E "\\\\.text|\\\\.data|\\\\.rdata"',
+      '# 5. Imports sospechosos',
+      'pedump --imports muestra.exe | grep -E "(VirtualAlloc|CreateRemoteThread|URLDownload)"',
+      '# 6. Timestamp de compilaci\u00F3n',
+      'exiftool muestra.exe | grep -i "time|date"'
+    ]}
+   ]},
+  {id:'tools',icon:'\uD83D\uDEE0\uFE0F',title:'Toolbox del SOC Analyst',badge:'12 herramientas',
+   content:[
+    {type:'grid',items:[
+      {i:'\uD83D\uDD0D',t:'Splunk / Sentinel / Elastic',d:'SIEM principal.',g:'SIEM',c:'b'},
+      {i:'\uD83D\uDFE2',t:'CrowdStrike / S1 / MDE',d:'EDR. Hunting, isolation.',g:'EDR',c:'g'},
+      {i:'\uD83D\uDFE0',t:'VirusTotal + GreyNoise',d:'Enriquecimiento de IoCs.',g:'CTI',c:'p'},
+      {i:'\uD83D\uDCF8',t:'URLScan.io',d:'An\u00E1lisis de URLs.',g:'CTI',c:'p'},
+      {i:'\uD83D\uDD0E',t:'Shodan / Censys',d:'Buscar infraestructura C2.',g:'OSINT',c:'p'},
+      {i:'\uD83D\uDD27',t:'Wireshark / tshark',d:'An\u00E1lisis de PCAP.',g:'Red',c:'o'},
+      {i:'\uD83E\uDDE0',t:'Volatility 3',d:'An\u00E1lisis de memoria RAM.',g:'Forensia',c:'b'},
+      {i:'\uD83E\uDDEC',t:'Velociraptor',d:'DFIR a escala.',g:'Forensia',c:'b'},
+      {i:'\uD83D\uDCCA',t:'Hayabusa',d:'An\u00E1lisis de EventLogs.',g:'Win',c:'y'},
+      {i:'\uD83D\uDD29',t:'Procmon / Process Hacker',d:'Monitoreo de procesos.',g:'Win',c:'y'},
+      {i:'\uD83D\uDCC2',t:'MISP / OTX',d:'Threat intel sharing.',g:'CTI',c:'p'},
+      {i:'\uD83D\uDD17',t:'CyberChef',d:'Decode todo: base64, hex, XOR.',g:'Util',c:'g'}
+    ]}
+   ]},
+  {id:'cheat',icon:'\uD83D\uDCC4',title:'Cheat Sheet',badge:'Comandos r\u00E1pidos',
+   content:[
+    {type:'sub',title:'Windows'},
+    {type:'code',lang:'ps',lines:[
+      'netstat -ano | findstr ESTABLISHED',
+      'Get-Process -Id 4321 | Select-Object *',
+      'Get-CimInstance Win32_Service | Select Name, PathName, StartName',
+      'Search-ADAccount -LockedOut | Select Name, SamAccountName'
+    ]},
+    {type:'sub',title:'Linux'},
+    {type:'code',lang:'bash',lines:[
+      'find / -perm -4000 -type f 2>/dev/null   # SUID',
+      'ss -tunap | grep ESTAB',
+      'dpkg --verify',
+      'last -10',
+      'find /tmp /dev/shm -type f -mtime -1 2>/dev/null'
+    ]},
+    {type:'sub',title:'Red'},
+    {type:'code',lang:'shell',lines:[
+      'tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u',
+      'tshark -r cap.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name | sort | uniq -c | sort -rn',
+      'tcpdump -i eth0 -n port 53'
+    ]},
+    {type:'sub',title:'Conversiones'},
+    {type:'grid',items:[
+      {i:'\uD83E\uDDEE',t:'Bytes a GB',d:'bytes / 1073741824'},
+      {i:'\u23F0',t:'Epoch a fecha',d:'date -d @1700000000'},
+      {i:'\uD83D\uDD22',t:'Hex a Decimal',d:'printf "%d" 0x7F'},
+      {i:'\uD83D\uDD04',t:'Base64 Decode',d:'echo "dGVzdA==" | base64 -d'},
+      {i:'\uD83D\uDD10',t:'Hash r\u00E1pido',d:'sha256sum archivo'},
+      {i:'\uD83C\uDF10',t:'URL Decode',d:\"python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'\"}
+    ]}
+   ]}
+];
+
+const NAV_GROUPS = [
+  {t:'An\u00E1lisis',items:[{id:'triage',i:'\uD83D\uDD0D',l:'Triage'},{id:'severidad',i:'\uD83C\uDFF7\uFE0F',l:'Severidad'}]},
+  {t:'Windows',items:[{id:'evtx',i:'\uD83D\uDCCB',l:'EventLogs'},{id:'sysmon',i:'\uD83D\uDCE1',l:'Sysmon'},{id:'win-cmd',i:'\uD83D\uDCBB',l:'Cmd Forense'},{id:'lolbins',i:'\u26A1',l:'LOLBins'}]},
+  {t:'Linux',items:[{id:'linux-cmd',i:'\uD83D\uDC27',l:'Cmd Forense'},{id:'linux-logs',i:'\uD83D\uDCDD',l:'Logs'}]},
+  {t:'Red',items:[{id:'network',i:'\uD83C\uDF10',l:'An\u00E1lisis'}]},
+  {t:'Queries',items:[{id:'queries',i:'\u26A1',l:'KQL / SPL / ESQL'}]},
+  {t:'Incidentes',items:[{id:'containment',i:'\u26D4',l:'Contenci\u00F3n'},{id:'playbooks',i:'\uD83D\uDCCB',l:'Playbooks'}]},
+  {t:'Framework',items:[{id:'mitre',i:'\uD83C\uDFAF',l:'MITRE'},{id:'forensics',i:'\uD83D\uDD2C',l:'Forensia'},{id:'malware',i:'\uD83E\uDDA0',l:'Malware'}]},
+  {t:'Referencia',items:[{id:'tools',i:'\uD83D\uDEE0\uFE0F',l:'Toolbox'},{id:'cheat',i:'\uD83D\uDCC4',l:'Cheat Sheet'}]}
+];
+
+const MITRE_TACTICS = [
+  {id:'TA0043',n:'Recon'},{id:'TA0042',n:'Resource Dev'},{id:'TA0001',n:'Initial Access'},
+  {id:'TA0002',n:'Execution'},{id:'TA0003',n:'Persistence'},{id:'TA0004',n:'Priv Esc'},
+  {id:'TA0005',n:'Defense Evasion'},{id:'TA0006',n:'Cred Access'},{id:'TA0007',n:'Discovery'},
+  {id:'TA0008',n:'Lateral Mov'},{id:'TA0009',n:'Collection'},{id:'TA0011',n:'C2'},
+  {id:'TA0010',n:'Exfil'},{id:'TA0040',n:'Impact'}
+];
+
+// ===== COMPONENTS =====
+function CodeBlock(props) {
+  const [copied, setCopied] = React.useState(false);
+  const text = props.lines.join('\n');
+  function copy() {
+    navigator.clipboard.writeText(text).then(function() {
+      setCopied(true);
+      setTimeout(function() { setCopied(false); }, 1200);
+    });
   }
-];
-
-// Sidebar groups with collapsible items
-const navGroups = [
-  { title:'Análisis', items:[
-    { id:'triage', icon:'🔍', label:'Triage' },
-    { id:'severidad', icon:'🏷️', label:'Severidad' }
-  ]},
-  { title:'Windows', items:[
-    { id:'evtx', icon:'📋', label:'EventLogs' },
-    { id:'sysmon', icon:'📡', label:'Sysmon' },
-    { id:'win-cmd', icon:'💻', label:'Cmd Forense' },
-    { id:'lolbins', icon:'⚡', label:'LOLBins' }
-  ]},
-  { title:'Linux', items:[
-    { id:'linux-cmd', icon:'🐧', label:'Cmd Forense' },
-    { id:'linux-logs', icon:'📝', label:'Logs Críticos' }
-  ]},
-  { title:'Red', items:[
-    { id:'network', icon:'🌐', label:'Análisis' }
-  ]},
-  { title:'Queries', items:[
-    { id:'queries', icon:'⚡', label:'KQL · SPL · ESQL' }
-  ]},
-  { title:'Incidentes', items:[
-    { id:'containment', icon:'⛔', label:'Contención' },
-    { id:'playbooks', icon:'📋', label:'Playbooks' }
-  ]},
-  { title:'Framework', items:[
-    { id:'mitre', icon:'🎯', label:'MITRE ATT&CK' },
-    { id:'forensics', icon:'🔬', label:'Forensia RAM' },
-    { id:'malware', icon:'🦠', label:'Malware' }
-  ]},
-  { title:'Referencia', items:[
-    { id:'tools', icon:'🛠️', label:'Toolbox' },
-    { id:'cheat', icon:'📄', label:'Cheat Sheet' }
-  ]}
-];
-
-const tagStyles = { b:'t-b', g:'t-g', y:'t-y', r:'t-r', p:'t-p', o:'t-o', c:'t-c' };
-const pillStyles = { CRITICAL:'p-c', HIGH:'p-h', MEDIUM:'p-m', LOW:'p-l' };
-
-// ---- SUB-COMPONENTS ----
-const CodeBlock = ({ lang, lines }) => {
-  const [copied, setCopied] = useState(false);
-  const text = lines.join('\n');
-  const handleCopy = () => { navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),1200)}) };
-  return (
-    <pre onClick={handleCopy} title="Click para copiar">
-      <span className="lb">{copied ? '✓ Copiado' : lang}</span>
-      <code>{lines.map((l,i)=>(
-        <React.Fragment key={i}>
-          {l.startsWith('#') || l.startsWith('//') || l.startsWith('|') && !l.startsWith('| ') ? (
-            <span className="cm">{l}</span>
-          ) : l.startsWith('| ') ? (
-            <span className="op">{l}</span>
-          ) : l.match(/^(let|where|project|summarize|sort|extend|partition|eval|eventstats|stats|table|index|bucket|FROM|STAT|SORT|GET)/) ? (
-            <span className="kw">{l}</span>
-          ) : l.match(/^[a-z]/) && l.includes(' ') ? (
-            <><span className="fn">{l.split(' ')[0]}</span>{l.substring(l.indexOf(' '))}</>
-          ) : <>{l}</>
-          }{'\n'}
-        </React.Fragment>
-      ))}</code>
-    </pre>
+  return e('pre',{onClick:copy,title:'Click para copiar'},
+    e('span',{className:'lb'},copied ? '\u2713 Copiado' : props.lang),
+    e('code',null,props.lines.map(function(l,i){
+      return React.createElement(React.Fragment,{key:i},l,'\n');
+    }))
   );
-};
+}
 
-const Callout = ({ style, title, body }) => {
-  const s = { i:'callout-i', w:'callout-w', d:'callout-d', g:'callout-g' }[style] || 'callout-i';
-  return <div className={`callout ${s}`}><strong>{title}</strong>{body}</div>;
-};
-
-const TableView = ({ headers, rows }) => (
-  <div className="cw">
-    <table>
-      <thead><tr>{headers.map((h,i)=><th key={i}>{h}</th>)}</tr></thead>
-      <tbody>{rows.map((r,ri)=><tr key={ri}>{r.map((c,ci)=><td key={ci}>{c}</td>)}</tr>)}</tbody>
-    </table>
-  </div>
-);
-
-const GridView = ({ items }) => (
-  <div className="grid-2">
-    {items.map((it,i)=>(
-      <div className="info-card" key={i}>
-        <h4>{it.icon} {it.title}</h4>
-        <p>{it.desc}</p>
-        {it.tag && <div className="tags"><span className={`tag ${tagStyles[it.tc]||'t-b'}`}>{it.tag}</span></div>}
-      </div>
-    ))}
-  </div>
-);
-
-const TabSwitcher = ({ tabs }) => {
-  const [active, setActive] = useState(0);
-  return (
-    <div className="tabs">
-      <div className="tab-bar">
-        {tabs.map((t,i)=>(
-          <button key={i} className={`tab-btn ${i===active?'active':''}`} onClick={()=>setActive(i)}>{t.label}</button>
-        ))}
-      </div>
-      <div className="tab-content">
-        {tabs.map((t,i)=>(
-          <div key={i} className={`tab-pane ${i===active?'active':''}`}>
-            <CodeBlock lang={t.lang} lines={t.lines} />
-          </div>
-        ))}
-      </div>
-    </div>
+function Callout(props) {
+  var s = {i:'callout-i',w:'callout-w',d:'callout-d',g:'callout-g'}[props.style] || 'callout-i';
+  return e('div',{className:'callout '+s},
+    e('strong',null,props.title),
+    props.body
   );
-};
+}
 
-const AccordionGroup = ({ items }) => {
-  const [open, setOpen] = useState(null);
-  const toggle = (i) => setOpen(open===i ? null : i);
-  return (
-    <div>
-      {items.map((it,i)=>(
-        <div className="accordion" key={i}>
-          <div className="acc-hdr" onClick={()=>toggle(i)}>
-            {it.title}
-            <span className={`arrow ${open===i?'open':''}`}>▶</span>
-          </div>
-          <div className={`acc-body ${open===i?'open':''}`}>
-            {it.lines.map((l,li)=><p key={li}>{l}</p>)}
-          </div>
-        </div>
-      ))}
-    </div>
+function TableView(props) {
+  return e('div',{className:'cw'},
+    e('table',null,
+      e('thead',null,e('tr',null,props.headers.map(function(h,i){return e('th',{key:i},h)}))),
+      e('tbody',null,props.rows.map(function(r,ri){
+        return e('tr',{key:ri},r.map(function(c,ci){return e('td',{key:ci},c)}))
+      }))
+    )
   );
-};
+}
 
-const MitreMatrix = () => {
-  const tactics = [
-    {id:'TA0043',name:'Recon'},{id:'TA0042',name:'Resource Dev'},{id:'TA0001',name:'Initial Access'},
-    {id:'TA0002',name:'Execution'},{id:'TA0003',name:'Persistence'},{id:'TA0004',name:'Priv Esc'},
-    {id:'TA0005',name:'Defense Evasion'},{id:'TA0006',name:'Cred Access'},{id:'TA0007',name:'Discovery'},
-    {id:'TA0008',name:'Lateral Mov'},{id:'TA0009',name:'Collection'},{id:'TA0011',name:'C2'},
-    {id:'TA0010',name:'Exfil'},{id:'TA0040',name:'Impact'}
-  ];
-  return (
-    <>
-      <div className="mitre-grid">
-        {tactics.map((t,i)=>(
-          <div className="mitre-cell" key={i} title={t.id}>
-            <div className="tac">{t.name}</div>
-            <div className="t">{t.id}</div>
-          </div>
-        ))}
-      </div>
-      <Callout style='i' title='🧭 ATT&CK Navigator' body={<><a href="https://mitre-attack.github.io/attack-navigator/" target="_blank" style={{color:'var(--accent)'}}>mitre-attack.github.io/attack-navigator</a> — creá heatmaps de cobertura de detección.</>} />
-    </>
+function GridView(props) {
+  return e('div',{className:'grid-2'},
+    props.items.map(function(it,i){
+      var tc = {b:'t-b',g:'t-g',y:'t-y',r:'t-r',p:'t-p',o:'t-o'}[it.c] || 't-b';
+      return e('div',{className:'info-card',key:i},
+        e('h4',null,it.i+' '+it.t),
+        e('p',null,it.d),
+        it.g ? e('div',{className:'tags'},e('span',{className:'tag '+tc},it.g)) : null
+      );
+    })
   );
-};
+}
 
-// ---- SECTION CONTENT RENDERER ----
-const renderContent = (content) => {
-  if (!content) return null;
-  return content.map((block, i) => {
-    switch(block.type) {
-      case 'table': return <TableView key={i} headers={block.headers} rows={block.rows} />;
-      case 'grid': return <GridView key={i} items={block.items} />;
-      case 'code': return <CodeBlock key={i} lang={block.lang} lines={block.lines} />;
-      case 'callout': return <Callout key={i} style={block.style} title={block.title} body={block.body} />;
-      case 'tabs': return <TabSwitcher key={i} tabs={block.tabs} />;
-      case 'accordion': return <AccordionGroup key={i} items={block.items} />;
-      case 'mitre': return <MitreMatrix key={i} />;
-      case 'sub': return <div key={i} className="subtitle">{block.title}</div>;
-      default: return null;
+function TabSwitcher(props) {
+  var _useState = React.useState(0), active = _useState[0], setActive = _useState[1];
+  return e('div',{className:'tabs'},
+    e('div',{className:'tab-bar'},props.tabs.map(function(t,i){
+      return e('button',{key:i,className:'tab-btn'+(i===active?' active':''),onClick:function(){setActive(i)}},t.label);
+    })),
+    e('div',{className:'tab-content'},props.tabs.map(function(t,i){
+      return i===active ? e('div',{key:i,className:'tab-pane active'},e(CodeBlock,{lang:t.lang,lines:t.lines})) : null;
+    }))
+  );
+}
+
+function Accordion(props) {
+  var _useState2 = React.useState(null), open = _useState2[0], setOpen = _useState2[1];
+  return e('div',null,props.items.map(function(it,i){
+    var isOpen = open === i;
+    return e('div',{className:'accordion',key:i},
+      e('div',{className:'acc-hdr',onClick:function(){setOpen(isOpen?null:i)}},
+        it.title,
+        e('span',{className:'arrow'+(isOpen?' open':'')},'\u25B6')
+      ),
+      e('div',{className:'acc-body'+(isOpen?' open':'')},
+        it.lines.map(function(l,li){return e('p',{key:li},l)})
+      )
+    );
+  }));
+}
+
+function MitreMatrix() {
+  return e('div',{className:'mitre-grid'},
+    MITRE_TACTICS.map(function(t,i){
+      return e('div',{className:'mitre-cell',key:i,title:t.id},
+        e('div',{className:'tac'},t.n),
+        e('div',{className:'t'},t.id)
+      );
+    })
+  );
+}
+
+function renderContent(block) {
+  switch(block.type) {
+    case 'table': return e(TableView,{headers:block.h,rows:block.r});
+    case 'grid': return e(GridView,{items:block.items});
+    case 'code': return e(CodeBlock,{lang:block.lang,lines:block.lines});
+    case 'callout': return e(Callout,{style:block.s,title:block.title,body:block.body});
+    case 'tabs': return e(TabSwitcher,{tabs:block.tabs});
+    case 'accordion': return e(Accordion,{items:block.items});
+    case 'mitre': return e(MitreMatrix);
+    case 'sub': return e('div',{className:'subtitle'},block.title);
+    default: return null;
+  }
+}
+
+// ===== SECTION COMPONENT =====
+function SectionCard(props) {
+  var s = props.section, isOpen = props.isOpen, toggle = props.toggle;
+  return e('div',{className:'section-card',id:s.id},
+    e('div',{className:'section-hdr',onClick:function(){toggle(s.id)}},
+      e('div',{className:'left'},
+        e('span',{className:'icon'},s.icon),
+        e('h2',null,s.title),
+        s.badge ? e('span',{className:'badge'},s.badge) : null
+      ),
+      e('span',{className:'toggle'+(isOpen?' open':'')},'\u25BC')
+    ),
+    e('div',{className:'section-body'+(isOpen?' open':'')},
+      s.desc ? e('div',{className:'section-intro'},e('p',null,s.desc)) : null,
+      s.content ? s.content.map(function(b,i){return e(React.Fragment,{key:i},renderContent(b))}) : null
+    )
+  );
+}
+
+// ===== NAV GROUP =====
+function NavGroup(props) {
+  var _useState3 = React.useState(true), open = _useState3[0], setOpen = _useState3[1];
+  var g = props.group, active = props.active, onNav = props.onNav;
+  return e('div',{className:'nav-group'},
+    e('div',{className:'nav-grp-title',onClick:function(){setOpen(!open)}},
+      g.t,
+      e('span',{className:'arrow'+(open?' open':'')},'\u25B6')
+    ),
+    e('div',{className:'nav-items'+(open?' open':'')},
+      g.items.map(function(item,i){
+        return e('a',{key:i,className:'nav-link'+(active===item.id?' active':''),onClick:function(e){e.preventDefault();onNav(item.id)}},
+          e('span',{className:'ico'},item.i),
+          item.l
+        );
+      })
+    )
+  );
+}
+
+// ===== APP =====
+function App() {
+  var _React$useState = React.useState(function(){
+    try { return JSON.parse(localStorage.getItem('soc-guide-open')) || {triage:true,queries:true,cheat:true}; }
+    catch(e) { return {triage:true,queries:true,cheat:true}; }
+  }), openSections = _React$useState[0], setOpenSections = _React$useState[1];
+
+  var _React$useState2 = React.useState('triage'), activeSection = _React$useState2[0], setActive = _React$useState2[1];
+  var _React$useState3 = React.useState(false), sideOpen = _React$useState3[0], setSideOpen = _React$useState3[1];
+  var _React$useState4 = React.useState(''), searchQ = _React$useState4[0], setSearchQ = _React$useState4[1];
+  var searchRef = React.useRef(null);
+
+  React.useEffect(function(){
+    function handler(e) {
+      if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); searchRef.current && searchRef.current.focus(); }
+      if (e.key==='Escape') { setSearchQ(''); searchRef.current && searchRef.current.blur(); }
     }
-  });
-};
+    document.addEventListener('keydown',handler);
+    return function(){document.removeEventListener('keydown',handler)};
+  },[]);
 
-// ---- SECTION CARD ----
-const SectionCard = ({ section, isOpen, toggle }) => (
-  <div className="section-card" id={section.id}>
-    <div className="section-hdr" onClick={()=>toggle(section.id)}>
-      <div className="left">
-        <span className="icon">{section.icon}</span>
-        <h2>{section.title}</h2>
-        {section.badge && <span className="badge">{section.badge}</span>}
-      </div>
-      <span className={`toggle ${isOpen?'open':''}`}>▼</span>
-    </div>
-    <div className={`section-body ${isOpen?'open':''}`}>
-      {section.desc && <div className="section-intro"><p>{section.desc}</p></div>}
-      {renderContent(section.content)}
-    </div>
-  </div>
-);
-
-// ---- NAV GROUP ----
-const NavGroup = ({ group, activeSection, onNav }) => {
-  const [open, setOpen] = useState(true);
-  return (
-    <div className="nav-group">
-      <div className="nav-grp-title" onClick={()=>setOpen(!open)}>
-        {group.title}
-        <span className={`arrow ${open?'open':''}`}>▶</span>
-      </div>
-      <div className={`nav-items ${open?'open':''}`}>
-        {group.items.map((item,i)=>(
-          <a key={i} className={`nav-link ${activeSection===item.id?'active':''}`} data-target={item.id} onClick={(e)=>{e.preventDefault();onNav(item.id)}}>
-            <span className="ico">{item.icon}</span>
-            {item.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ---- APP ----
-const App = () => {
-  const [openSections, setOpenSections] = useState(()=>{
-    const saved = localStorage.getItem('soc-guide-open');
-    if (saved) try { return JSON.parse(saved) } catch(e) {}
-    return { triage:true, queries:true, cheat:true };
-  });
-  const [activeSection, setActiveSection] = useState('triage');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchRef = useRef(null);
-  const sectionRefs = useRef({});
-
-  // Keyboard shortcuts
-  useEffect(()=>{
-    const handler = (e) => {
-      if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); searchRef.current?.focus(); }
-      if (e.key==='Escape') { setSearchQuery(''); searchRef.current?.blur(); }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, []);
-
-  const toggleSection = useCallback((id) => {
-    setOpenSections(prev => {
-      const next = { ...prev, [id]: !prev[id] };
-      localStorage.setItem('soc-guide-open', JSON.stringify(next));
+  function toggleSection(id) {
+    setOpenSections(function(prev){
+      var next = Object.assign({},prev);
+      next[id] = !next[id];
+      localStorage.setItem('soc-guide-open',JSON.stringify(next));
       return next;
     });
-  }, []);
+  }
 
-  const navigateTo = useCallback((id) => {
-    setActiveSection(id);
-    setOpenSections(prev => {
+  function navigateTo(id) {
+    setActive(id);
+    setOpenSections(function(prev){
       if (!prev[id]) {
-        const next = { ...prev, [id]: true };
-        localStorage.setItem('soc-guide-open', JSON.stringify(next));
+        var next = Object.assign({},prev);
+        next[id] = true;
+        localStorage.setItem('soc-guide-open',JSON.stringify(next));
         return next;
       }
       return prev;
     });
-    setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' });
-    }, 50);
-    if (window.innerWidth <= 900) setSidebarOpen(false);
-  }, []);
+    setTimeout(function(){
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    },50);
+    if (window.innerWidth <= 900) setSideOpen(false);
+  }
 
-  // Scroll spy
-  useEffect(()=>{
-    const observer = new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting) setActiveSection(e.target.id)});
-    }, { rootMargin:'-80px 0px -70% 0px' });
-    sections.forEach(s => {
-      const el = document.getElementById(s.id);
+  React.useEffect(function(){
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting) setActive(e.target.id)});
+    },{rootMargin:'-80px 0px -70% 0px'});
+    SECTIONS.forEach(function(s){
+      var el = document.getElementById(s.id);
       if (el) observer.observe(el);
     });
-    return () => observer.disconnect();
-  }, []);
+    return function(){observer.disconnect()};
+  },[]);
 
-  // Search
-  const filtered = useMemo(() => {
-    if (!searchQuery.trim()) return sections;
-    const q = searchQuery.toLowerCase().trim();
-    return sections.filter(s =>
-      s.title.toLowerCase().includes(q) ||
-      (s.badge && s.badge.toLowerCase().includes(q)) ||
-      (s.desc && s.desc.toLowerCase().includes(q)) ||
-      JSON.stringify(s.content).toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
+  var filtered = React.useMemo(function(){
+    if (!searchQ.trim()) return SECTIONS;
+    var q = searchQ.toLowerCase().trim();
+    return SECTIONS.filter(function(s){
+      return s.title.toLowerCase().includes(q) ||
+        (s.badge && s.badge.toLowerCase().includes(q)) ||
+        (s.desc && s.desc.toLowerCase().includes(q));
+    });
+  },[searchQ]);
 
-  return (
-    <>
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen?'open':''}`}>
-        <div className="side-hdr">
-          <h1>🛡️ SOC Guide</h1>
-          <span className="badge">v3.0</span>
-        </div>
-        <div className="side-search">
-          <input ref={searchRef} type="text" placeholder="Buscar… (Ctrl+K)"
-            value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} />
-        </div>
-        <nav className="nav">
-          {navGroups.map((g,i)=><NavGroup key={i} group={g} activeSection={activeSection} onNav={navigateTo} />)}
-        </nav>
-      </aside>
-      <div className={`overlay ${sidebarOpen?'open':''}`} onClick={()=>setSidebarOpen(false)} />
+  var mdPadding = {padding:'20px 0 10px',fontSize:'.72rem',color:'var(--text2)',textAlign:'center',borderTop:'1px solid var(--border)',marginTop:20};
+  var bannerStyle = {
+    background:'linear-gradient(135deg, rgba(74,158,255,.08) 0%, rgba(180,124,255,.06) 100%)',
+    border:'1px solid var(--border)',
+    borderRadius:'var(--radius)',
+    padding:'20px 24px',
+    marginBottom:'24px'
+  };
 
-      {/* Main */}
-      <div className="main">
-        <header className="topbar">
-          <button className="menu-btn" onClick={()=>setSidebarOpen(!sidebarOpen)}>☰</button>
-          <div className="bc">
-            <span className="dot"></span>
-            <span>Guía Interactiva del SOC Analyst</span>
-          </div>
-          <div className="stats">
-            <span>📚 {sections.length} secciones</span>
-            <span>⚡ {openSections[Object.keys(openSections).find(k=>openSections[k])] ? 'Interactivo' : 'Explorá'}</span>
-          </div>
-        </header>
+  return [
+    e('aside',{className:'sidebar'+(sideOpen?' open':''),key:'sidebar'},
+      e('div',{className:'side-hdr'},e('h1',null,'\uD83D\uDEE1\uFE0F SOC Guide'),e('span',{className:'badge'},'v4.0')),
+      e('div',{className:'side-search'},e('input',{ref:searchRef,type:'text',placeholder:'Buscar... (Ctrl+K)',value:searchQ,onChange:function(e){setSearchQ(e.target.value)}})),
+      e('nav',{className:'nav'},NAV_GROUPS.map(function(g,i){return e(NavGroup,{key:i,group:g,active:activeSection,onNav:navigateTo})}))
+    ),
+    e('div',{className:'overlay'+(sideOpen?' open':''),onClick:function(){setSideOpen(false)},key:'overlay'}),
+    e('div',{className:'main',key:'main'},
+      e('header',{className:'topbar'},
+        e('button',{className:'menu-btn',onClick:function(){setSideOpen(!sideOpen)}},'\u2630'),
+        e('div',{className:'bc'},e('span',{className:'dot'}),e('span',null,'Gu\u00EDa Interactiva del SOC Analyst')),
+        e('div',{className:'stats'},e('span',null,'\uD83D\uDCDA '+SECTIONS.length+' secciones'))
+      ),
+      e('div',{className:'content'},
+        !searchQ ? e('div',{style:bannerStyle},
+          e('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+            e('span',{style:{fontSize:'1.5rem'}},'\uD83D\uDEE1\uFE0F'),
+            e('div',null,
+              e('h3',{style:{fontSize:'1rem',fontWeight:600,marginBottom:2}},'SOC Analyst - Gu\u00EDa de Consulta R\u00E1pida'),
+              e('p',{style:{fontSize:'.8rem',color:'var(--text2)'}},
+                'Hac\u00E9 click en cualquier secci\u00F3n para expandir. Us\u00E1 Ctrl+K para buscar. C\u00F3digos copiables con un click.'
+              )
+            )
+          )
+        ) : null,
+        searchQ ? e('div',{style:{marginBottom:16,fontSize:'.85rem',color:'var(--text2)'}},
+          '\uD83D\uDD0E Resultados para "',e('strong',{style:{color:'var(--text)'}},searchQ),'": ',filtered.length,' secci\u00F3n(es)'
+        ) : null,
+        filtered.length > 0 ? filtered.map(function(s){
+          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection});
+        }) : e('div',{style:{padding:40,textAlign:'center',color:'var(--text2)'}},
+          e('p',{style:{fontSize:'1.5rem',marginBottom:8}},'\uD83D\uDD0D'),
+          e('p',null,'No se encontraron resultados para "'+searchQ+'"'),
+          e('p',{style:{fontSize:'.78rem',marginTop:4}},'Prob\u00E1 con: phishing, ransomware, KQL, EventID, MITRE, etc.')
+        ),
+        e('div',{style:mdPadding},'SOC Analyst Guide v4.0 - Hecho para consulta diaria.')
+      )
+    )
+  ];
+}
 
-        <div className="content">
-          {/* Welcome Banner */}
-          {!searchQuery && (
-            <div style={{
-              background:'linear-gradient(135deg, rgba(74,158,255,.08) 0%, rgba(180,124,255,.06) 100%)',
-              border:'1px solid var(--border)',
-              borderRadius:'var(--radius)',
-              padding:'20px 24px',
-              marginBottom:'24px'
-            }}>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',flexWrap:'wrap'}}>
-                <span style={{fontSize:'1.5rem'}}>🛡️</span>
-                <div>
-                  <h3 style={{fontSize:'1rem',fontWeight:600,marginBottom:2}}>
-                    SOC Analyst — Guía de Consulta Rápida
-                  </h3>
-                  <p style={{fontSize:'.8rem',color:'var(--text2)'}}>
-                    Hacé click en cualquier sección para expandir. Usá <kbd style={{background:'var(--bg4)',padding:'1px 6px',borderRadius:3,fontSize:'.7rem'}}>Ctrl+K</kbd> para buscar.
-                    Cada tarjeta tiene tablas, comandos y queries listos para copiar.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {searchQuery && (
-            <div style={{marginBottom:16,fontSize:'.85rem',color:'var(--text2)'}}>
-              🔍 Resultados para "<strong style={{color:'var(--text)'}}>{searchQuery}</strong>":
-              {filtered.length === 0 ? ' sin resultados' : ` ${filtered.length} sección(es)`}
-            </div>
-          )}
-
-          {filtered.map(s => (
-            <SectionCard key={s.id} section={s}
-              isOpen={openSections[s.id] || false}
-              toggle={toggleSection} />
-          ))}
-
-          {filtered.length === 0 && (
-            <div className="empty-state">
-              <div style={{fontSize:'2rem',marginBottom:8}}>🔍</div>
-              <p>No se encontraron resultados para "{searchQuery}"</p>
-              <p style={{fontSize:'.78rem',marginTop:4}}>Probá con: phishing, ransomware, KQL, EventID, MITRE, etc.</p>
-            </div>
-          )}
-
-          <div style={{textAlign:'center',padding:'20px 0 10px',fontSize:'.72rem',color:'var(--text2)',borderTop:'1px solid var(--border)',marginTop:20}}>
-            SOC Analyst Guide v3.0 — Hecho para consulta diaria. Todas las queries y comandos son copiables con un click.
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// ===== RENDER =====
+var root = document.getElementById('root');
+try {
+  ReactDOM.createRoot(root).render(e(App));
+} catch(err) {
+  root.innerHTML = '<div style="padding:40px;background:#080c14;color:#f0605a;font-family:monospace;min-height:100vh">' +
+    '<h2 style="color:#f0605a">\u26A0\uFE0F Error: '+err.message+'</h2>' +
+    '<pre style="color:#8b9db0;margin-top:12px">'+err.stack+'</pre></div>';
+}
 </script>
 </body>
 </html>
