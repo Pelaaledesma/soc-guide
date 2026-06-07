@@ -194,8 +194,17 @@
 </head>
 <body><div id="root"></div>
 
-<script type="text/babel" data-type="module">
-const { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } = React;
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback, useMemo } = React;
+
+// Error boundary for render debugging
+window.addEventListener('error', function(e) {
+  document.getElementById('root').innerHTML =
+    '<div style="padding:40px;background:#0a0e14;color:#f0605a;font-family:monospace;min-height:100vh">' +
+    '<h2 style="color:#f0605a">⚠️ Error al cargar la aplicación</h2>' +
+    '<p style="color:#6a7f9e">' + (e.message || e.error?.message || 'Error desconocido') + '</p>' +
+    '<pre style="color:#8b9db0;margin-top:12px">' + (e.error?.stack || '') + '</pre></div>';
+});
 
 const sections = [
   { id:'triage', icon:'🔍', title:'Triage de Alertas', badge:'5 pasos',
