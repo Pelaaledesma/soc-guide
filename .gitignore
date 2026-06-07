@@ -8,3 +8,4 @@ Thumbs.db
 *~
 
 # No need to ignore anything else, it's a static site
+.cache/

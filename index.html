@@ -117,351 +117,18 @@
   .hl{background:rgba(232,179,57,.25);padding:0 2px;border-radius:2px}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
   .overlay.open{display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body><div id="root"></div>
 <script>
+
 "use strict";
 
 const { useState, useRef, useEffect, useCallback, useMemo } = React;
 const e = React.createElement;
 
 // ===== DATA =====
-const SECTIONS = [
-  {id:'triage',icon:'\uD83D\uDD0D',title:'Triage de Alertas',badge:'5 pasos',desc:'Proceso de clasificaci\u00F3n, priorizaci\u00F3n y escalado de alertas.',
-   content:[
-    {type:'table',h:['#','Paso','Acci\u00F3n','Pregunta clave'],r:[
-      ['1','Validar','Revisar timestamp, fuente, tipo de evento','\u00BFEs un evento real o error de parsing?'],
-      ['2','Clasificar','Tipo: malware, phishing, acceso no autorizado, DDoS','\u00BFQu\u00E9 categor\u00EDa de ataque?'],
-      ['3','Priorizar','Criticidad del activo x tipo de amenaza x evidencia','\u00BFA qui\u00E9n afecta y qu\u00E9 tan grave es?'],
-      ['4','Contener','Si riesgo alto: aislar host, bloquear IP, suspender usuario','\u00BFPuedo contener sin escalar?'],
-      ['5','Escalar/Cerrar','Con evidencia s\u00F3lida -> L2. Falso positivo -> documentar','\u00BFNecesito m\u00E1s recursos?']
-    ]},
-    {type:'callout',s:'w',title:'\uD83D\uDCA1 En triage',body:'cada alerta es una hip\u00F3tesis. Tu trabajo es juntar evidencia para probarla o descartarla.'}
-   ]},
-  {id:'severidad',icon:'\uD83C\uDFF7\uFE0F',title:'Matriz de Severidad',badge:'Clasificaci\u00F3n',
-   content:[
-    {type:'table',h:['Severidad','Activo','Evidencia','Ejemplo','Acci\u00F3n'],r:[
-      ['CRITICAL','Cr\u00EDtico (DC, SQL, ERP)','S\u00F3lida','Ransomware en DC','Contener YA, escalar a IR'],
-      ['HIGH','Importante','Moderada-Fuerte','Lateral movement, C2','Aislar, escalar urgente'],
-      ['MEDIUM','Est\u00E1ndar','Parcial','Binary desde temp','Investigar en 24h'],
-      ['LOW','Bajo','D\u00E9bil','Login IP inusual','Ticket, revisi\u00F3n semanal']
-    ]}
-   ]},
-  {id:'evtx',icon:'\uD83D\uDCCB',title:'Windows EventLogs Clave',badge:'15 EventIDs',
-   desc:'EventIDs que todo SOC Analyst debe reconocer al instante.',
-   content:[
-    {type:'table',h:['EventID','Nombre','Qu\u00E9 detecta','Riesgo'],r:[
-      ['4624','Logon Success','Login fuera de horario, IP externa','Ver contexto'],
-      ['4625','Logon Failure','Password spraying, brute force','Media'],
-      ['4672','Admin Logon','Privilegios asignados (SeDebug)','Alta'],
-      ['4688','Process Creation','LOLBins, child process de Office','Cr\u00EDtica'],
-      ['4698','Scheduled Task','Creaci\u00F3n de tarea (persistencia)','Alta'],
-      ['4719','Audit Policy Change','Atacante desactivando logging','Cr\u00EDtica'],
-      ['4720','User Created','Creaci\u00F3n de cuenta nueva','Alta'],
-      ['4728','Group Member Added','Usuario agregado a Admin/Enterprise Admin','Cr\u00EDtica'],
-      ['4104','PS ScriptBlock','Script malicioso, download cradle','Cr\u00EDtica'],
-      ['5156','WFP Connection','Conexi\u00F3n saliente a IP sospechosa (C2)','Alta'],
-      ['7045','Service Installed','Instalaci\u00F3n de servicio (persistencia)','Alta']
-    ]}
-   ]},
-  {id:'sysmon',icon:'\uD83D\uDCE1',title:'Sysmon Events',badge:'10 EventIDs',
-   content:[
-    {type:'table',h:['EventID','Nombre','Uso','Riesgo'],r:[
-      ['1','Process Create','L\u00EDnea de comandos completa de cada proceso','Cr\u00EDtica'],
-      ['3','Network Connect','Conexi\u00F3n de red por proceso','Cr\u00EDtica'],
-      ['7','Image Load','DLL cargada (detecta DLL hijacking)','Alta'],
-      ['8','CreateRemoteThread','Inyecci\u00F3n de hilo en otro proceso','Cr\u00EDtica'],
-      ['10','Process Access','Acceso a LSASS (Mimikatz)','Cr\u00EDtica'],
-      ['11','File Create','Archivos en directorios sospechosos','Alta'],
-      ['12-14','Registry Events','Modificaci\u00F3n de Run keys','Alta'],
-      ['15','File Stream','Alternate Data Stream (ADS)','Alta'],
-      ['22','DNS Query','Consulta DNS desde el host','Alta']
-    ]}
-   ]},
-  {id:'win-cmd',icon:'\uD83D\uDCBB',title:'Comandos Forense Windows',badge:'PowerShell',
-   desc:'Comandos para ejecutar en caliente durante una investigaci\u00F3n.',
-   content:[
-    {type:'code',lang:'powershell',lines:[
-      '# Procesos con conexiones de red activas',
-      'Get-NetTCPConnection | Where-Object State -eq Established',
-      '# Scheduled tasks no-Microsoft',
-      'Get-ScheduledTask | Where-Object TaskPath -notlike "\\Microsoft\\*"',
-      '# Servicios con paths raros',
-      'Get-CimInstance Win32_Service | Where-Object PathName -match "(temp|users|appdata)"',
-      '# Run keys - persistencia',
-      'Get-ItemProperty -Path "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"',
-      '# Logins remotos RDP',
-      'Get-WinEvent -FilterHashtable @{LogName="Security";ID=4624;LogonType=10}'
-    ]}
-   ]},
-  {id:'lolbins',icon:'\u26A1',title:'Living Off the Land Binaries',badge:'LOLBins',
-   content:[
-    {type:'table',h:['Binario','Uso malicioso','Qu\u00E9 monitorear'],r:[
-      ['powershell.exe','Download cradle, ofuscaci\u00F3n -enc','4104 ScriptBlock, l\u00EDneas con -enc / IEX'],
-      ['rundll32.exe','Cargar DLL, ejecutar JavaScript','Child process sin parent Office. Conexiones de red.'],
-      ['regsvr32.exe','Ejecutar .sct (Squiblydoo)','regsvr32 /s /n /u /i: con argumento URL'],
-      ['mshta.exe','Ejecutar HTA malicioso','Mshta.exe desde temp/downloads'],
-      ['certutil.exe','Descargar payloads, decode base64','certutil -urlcache -f, certutil -decode'],
-      ['wmic.exe','Ejecuci\u00F3n remota','wmic process call create'],
-      ['bitsadmin.exe','Descarga via BITS','bitsadmin /transfer a dominio externo']
-    ]},
-    {type:'callout',s:'d',title:'\u26A0\uFE0F Regla',body:'CUALQUIER ejecuci\u00F3n de estos binarios desde %TEMP%, %APPDATA% o %USERPROFILE% merece investigaci\u00F3n inmediata.'}
-   ]},
-  {id:'linux-cmd',icon:'\uD83D\uDC27',title:'Comandos Forense Linux',badge:'Bash',
-   desc:'Para investigaci\u00F3n en caliente de endpoints Linux.',
-   content:[
-    {type:'code',lang:'bash',lines:[
-      '# Procesos ocultos',
-      'ps auxf',
-      'ls -la /proc/*/exe 2>/dev/null | grep -E "(deleted|tmp|dev/shm)"',
-      '# M\u00F3dulos de kernel (rootkits)',
-      'lsmod | sort',
-      '# Archivos modificados \u00FAltimas 24h',
-      'find / -xdev -mtime -1 -type f -not -path "/proc/*" -not -path "/sys/*" 2>/dev/null',
-      '# Persistencia via cron',
-      'ls -la /etc/cron* /var/spool/cron/crontabs/',
-      '# Conexiones de red activas',
-      'ss -tunap',
-      '# Archivos SUID (privilege escalation)',
-      'find / -perm -4000 -type f 2>/dev/null',
-      '# Comandos sospechosos en history',
-      'cat ~/.bash_history 2>/dev/null | grep -E "(wget|curl -o|nc |bash -i|python -c)"',
-      '# Archivos en /dev/shm',
-      'ls -la /dev/shm/',
-      '# \u00DAltimos logins',
-      'last -10'
-    ]}
-   ]},
-  {id:'linux-logs',icon:'\uD83D\uDCDD',title:'Logs Cr\u00EDticos en Linux',badge:'Ubicaciones',
-   content:[
-    {type:'table',h:['Archivo','Qu\u00E9 contiene','Comando r\u00E1pido'],r:[
-      ['/var/log/auth.log','Autenticaciones SSH, sudo, login','grep "Failed password" auth.log | awk \'{print $11}\' | sort | uniq -c | sort -rn'],
-      ['/var/log/syslog','Eventos del sistema','grep -i "error|fail|critical" syslog'],
-      ['/var/log/audit/audit.log','Auditd: execve, syscalls','ausearch -m execve -ts today'],
-      ['dmesg','Buffer de kernel','dmesg --level=err,warn']
-    ]}
-   ]},
-  {id:'network',icon:'\uD83C\uDF10',title:'An\u00E1lisis de Red',badge:'7 preguntas',
-   desc:'Indicadores de compromiso en tr\u00E1fico de red.',
-   content:[
-    {type:'grid',items:[
-      {i:'\uD83D\uDD04',t:'Beaconing',d:'Tr\u00E1fico peri\u00F3dico a IP externa (C2). Mismo intervalo, mismo payload size.',g:'C2',c:'r'},
-      {i:'\uD83C\uDF10',t:'DGA Domains',d:'Dominios aleatorios, TLDs raros (.xyz, .top, .gq). Alta entrop\u00EDa.',g:'C2',c:'r'},
-      {i:'\uD83D\uDCE4',t:'Data Exfil',d:'Tr\u00E1fico saliente an\u00F3malo en volumen, horario (3 AM), puerto no est\u00E1ndar.',g:'Exfil',c:'r'},
-      {i:'\uD83D\uDD01',t:'DNS Tunneling',d:'Subdominios largos de alta entrop\u00EDa. Respuestas DNS > 200B.',g:'T\u00FAnel',c:'o'},
-      {i:'\uD83D\uDD0D',t:'Port Scan',d:'M\u00FAltiples conexiones a distintos puertos en poco tiempo.',g:'Recon',c:'y'},
-      {i:'\uD83D\uDCE6',t:'Protocol Anomaly',d:'HTTP en puerto 22, SSH en 443, DNS sobre TCP sin consulta.',g:'An\u00F3malo',c:'o'}
-    ]},
-    {type:'table',h:['#','Pregunta','C\u00F3mo responder'],r:[
-      ['1','\u00BFConexiones a IPs maliciosas conocidas?','Correlacionar con OTX, VirusTotal, GreyNoise'],
-      ['2','\u00BFTr\u00E1fico en puertos no est\u00E1ndar?','Buscar servicios conocidos en puertos >1024'],
-      ['3','\u00BFPatr\u00F3n humano o automatizado?','Autom\u00E1tico = mismo intervalo + payload size'],
-      ['4','\u00BFCertificados TLS sospechosos?','Self-signed, expired, mismatch, issuer inusual'],
-      ['5','\u00BFDNS queries leg\u00EDtimos?','Alta entrop\u00EDa, TTLs inusuales, NXDOMAIN alto'],
-      ['6','\u00BFTr\u00E1fico en horarios no laborales?','Conexiones fuera del horario del usuario'],
-      ['7','\u00BFHTTP User-Agent inusual?','Vac\u00EDo, Python-requests, curl sin navegador']
-    ]}
-   ]},
-  {id:'queries',icon:'\u26A1',title:'Queries \u00DAtiles',badge:'KQL / SPL / ESQL',
-   desc:'Queries pr\u00E1cticos para los SIEM m\u00E1s usados.',
-   content:[
-    {type:'tabs',tabs:[
-      {label:'KQL (Sentinel)',lang:'kql',lines:[
-        '# Office spawn -> proceso hijo (phishing)',
-        'let Office = dynamic(["winword.exe","excel.exe","outlook.exe"]);',
-        'let LOL = dynamic(["powershell.exe","cmd.exe","rundll32.exe","mshta.exe"]);',
-        'DeviceProcessEvents',
-        '| where InitiatingProcessFileName has_any Office and FileName has_any LOL',
-        '| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName',
-        '',
-        '# Lateral movement via RDP',
-        'DeviceNetworkEvents',
-        '| where RemotePort == 3389 and ActionType == "ConnectionSuccess"',
-        '| summarize Count = count() by DeviceName, RemoteIP, LocalIP',
-        '| where Count > 3'
-      ]},
-      {label:'SPL (Splunk)',lang:'spl',lines:[
-        '# Procesos hijos de Office',
-        'index=windows EventCode=4688 (ParentProcess="winword.exe" OR ParentProcess="excel.exe" OR ParentProcess="outlook.exe")',
-        '| table _time, host, Account_Name, ProcessName, ParentProcess, CommandLine',
-        '# Password spraying',
-        'index=windows EventCode=4625',
-        '| bucket _time span=5m',
-        '| stats count by _time, Account_Name, Source_Network_Address',
-        '| where count > 10',
-        '# DNS queries DGA',
-        'index=dns',
-        '| eval entropy=len(query)-len(replace(query, "[a-z]", ""))',
-        '| where len(query) > 20 AND entropy > 10'
-      ]},
-      {label:'ESQL (Elastic)',lang:'esql',lines:[
-        '// Procesos desde directorios temporales',
-        'FROM logs-endpoint.events.process-*',
-        '| WHERE STARTS_WITH(process.executable, "C:\\\\Users\\\\")',
-        '    AND process.executable LIKE "*\\\\AppData\\\\Local\\\\Temp\\\\*"',
-        '| STAT count = COUNT() BY host.hostname, process.name',
-        '',
-        '// Conexiones salientes a puertos no est\u00E1ndar',
-        'FROM logs-endpoint.events.network-*',
-        '| WHERE destination.port NOT IN (80, 443, 22, 53, 3389)',
-        '| STAT count = COUNT() BY host.hostname, destination.address, destination.port'
-      ]}
-    ]}
-   ]},
-  {id:'containment',icon:'\u26D4',title:'Contenci\u00F3n R\u00E1pida',badge:'7 escenarios',
-   desc:'Acciones inmediatas por tipo de incidente. La contenci\u00F3n es PRIORIDAD sobre la investigaci\u00F3n.',
-   content:[
-    {type:'table',h:['Escenario','Acci\u00F3n','Impacto','Tiempo'],r:[
-      ['Ransomware','Aislar host de red (EDR isolate)','Usuario pierde acceso','< 5 min'],
-      ['Cuenta comprometida','Deshabilitar cuenta, resetear pass, revocar tokens','Usuario sin acceso','< 2 min'],
-      ['C2 beaconing','Bloquear IP en firewall + aislar host','Posible p\u00E9rdida conectividad','< 3 min'],
-      ['Phishing masivo','Bloquear remitente en gateway, eliminar correos','P\u00E9rdida correos leg\u00EDtimos','< 10 min'],
-      ['Data exfiltration','Bloquear tr\u00E1fico saliente a IP + aislar host','Interrupci\u00F3n parcial de red','< 5 min'],
-      ['Malware detectado','Aislar host, bloquear hash en AV/EDR','Usuario sin acceso','< 5 min'],
-      ['Lateral movement','Aislar host origen y destino, revocar credenciales','M\u00FAltiples usuarios','< 10 min']
-    ]},
-    {type:'callout',s:'d',title:'\uD83D\uDD25 Regla de oro',body:'En incidente confirmado, conten\u00E9 primero, investig\u00E1 despu\u00E9s.'}
-   ]},
-  {id:'playbooks',icon:'\uD83D\uDCCB',title:'Playbooks',badge:'Phishing / Ransomware',
-   content:[
-    {type:'accordion',items:[
-      {title:'\uD83D\uDC1F Phishing',lines:[
-        '1. RECOLECTAR: Pedir EML/MSG original. Headers, adjuntos, URLs.',
-        '2. HEADERS: SPF, DKIM, DMARC. IP de origen.',
-        '3. URLs: VirusTotal + URLScan.io.',
-        '4. ADJUNTOS: Hash SHA256 -> VT. Tipo real.',
-        '5. ACCI\u00D3N: Si malicioso -> bloquear remitente, eliminar correos.',
-        '6. ESCALAR: Si hubo click/ejecuci\u00F3n -> IR.'
-      ]},
-      {title:'\uD83D\uDCA3 Ransomware',lines:[
-        '1. CONFIRMAR: Alertas EDR masivas. Notas de rescate.',
-        '2. AISLAR: Aislar host de RED (NO apagar).',
-        '3. ALCANCE: \u00BFS\u00F3lo 1 host? \u00BFSe propag\u00F3?',
-        '4. EVIDENCIA: Volcar RAM. Preservar logs.',
-        '5. VECTOR: \u00BFRDP? Phishing? VPN sin MFA?',
-        '6. RECOVERY: Restaurar backup. NO pagar rescate.'
-      ]}
-    ]}
-   ]},
-  {id:'mitre',icon:'\uD83C\uDFAF',title:'MITRE ATT&CK',badge:'14 t\u00E1cticas',
-   content:[
-    {type:'mitre'},
-    {type:'table',h:['T\u00E9cnica','Nombre','T\u00E1ctica','Detecci\u00F3n r\u00E1pida'],r:[
-      ['T1566.001','Spearphishing Adjunto','Initial Access','Office spawning proceso hijo'],
-      ['T1059.001','PowerShell','Execution','4104 ScriptBlock, -enc, IEX'],
-      ['T1055.012','Process Hollowing','Defense Evasion','Primary thread suspendido'],
-      ['T1003.001','LSASS Memory','Credential Access','ProDump, comsvcs.dll a LSASS'],
-      ['T1021.001','Remote Desktop','Lateral Movement','4624 LogonType 10 desde host no admin'],
-      ['T1048','Exfil Over C2','Exfiltration','Tr\u00E1fico saliente an\u00F3malo'],
-      ['T1486','Data Encrypted for Impact','Impact','Masivas modificaciones de archivos']
-    ]}
-   ]},
-  {id:'forensics',icon:'\uD83D\uDD2C',title:'Forensia de Memoria RAM',badge:'Volatility 3',
-   content:[
-    {type:'code',lang:'shell',lines:[
-      '# Listar procesos (psscan detecta ocultos)',
-      'volatility -f memory.dmp windows.psscan',
-      '# Conexiones de red desde memoria',
-      'volatility -f memory.dmp windows.netscan',
-      '# L\u00EDnea de comandos de cada proceso',
-      'volatility -f memory.dmp windows.cmdline',
-      '# C\u00F3digo inyectado (malfind)',
-      'volatility -f memory.dmp windows.malfind',
-      '# Handles a procesos (process hollowing)',
-      'volatility -f memory.dmp windows.handles --pid 1234 --object-type Process',
-      '# Scan de archivos en memoria',
-      'volatility -f memory.dmp windows.filescan | grep -E "(\\.exe|\\.dll)"'
-    ]}
-   ]},
-  {id:'malware',icon:'\uD83E\uDDA0',title:'An\u00E1lisis de Malware',badge:'Triage r\u00E1pido',
-   content:[
-    {type:'code',lang:'shell',lines:[
-      '# 1. Hashes (para VirusTotal)',
-      'sha256sum muestra.exe',
-      '# 2. Tipo de archivo real',
-      'file muestra.exe',
-      '# 3. Strings: buscar URLs, IPs',
-      'strings muestra.exe | grep -ioE \'https?://[^"\\\'<> ]+\'',
-      'strings muestra.exe | grep -oE \'\\\\b[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\b\' | sort -u',
-      '# 4. Secciones PE (packed?)',
-      'objdump -h muestra.exe | grep -E "\\\\.text|\\\\.data|\\\\.rdata"',
-      '# 5. Imports sospechosos',
-      'pedump --imports muestra.exe | grep -E "(VirtualAlloc|CreateRemoteThread|URLDownload)"',
-      '# 6. Timestamp de compilaci\u00F3n',
-      'exiftool muestra.exe | grep -i "time|date"'
-    ]}
-   ]},
-  {id:'tools',icon:'\uD83D\uDEE0\uFE0F',title:'Toolbox del SOC Analyst',badge:'12 herramientas',
-   content:[
-    {type:'grid',items:[
-      {i:'\uD83D\uDD0D',t:'Splunk / Sentinel / Elastic',d:'SIEM principal.',g:'SIEM',c:'b'},
-      {i:'\uD83D\uDFE2',t:'CrowdStrike / S1 / MDE',d:'EDR. Hunting, isolation.',g:'EDR',c:'g'},
-      {i:'\uD83D\uDFE0',t:'VirusTotal + GreyNoise',d:'Enriquecimiento de IoCs.',g:'CTI',c:'p'},
-      {i:'\uD83D\uDCF8',t:'URLScan.io',d:'An\u00E1lisis de URLs.',g:'CTI',c:'p'},
-      {i:'\uD83D\uDD0E',t:'Shodan / Censys',d:'Buscar infraestructura C2.',g:'OSINT',c:'p'},
-      {i:'\uD83D\uDD27',t:'Wireshark / tshark',d:'An\u00E1lisis de PCAP.',g:'Red',c:'o'},
-      {i:'\uD83E\uDDE0',t:'Volatility 3',d:'An\u00E1lisis de memoria RAM.',g:'Forensia',c:'b'},
-      {i:'\uD83E\uDDEC',t:'Velociraptor',d:'DFIR a escala.',g:'Forensia',c:'b'},
-      {i:'\uD83D\uDCCA',t:'Hayabusa',d:'An\u00E1lisis de EventLogs.',g:'Win',c:'y'},
-      {i:'\uD83D\uDD29',t:'Procmon / Process Hacker',d:'Monitoreo de procesos.',g:'Win',c:'y'},
-      {i:'\uD83D\uDCC2',t:'MISP / OTX',d:'Threat intel sharing.',g:'CTI',c:'p'},
-      {i:'\uD83D\uDD17',t:'CyberChef',d:'Decode todo: base64, hex, XOR.',g:'Util',c:'g'}
-    ]}
-   ]},
-  {id:'cheat',icon:'\uD83D\uDCC4',title:'Cheat Sheet',badge:'Comandos r\u00E1pidos',
-   content:[
-    {type:'sub',title:'Windows'},
-    {type:'code',lang:'ps',lines:[
-      'netstat -ano | findstr ESTABLISHED',
-      'Get-Process -Id 4321 | Select-Object *',
-      'Get-CimInstance Win32_Service | Select Name, PathName, StartName',
-      'Search-ADAccount -LockedOut | Select Name, SamAccountName'
-    ]},
-    {type:'sub',title:'Linux'},
-    {type:'code',lang:'bash',lines:[
-      'find / -perm -4000 -type f 2>/dev/null   # SUID',
-      'ss -tunap | grep ESTAB',
-      'dpkg --verify',
-      'last -10',
-      'find /tmp /dev/shm -type f -mtime -1 2>/dev/null'
-    ]},
-    {type:'sub',title:'Red'},
-    {type:'code',lang:'shell',lines:[
-      'tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u',
-      'tshark -r cap.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name | sort | uniq -c | sort -rn',
-      'tcpdump -i eth0 -n port 53'
-    ]},
-    {type:'sub',title:'Conversiones'},
-    {type:'grid',items:[
-      {i:'\uD83E\uDDEE',t:'Bytes a GB',d:'bytes / 1073741824'},
-      {i:'\u23F0',t:'Epoch a fecha',d:'date -d @1700000000'},
-      {i:'\uD83D\uDD22',t:'Hex a Decimal',d:'printf "%d" 0x7F'},
-      {i:'\uD83D\uDD04',t:'Base64 Decode',d:'echo "dGVzdA==" | base64 -d'},
-      {i:'\uD83D\uDD10',t:'Hash r\u00E1pido',d:'sha256sum archivo'},
-      {i:'\uD83C\uDF10',t:'URL Decode',d:"python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'"}
-    ]}
-   ]}
-];
-
-const NAV_GROUPS = [
-  {t:'An\u00E1lisis',items:[{id:'triage',i:'\uD83D\uDD0D',l:'Triage'},{id:'severidad',i:'\uD83C\uDFF7\uFE0F',l:'Severidad'}]},
-  {t:'Windows',items:[{id:'evtx',i:'\uD83D\uDCCB',l:'EventLogs'},{id:'sysmon',i:'\uD83D\uDCE1',l:'Sysmon'},{id:'win-cmd',i:'\uD83D\uDCBB',l:'Cmd Forense'},{id:'lolbins',i:'\u26A1',l:'LOLBins'}]},
-  {t:'Linux',items:[{id:'linux-cmd',i:'\uD83D\uDC27',l:'Cmd Forense'},{id:'linux-logs',i:'\uD83D\uDCDD',l:'Logs'}]},
-  {t:'Red',items:[{id:'network',i:'\uD83C\uDF10',l:'An\u00E1lisis'}]},
-  {t:'Queries',items:[{id:'queries',i:'\u26A1',l:'KQL / SPL / ESQL'}]},
-  {t:'Incidentes',items:[{id:'containment',i:'\u26D4',l:'Contenci\u00F3n'},{id:'playbooks',i:'\uD83D\uDCCB',l:'Playbooks'}]},
-  {t:'Framework',items:[{id:'mitre',i:'\uD83C\uDFAF',l:'MITRE'},{id:'forensics',i:'\uD83D\uDD2C',l:'Forensia'},{id:'malware',i:'\uD83E\uDDA0',l:'Malware'}]},
-  {t:'Referencia',items:[{id:'tools',i:'\uD83D\uDEE0\uFE0F',l:'Toolbox'},{id:'cheat',i:'\uD83D\uDCC4',l:'Cheat Sheet'}]}
-];
-
-const MITRE_TACTICS = [
-  {id:'TA0043',n:'Recon'},{id:'TA0042',n:'Resource Dev'},{id:'TA0001',n:'Initial Access'},
-  {id:'TA0002',n:'Execution'},{id:'TA0003',n:'Persistence'},{id:'TA0004',n:'Priv Esc'},
-  {id:'TA0005',n:'Defense Evasion'},{id:'TA0006',n:'Cred Access'},{id:'TA0007',n:'Discovery'},
-  {id:'TA0008',n:'Lateral Mov'},{id:'TA0009',n:'Collection'},{id:'TA0011',n:'C2'},
-  {id:'TA0010',n:'Exfil'},{id:'TA0040',n:'Impact'}
-];
 
 // ===== COMPONENTS =====
 function CodeBlock(props) {
@@ -541,9 +208,9 @@ function Accordion(props) {
   }));
 }
 
-function MitreMatrix() {
+function MitreMatrix(props) {
   return e('div',{className:'mitre-grid'},
-    MITRE_TACTICS.map(function(t,i){
+    props.tactics.map(function(t,i){
       return e('div',{className:'mitre-cell',key:i,title:t.id},
         e('div',{className:'tac'},t.n),
         e('div',{className:'t'},t.id)
@@ -552,7 +219,7 @@ function MitreMatrix() {
   );
 }
 
-function renderContent(block) {
+function renderContent(block, tactics) {
   switch(block.type) {
     case 'table': return e(TableView,{headers:block.h,rows:block.r});
     case 'grid': return e(GridView,{items:block.items});
@@ -560,7 +227,7 @@ function renderContent(block) {
     case 'callout': return e(Callout,{style:block.s,title:block.title,body:block.body});
     case 'tabs': return e(TabSwitcher,{tabs:block.tabs});
     case 'accordion': return e(Accordion,{items:block.items});
-    case 'mitre': return e(MitreMatrix);
+    case 'mitre': return e(MitreMatrix, {tactics: tactics});
     case 'sub': return e('div',{className:'subtitle'},block.title);
     default: return null;
   }
@@ -568,7 +235,7 @@ function renderContent(block) {
 
 // ===== SECTION COMPONENT =====
 function SectionCard(props) {
-  var s = props.section, isOpen = props.isOpen, toggle = props.toggle;
+  var s = props.section, isOpen = props.isOpen, toggle = props.toggle, tactics = props.tactics;
   return e('div',{className:'section-card',id:s.id},
     e('div',{className:'section-hdr',onClick:function(){toggle(s.id)}},
       e('div',{className:'left'},
@@ -607,6 +274,29 @@ function NavGroup(props) {
 
 // ===== APP =====
 function App() {
+  var _a = React.useState(null), data = _a[0], setData = _a[1];
+  var _b = React.useState(true), loading = _b[0], setLoading = _b[1];
+  var _c = React.useState(null), error = _c[0], setError = _c[1];
+
+  React.useEffect(function(){
+    fetch("data/sections.json")
+      .then(function(r){if(!r.ok) throw new Error("HTTP "+r.status); return r.json();})
+      .then(function(d){ setData(d); setLoading(false); })
+      .catch(function(e){ setError(e.message); setLoading(false); });
+  },[]);
+
+  if (loading) return e("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg)",color:"var(--text2)",flexDirection:"column",gap:"12px"}},
+    e("div",{style:{width:32,height:32,border:"3px solid var(--border)",borderTopColor:"var(--accent)",borderRadius:"50%",animation:"spin 1s linear infinite"}}),
+    e("p",{style:{fontSize:".85rem"}},"Cargando...")
+  );
+
+  if (error) return e("div",{style:{padding:40,textAlign:"center",color:"var(--red)"}},
+    e("h2",null,"Error al cargar datos"),
+    e("p",{style:{color:"var(--text2)",marginTop:8,fontSize:".85rem"}},error)
+  );
+
+  if (!data) return null;
+  var SECTIONS = data.sections, NAV_GROUPS = data.navGroups;
   var _React$useState = React.useState(function(){
     try { return JSON.parse(localStorage.getItem('soc-guide-open')) || {triage:true,queries:true,cheat:true}; }
     catch(e) { return {triage:true,queries:true,cheat:true}; }
@@ -712,7 +402,7 @@ function App() {
           '\uD83D\uDD0E Resultados para "',e('strong',{style:{color:'var(--text)'}},searchQ),'": ',filtered.length,' secci\u00F3n(es)'
         ) : null,
         filtered.length > 0 ? filtered.map(function(s){
-          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection});
+          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection,tactics:data.mitreTactics});
         }) : e('div',{style:{padding:40,textAlign:'center',color:'var(--text2)'}},
           e('p',{style:{fontSize:'1.5rem',marginBottom:8}},'\uD83D\uDD0D'),
           e('p',null,'No se encontraron resultados para "'+searchQ+'"'),
@@ -733,6 +423,7 @@ try {
     '<h2 style="color:#f0605a">\u26A0\uFE0F Error: '+err.message+'</h2>' +
     '<pre style="color:#8b9db0;margin-top:12px">'+err.stack+'</pre></div>';
 }
+
 </script>
 </body>
 </html>

@@ -1,0 +1,1181 @@
+{
+  "sections": [
+    {
+      "id": "triage",
+      "icon": "🔍",
+      "title": "Triage de Alertas",
+      "badge": "5 pasos",
+      "desc": "Proceso de clasificación, priorización y escalado de alertas.",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "#",
+            "Paso",
+            "Acción",
+            "Pregunta clave"
+          ],
+          "r": [
+            [
+              "1",
+              "Validar",
+              "Revisar timestamp, fuente, tipo de evento",
+              "¿Es un evento real o error de parsing?"
+            ],
+            [
+              "2",
+              "Clasificar",
+              "Tipo: malware, phishing, acceso no autorizado, DDoS",
+              "¿Qué categoría de ataque?"
+            ],
+            [
+              "3",
+              "Priorizar",
+              "Criticidad del activo x tipo de amenaza x evidencia",
+              "¿A quién afecta y qué tan grave es?"
+            ],
+            [
+              "4",
+              "Contener",
+              "Si riesgo alto: aislar host, bloquear IP, suspender usuario",
+              "¿Puedo contener sin escalar?"
+            ],
+            [
+              "5",
+              "Escalar/Cerrar",
+              "Con evidencia sólida -> L2. Falso positivo -> documentar",
+              "¿Necesito más recursos?"
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "💡 En triage",
+          "body": "cada alerta es una hipótesis. Tu trabajo es juntar evidencia para probarla o descartarla."
+        }
+      ]
+    },
+    {
+      "id": "severidad",
+      "icon": "🏷️",
+      "title": "Matriz de Severidad",
+      "badge": "Clasificación",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "Severidad",
+            "Activo",
+            "Evidencia",
+            "Ejemplo",
+            "Acción"
+          ],
+          "r": [
+            [
+              "CRITICAL",
+              "Crítico (DC, SQL, ERP)",
+              "Sólida",
+              "Ransomware en DC",
+              "Contener YA, escalar a IR"
+            ],
+            [
+              "HIGH",
+              "Importante",
+              "Moderada-Fuerte",
+              "Lateral movement, C2",
+              "Aislar, escalar urgente"
+            ],
+            [
+              "MEDIUM",
+              "Estándar",
+              "Parcial",
+              "Binary desde temp",
+              "Investigar en 24h"
+            ],
+            [
+              "LOW",
+              "Bajo",
+              "Débil",
+              "Login IP inusual",
+              "Ticket, revisión semanal"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evtx",
+      "icon": "📋",
+      "title": "Windows EventLogs Clave",
+      "badge": "15 EventIDs",
+      "desc": "EventIDs que todo SOC Analyst debe reconocer al instante.",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "EventID",
+            "Nombre",
+            "Qué detecta",
+            "Riesgo"
+          ],
+          "r": [
+            [
+              "4624",
+              "Logon Success",
+              "Login fuera de horario, IP externa",
+              "Ver contexto"
+            ],
+            [
+              "4625",
+              "Logon Failure",
+              "Password spraying, brute force",
+              "Media"
+            ],
+            [
+              "4672",
+              "Admin Logon",
+              "Privilegios asignados (SeDebug)",
+              "Alta"
+            ],
+            [
+              "4688",
+              "Process Creation",
+              "LOLBins, child process de Office",
+              "Crítica"
+            ],
+            [
+              "4698",
+              "Scheduled Task",
+              "Creación de tarea (persistencia)",
+              "Alta"
+            ],
+            [
+              "4719",
+              "Audit Policy Change",
+              "Atacante desactivando logging",
+              "Crítica"
+            ],
+            [
+              "4720",
+              "User Created",
+              "Creación de cuenta nueva",
+              "Alta"
+            ],
+            [
+              "4728",
+              "Group Member Added",
+              "Usuario agregado a Admin/Enterprise Admin",
+              "Crítica"
+            ],
+            [
+              "4104",
+              "PS ScriptBlock",
+              "Script malicioso, download cradle",
+              "Crítica"
+            ],
+            [
+              "5156",
+              "WFP Connection",
+              "Conexión saliente a IP sospechosa (C2)",
+              "Alta"
+            ],
+            [
+              "7045",
+              "Service Installed",
+              "Instalación de servicio (persistencia)",
+              "Alta"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sysmon",
+      "icon": "📡",
+      "title": "Sysmon Events",
+      "badge": "10 EventIDs",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "EventID",
+            "Nombre",
+            "Uso",
+            "Riesgo"
+          ],
+          "r": [
+            [
+              "1",
+              "Process Create",
+              "Línea de comandos completa de cada proceso",
+              "Crítica"
+            ],
+            [
+              "3",
+              "Network Connect",
+              "Conexión de red por proceso",
+              "Crítica"
+            ],
+            [
+              "7",
+              "Image Load",
+              "DLL cargada (detecta DLL hijacking)",
+              "Alta"
+            ],
+            [
+              "8",
+              "CreateRemoteThread",
+              "Inyección de hilo en otro proceso",
+              "Crítica"
+            ],
+            [
+              "10",
+              "Process Access",
+              "Acceso a LSASS (Mimikatz)",
+              "Crítica"
+            ],
+            [
+              "11",
+              "File Create",
+              "Archivos en directorios sospechosos",
+              "Alta"
+            ],
+            [
+              "12-14",
+              "Registry Events",
+              "Modificación de Run keys",
+              "Alta"
+            ],
+            [
+              "15",
+              "File Stream",
+              "Alternate Data Stream (ADS)",
+              "Alta"
+            ],
+            [
+              "22",
+              "DNS Query",
+              "Consulta DNS desde el host",
+              "Alta"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "win-cmd",
+      "icon": "💻",
+      "title": "Comandos Forense Windows",
+      "badge": "PowerShell",
+      "desc": "Comandos para ejecutar en caliente durante una investigación.",
+      "content": [
+        {
+          "type": "code",
+          "lang": "powershell",
+          "lines": [
+            "# Procesos con conexiones de red activas",
+            "Get-NetTCPConnection | Where-Object State -eq Established",
+            "# Scheduled tasks no-Microsoft",
+            "Get-ScheduledTask | Where-Object TaskPath -notlike \"\\Microsoft\\*\"",
+            "# Servicios con paths raros",
+            "Get-CimInstance Win32_Service | Where-Object PathName -match \"(temp|users|appdata)\"",
+            "# Run keys - persistencia",
+            "Get-ItemProperty -Path \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\"",
+            "# Logins remotos RDP",
+            "Get-WinEvent -FilterHashtable @{LogName=\"Security\";ID=4624;LogonType=10}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lolbins",
+      "icon": "⚡",
+      "title": "Living Off the Land Binaries",
+      "badge": "LOLBins",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "Binario",
+            "Uso malicioso",
+            "Qué monitorear"
+          ],
+          "r": [
+            [
+              "powershell.exe",
+              "Download cradle, ofuscación -enc",
+              "4104 ScriptBlock, líneas con -enc / IEX"
+            ],
+            [
+              "rundll32.exe",
+              "Cargar DLL, ejecutar JavaScript",
+              "Child process sin parent Office. Conexiones de red."
+            ],
+            [
+              "regsvr32.exe",
+              "Ejecutar .sct (Squiblydoo)",
+              "regsvr32 /s /n /u /i: con argumento URL"
+            ],
+            [
+              "mshta.exe",
+              "Ejecutar HTA malicioso",
+              "Mshta.exe desde temp/downloads"
+            ],
+            [
+              "certutil.exe",
+              "Descargar payloads, decode base64",
+              "certutil -urlcache -f, certutil -decode"
+            ],
+            [
+              "wmic.exe",
+              "Ejecución remota",
+              "wmic process call create"
+            ],
+            [
+              "bitsadmin.exe",
+              "Descarga via BITS",
+              "bitsadmin /transfer a dominio externo"
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "⚠️ Regla",
+          "body": "CUALQUIER ejecución de estos binarios desde %TEMP%, %APPDATA% o %USERPROFILE% merece investigación inmediata."
+        }
+      ]
+    },
+    {
+      "id": "linux-cmd",
+      "icon": "🐧",
+      "title": "Comandos Forense Linux",
+      "badge": "Bash",
+      "desc": "Para investigación en caliente de endpoints Linux.",
+      "content": [
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Procesos ocultos",
+            "ps auxf",
+            "ls -la /proc/*/exe 2>/dev/null | grep -E \"(deleted|tmp|dev/shm)\"",
+            "# Módulos de kernel (rootkits)",
+            "lsmod | sort",
+            "# Archivos modificados últimas 24h",
+            "find / -xdev -mtime -1 -type f -not -path \"/proc/*\" -not -path \"/sys/*\" 2>/dev/null",
+            "# Persistencia via cron",
+            "ls -la /etc/cron* /var/spool/cron/crontabs/",
+            "# Conexiones de red activas",
+            "ss -tunap",
+            "# Archivos SUID (privilege escalation)",
+            "find / -perm -4000 -type f 2>/dev/null",
+            "# Comandos sospechosos en history",
+            "cat ~/.bash_history 2>/dev/null | grep -E \"(wget|curl -o|nc |bash -i|python -c)\"",
+            "# Archivos en /dev/shm",
+            "ls -la /dev/shm/",
+            "# Últimos logins",
+            "last -10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linux-logs",
+      "icon": "📝",
+      "title": "Logs Críticos en Linux",
+      "badge": "Ubicaciones",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "Archivo",
+            "Qué contiene",
+            "Comando rápido"
+          ],
+          "r": [
+            [
+              "/var/log/auth.log",
+              "Autenticaciones SSH, sudo, login",
+              "grep \"Failed password\" auth.log | awk '{print $11}' | sort | uniq -c | sort -rn"
+            ],
+            [
+              "/var/log/syslog",
+              "Eventos del sistema",
+              "grep -i \"error|fail|critical\" syslog"
+            ],
+            [
+              "/var/log/audit/audit.log",
+              "Auditd: execve, syscalls",
+              "ausearch -m execve -ts today"
+            ],
+            [
+              "dmesg",
+              "Buffer de kernel",
+              "dmesg --level=err,warn"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "icon": "🌐",
+      "title": "Análisis de Red",
+      "badge": "7 preguntas",
+      "desc": "Indicadores de compromiso en tráfico de red.",
+      "content": [
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🔄",
+              "t": "Beaconing",
+              "d": "Tráfico periódico a IP externa (C2). Mismo intervalo, mismo payload size.",
+              "g": "C2",
+              "c": "r"
+            },
+            {
+              "i": "🌐",
+              "t": "DGA Domains",
+              "d": "Dominios aleatorios, TLDs raros (.xyz, .top, .gq). Alta entropía.",
+              "g": "C2",
+              "c": "r"
+            },
+            {
+              "i": "📤",
+              "t": "Data Exfil",
+              "d": "Tráfico saliente anómalo en volumen, horario (3 AM), puerto no estándar.",
+              "g": "Exfil",
+              "c": "r"
+            },
+            {
+              "i": "🔁",
+              "t": "DNS Tunneling",
+              "d": "Subdominios largos de alta entropía. Respuestas DNS > 200B.",
+              "g": "Túnel",
+              "c": "o"
+            },
+            {
+              "i": "🔍",
+              "t": "Port Scan",
+              "d": "Múltiples conexiones a distintos puertos en poco tiempo.",
+              "g": "Recon",
+              "c": "y"
+            },
+            {
+              "i": "📦",
+              "t": "Protocol Anomaly",
+              "d": "HTTP en puerto 22, SSH en 443, DNS sobre TCP sin consulta.",
+              "g": "Anómalo",
+              "c": "o"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "h": [
+            "#",
+            "Pregunta",
+            "Cómo responder"
+          ],
+          "r": [
+            [
+              "1",
+              "¿Conexiones a IPs maliciosas conocidas?",
+              "Correlacionar con OTX, VirusTotal, GreyNoise"
+            ],
+            [
+              "2",
+              "¿Tráfico en puertos no estándar?",
+              "Buscar servicios conocidos en puertos >1024"
+            ],
+            [
+              "3",
+              "¿Patrón humano o automatizado?",
+              "Automático = mismo intervalo + payload size"
+            ],
+            [
+              "4",
+              "¿Certificados TLS sospechosos?",
+              "Self-signed, expired, mismatch, issuer inusual"
+            ],
+            [
+              "5",
+              "¿DNS queries legítimos?",
+              "Alta entropía, TTLs inusuales, NXDOMAIN alto"
+            ],
+            [
+              "6",
+              "¿Tráfico en horarios no laborales?",
+              "Conexiones fuera del horario del usuario"
+            ],
+            [
+              "7",
+              "¿HTTP User-Agent inusual?",
+              "Vacío, Python-requests, curl sin navegador"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queries",
+      "icon": "⚡",
+      "title": "Queries Útiles",
+      "badge": "KQL / SPL / ESQL",
+      "desc": "Queries prácticos para los SIEM más usados.",
+      "content": [
+        {
+          "type": "tabs",
+          "tabs": [
+            {
+              "label": "KQL (Sentinel)",
+              "lang": "kql",
+              "lines": [
+                "# Office spawn -> proceso hijo (phishing)",
+                "let Office = dynamic([\"winword.exe\",\"excel.exe\",\"outlook.exe\"]);",
+                "let LOL = dynamic([\"powershell.exe\",\"cmd.exe\",\"rundll32.exe\",\"mshta.exe\"]);",
+                "DeviceProcessEvents",
+                "| where InitiatingProcessFileName has_any Office and FileName has_any LOL",
+                "| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName",
+                "",
+                "# Lateral movement via RDP",
+                "DeviceNetworkEvents",
+                "| where RemotePort == 3389 and ActionType == \"ConnectionSuccess\"",
+                "| summarize Count = count() by DeviceName, RemoteIP, LocalIP",
+                "| where Count > 3"
+              ]
+            },
+            {
+              "label": "SPL (Splunk)",
+              "lang": "spl",
+              "lines": [
+                "# Procesos hijos de Office",
+                "index=windows EventCode=4688 (ParentProcess=\"winword.exe\" OR ParentProcess=\"excel.exe\" OR ParentProcess=\"outlook.exe\")",
+                "| table _time, host, Account_Name, ProcessName, ParentProcess, CommandLine",
+                "# Password spraying",
+                "index=windows EventCode=4625",
+                "| bucket _time span=5m",
+                "| stats count by _time, Account_Name, Source_Network_Address",
+                "| where count > 10",
+                "# DNS queries DGA",
+                "index=dns",
+                "| eval entropy=len(query)-len(replace(query, \"[a-z]\", \"\"))",
+                "| where len(query) > 20 AND entropy > 10"
+              ]
+            },
+            {
+              "label": "ESQL (Elastic)",
+              "lang": "esql",
+              "lines": [
+                "// Procesos desde directorios temporales",
+                "FROM logs-endpoint.events.process-*",
+                "| WHERE STARTS_WITH(process.executable, \"C:\\\\Users\\\\\")",
+                "    AND process.executable LIKE \"*\\\\AppData\\\\Local\\\\Temp\\\\*\"",
+                "| STAT count = COUNT() BY host.hostname, process.name",
+                "",
+                "// Conexiones salientes a puertos no estándar",
+                "FROM logs-endpoint.events.network-*",
+                "| WHERE destination.port NOT IN (80, 443, 22, 53, 3389)",
+                "| STAT count = COUNT() BY host.hostname, destination.address, destination.port"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "containment",
+      "icon": "⛔",
+      "title": "Contención Rápida",
+      "badge": "7 escenarios",
+      "desc": "Acciones inmediatas por tipo de incidente. La contención es PRIORIDAD sobre la investigación.",
+      "content": [
+        {
+          "type": "table",
+          "h": [
+            "Escenario",
+            "Acción",
+            "Impacto",
+            "Tiempo"
+          ],
+          "r": [
+            [
+              "Ransomware",
+              "Aislar host de red (EDR isolate)",
+              "Usuario pierde acceso",
+              "< 5 min"
+            ],
+            [
+              "Cuenta comprometida",
+              "Deshabilitar cuenta, resetear pass, revocar tokens",
+              "Usuario sin acceso",
+              "< 2 min"
+            ],
+            [
+              "C2 beaconing",
+              "Bloquear IP en firewall + aislar host",
+              "Posible pérdida conectividad",
+              "< 3 min"
+            ],
+            [
+              "Phishing masivo",
+              "Bloquear remitente en gateway, eliminar correos",
+              "Pérdida correos legítimos",
+              "< 10 min"
+            ],
+            [
+              "Data exfiltration",
+              "Bloquear tráfico saliente a IP + aislar host",
+              "Interrupción parcial de red",
+              "< 5 min"
+            ],
+            [
+              "Malware detectado",
+              "Aislar host, bloquear hash en AV/EDR",
+              "Usuario sin acceso",
+              "< 5 min"
+            ],
+            [
+              "Lateral movement",
+              "Aislar host origen y destino, revocar credenciales",
+              "Múltiples usuarios",
+              "< 10 min"
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🔥 Regla de oro",
+          "body": "En incidente confirmado, contené primero, investigá después."
+        }
+      ]
+    },
+    {
+      "id": "playbooks",
+      "icon": "📋",
+      "title": "Playbooks",
+      "badge": "Phishing / Ransomware",
+      "content": [
+        {
+          "type": "accordion",
+          "items": [
+            {
+              "title": "🐟 Phishing",
+              "lines": [
+                "1. RECOLECTAR: Pedir EML/MSG original. Headers, adjuntos, URLs.",
+                "2. HEADERS: SPF, DKIM, DMARC. IP de origen.",
+                "3. URLs: VirusTotal + URLScan.io.",
+                "4. ADJUNTOS: Hash SHA256 -> VT. Tipo real.",
+                "5. ACCIÓN: Si malicioso -> bloquear remitente, eliminar correos.",
+                "6. ESCALAR: Si hubo click/ejecución -> IR."
+              ]
+            },
+            {
+              "title": "💣 Ransomware",
+              "lines": [
+                "1. CONFIRMAR: Alertas EDR masivas. Notas de rescate.",
+                "2. AISLAR: Aislar host de RED (NO apagar).",
+                "3. ALCANCE: ¿Sólo 1 host? ¿Se propagó?",
+                "4. EVIDENCIA: Volcar RAM. Preservar logs.",
+                "5. VECTOR: ¿RDP? Phishing? VPN sin MFA?",
+                "6. RECOVERY: Restaurar backup. NO pagar rescate."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mitre",
+      "icon": "🎯",
+      "title": "MITRE ATT&CK",
+      "badge": "14 tácticas",
+      "content": [
+        {
+          "type": "mitre"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Técnica",
+            "Nombre",
+            "Táctica",
+            "Detección rápida"
+          ],
+          "r": [
+            [
+              "T1566.001",
+              "Spearphishing Adjunto",
+              "Initial Access",
+              "Office spawning proceso hijo"
+            ],
+            [
+              "T1059.001",
+              "PowerShell",
+              "Execution",
+              "4104 ScriptBlock, -enc, IEX"
+            ],
+            [
+              "T1055.012",
+              "Process Hollowing",
+              "Defense Evasion",
+              "Primary thread suspendido"
+            ],
+            [
+              "T1003.001",
+              "LSASS Memory",
+              "Credential Access",
+              "ProDump, comsvcs.dll a LSASS"
+            ],
+            [
+              "T1021.001",
+              "Remote Desktop",
+              "Lateral Movement",
+              "4624 LogonType 10 desde host no admin"
+            ],
+            [
+              "T1048",
+              "Exfil Over C2",
+              "Exfiltration",
+              "Tráfico saliente anómalo"
+            ],
+            [
+              "T1486",
+              "Data Encrypted for Impact",
+              "Impact",
+              "Masivas modificaciones de archivos"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forensics",
+      "icon": "🔬",
+      "title": "Forensia de Memoria RAM",
+      "badge": "Volatility 3",
+      "content": [
+        {
+          "type": "code",
+          "lang": "shell",
+          "lines": [
+            "# Listar procesos (psscan detecta ocultos)",
+            "volatility -f memory.dmp windows.psscan",
+            "# Conexiones de red desde memoria",
+            "volatility -f memory.dmp windows.netscan",
+            "# Línea de comandos de cada proceso",
+            "volatility -f memory.dmp windows.cmdline",
+            "# Código inyectado (malfind)",
+            "volatility -f memory.dmp windows.malfind",
+            "# Handles a procesos (process hollowing)",
+            "volatility -f memory.dmp windows.handles --pid 1234 --object-type Process",
+            "# Scan de archivos en memoria",
+            "volatility -f memory.dmp windows.filescan | grep -E \"(\\.exe|\\.dll)\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "malware",
+      "icon": "🦠",
+      "title": "Análisis de Malware",
+      "badge": "Triage rápido",
+      "content": [
+        {
+          "type": "code",
+          "lang": "shell",
+          "lines": [
+            "# 1. Hashes (para VirusTotal)",
+            "sha256sum muestra.exe",
+            "# 2. Tipo de archivo real",
+            "file muestra.exe",
+            "# 3. Strings: buscar URLs, IPs",
+            "strings muestra.exe | grep -ioE 'https?://[^\"\\'<> ]+'",
+            "strings muestra.exe | grep -oE '\\\\b[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\b' | sort -u",
+            "# 4. Secciones PE (packed?)",
+            "objdump -h muestra.exe | grep -E \"\\\\.text|\\\\.data|\\\\.rdata\"",
+            "# 5. Imports sospechosos",
+            "pedump --imports muestra.exe | grep -E \"(VirtualAlloc|CreateRemoteThread|URLDownload)\"",
+            "# 6. Timestamp de compilación",
+            "exiftool muestra.exe | grep -i \"time|date\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "icon": "🛠️",
+      "title": "Toolbox del SOC Analyst",
+      "badge": "12 herramientas",
+      "content": [
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🔍",
+              "t": "Splunk / Sentinel / Elastic",
+              "d": "SIEM principal.",
+              "g": "SIEM",
+              "c": "b"
+            },
+            {
+              "i": "🟢",
+              "t": "CrowdStrike / S1 / MDE",
+              "d": "EDR. Hunting, isolation.",
+              "g": "EDR",
+              "c": "g"
+            },
+            {
+              "i": "🟠",
+              "t": "VirusTotal + GreyNoise",
+              "d": "Enriquecimiento de IoCs.",
+              "g": "CTI",
+              "c": "p"
+            },
+            {
+              "i": "📸",
+              "t": "URLScan.io",
+              "d": "Análisis de URLs.",
+              "g": "CTI",
+              "c": "p"
+            },
+            {
+              "i": "🔎",
+              "t": "Shodan / Censys",
+              "d": "Buscar infraestructura C2.",
+              "g": "OSINT",
+              "c": "p"
+            },
+            {
+              "i": "🔧",
+              "t": "Wireshark / tshark",
+              "d": "Análisis de PCAP.",
+              "g": "Red",
+              "c": "o"
+            },
+            {
+              "i": "🧠",
+              "t": "Volatility 3",
+              "d": "Análisis de memoria RAM.",
+              "g": "Forensia",
+              "c": "b"
+            },
+            {
+              "i": "🧬",
+              "t": "Velociraptor",
+              "d": "DFIR a escala.",
+              "g": "Forensia",
+              "c": "b"
+            },
+            {
+              "i": "📊",
+              "t": "Hayabusa",
+              "d": "Análisis de EventLogs.",
+              "g": "Win",
+              "c": "y"
+            },
+            {
+              "i": "🔩",
+              "t": "Procmon / Process Hacker",
+              "d": "Monitoreo de procesos.",
+              "g": "Win",
+              "c": "y"
+            },
+            {
+              "i": "📂",
+              "t": "MISP / OTX",
+              "d": "Threat intel sharing.",
+              "g": "CTI",
+              "c": "p"
+            },
+            {
+              "i": "🔗",
+              "t": "CyberChef",
+              "d": "Decode todo: base64, hex, XOR.",
+              "g": "Util",
+              "c": "g"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cheat",
+      "icon": "📄",
+      "title": "Cheat Sheet",
+      "badge": "Comandos rápidos",
+      "content": [
+        {
+          "type": "sub",
+          "title": "Windows"
+        },
+        {
+          "type": "code",
+          "lang": "ps",
+          "lines": [
+            "netstat -ano | findstr ESTABLISHED",
+            "Get-Process -Id 4321 | Select-Object *",
+            "Get-CimInstance Win32_Service | Select Name, PathName, StartName",
+            "Search-ADAccount -LockedOut | Select Name, SamAccountName"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Linux"
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "find / -perm -4000 -type f 2>/dev/null   # SUID",
+            "ss -tunap | grep ESTAB",
+            "dpkg --verify",
+            "last -10",
+            "find /tmp /dev/shm -type f -mtime -1 2>/dev/null"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Red"
+        },
+        {
+          "type": "code",
+          "lang": "shell",
+          "lines": [
+            "tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u",
+            "tshark -r cap.pcap -Y \"dns.flags.response == 0\" -T fields -e dns.qry.name | sort | uniq -c | sort -rn",
+            "tcpdump -i eth0 -n port 53"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Conversiones"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🧮",
+              "t": "Bytes a GB",
+              "d": "bytes / 1073741824"
+            },
+            {
+              "i": "⏰",
+              "t": "Epoch a fecha",
+              "d": "date -d @1700000000"
+            },
+            {
+              "i": "🔢",
+              "t": "Hex a Decimal",
+              "d": "printf \"%d\" 0x7F"
+            },
+            {
+              "i": "🔄",
+              "t": "Base64 Decode",
+              "d": "echo \"dGVzdA==\" | base64 -d"
+            },
+            {
+              "i": "🔐",
+              "t": "Hash rápido",
+              "d": "sha256sum archivo"
+            },
+            {
+              "i": "🌐",
+              "t": "URL Decode",
+              "d": "python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "navGroups": [
+    {
+      "t": "Análisis",
+      "items": [
+        {
+          "id": "triage",
+          "i": "🔍",
+          "l": "Triage"
+        },
+        {
+          "id": "severidad",
+          "i": "🏷️",
+          "l": "Severidad"
+        }
+      ]
+    },
+    {
+      "t": "Windows",
+      "items": [
+        {
+          "id": "evtx",
+          "i": "📋",
+          "l": "EventLogs"
+        },
+        {
+          "id": "sysmon",
+          "i": "📡",
+          "l": "Sysmon"
+        },
+        {
+          "id": "win-cmd",
+          "i": "💻",
+          "l": "Cmd Forense"
+        },
+        {
+          "id": "lolbins",
+          "i": "⚡",
+          "l": "LOLBins"
+        }
+      ]
+    },
+    {
+      "t": "Linux",
+      "items": [
+        {
+          "id": "linux-cmd",
+          "i": "🐧",
+          "l": "Cmd Forense"
+        },
+        {
+          "id": "linux-logs",
+          "i": "📝",
+          "l": "Logs"
+        }
+      ]
+    },
+    {
+      "t": "Red",
+      "items": [
+        {
+          "id": "network",
+          "i": "🌐",
+          "l": "Análisis"
+        }
+      ]
+    },
+    {
+      "t": "Queries",
+      "items": [
+        {
+          "id": "queries",
+          "i": "⚡",
+          "l": "KQL / SPL / ESQL"
+        }
+      ]
+    },
+    {
+      "t": "Incidentes",
+      "items": [
+        {
+          "id": "containment",
+          "i": "⛔",
+          "l": "Contención"
+        },
+        {
+          "id": "playbooks",
+          "i": "📋",
+          "l": "Playbooks"
+        }
+      ]
+    },
+    {
+      "t": "Framework",
+      "items": [
+        {
+          "id": "mitre",
+          "i": "🎯",
+          "l": "MITRE"
+        },
+        {
+          "id": "forensics",
+          "i": "🔬",
+          "l": "Forensia"
+        },
+        {
+          "id": "malware",
+          "i": "🦠",
+          "l": "Malware"
+        }
+      ]
+    },
+    {
+      "t": "Referencia",
+      "items": [
+        {
+          "id": "tools",
+          "i": "🛠️",
+          "l": "Toolbox"
+        },
+        {
+          "id": "cheat",
+          "i": "📄",
+          "l": "Cheat Sheet"
+        }
+      ]
+    }
+  ],
+  "mitreTactics": [
+    {
+      "id": "TA0043",
+      "n": "Reconnaissance"
+    },
+    {
+      "id": "TA0042",
+      "n": "Resource Development"
+    },
+    {
+      "id": "TA0001",
+      "n": "Initial Access"
+    },
+    {
+      "id": "TA0002",
+      "n": "Execution"
+    },
+    {
+      "id": "TA0003",
+      "n": "Persistence"
+    },
+    {
+      "id": "TA0004",
+      "n": "Privilege Escalation"
+    },
+    {
+      "id": "TA0005",
+      "n": "Defense Evasion"
+    },
+    {
+      "id": "TA0006",
+      "n": "Credential Access"
+    },
+    {
+      "id": "TA0007",
+      "n": "Discovery"
+    },
+    {
+      "id": "TA0008",
+      "n": "Lateral Movement"
+    },
+    {
+      "id": "TA0009",
+      "n": "Collection"
+    },
+    {
+      "id": "TA0011",
+      "n": "Command and Control"
+    },
+    {
+      "id": "TA0010",
+      "n": "Exfiltration"
+    },
+    {
+      "id": "TA0040",
+      "n": "Impact"
+    }
+  ]
+}
