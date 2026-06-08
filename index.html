@@ -118,6 +118,20 @@
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
   .overlay.open{display:block}
   @keyframes spin{to{transform:rotate(360deg)}}
+
+  .mitre-matrix{display:flex;gap:10px;overflow-x:auto;padding:8px 0 16px;scrollbar-width:thin}
+  .mitre-col{flex:0 0 220px;min-width:220px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .mitre-col-hdr{background:var(--bg4);padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)}
+  .mitre-col-hdr .mitre-ta{display:block;font-size:.68rem;font-weight:700;color:var(--accent);letter-spacing:.03em}
+  .mitre-col-hdr .mitre-tn{display:block;font-size:.72rem;color:var(--text);font-weight:500;margin-top:2px}
+  .mitre-techs{padding:4px 0}
+  .mitre-tech,.mitre-sub{padding:4px 10px;border-bottom:1px solid rgba(255,255,255,.03);cursor:default}
+  .mitre-tech:hover,.mitre-sub:hover{background:rgba(74,158,255,.06)}
+  .mitre-tech .mitre-tid,.mitre-sub .mitre-tid{font-size:.62rem;font-weight:600;color:var(--yellow);font-family:var(--mono);display:block}
+  .mitre-tech .mitre-tname,.mitre-sub .mitre-tname{font-size:.68rem;color:var(--text2);display:block;line-height:1.3;margin-top:1px}
+  .mitre-sub{padding-left:18px;background:rgba(0,0,0,.15)}
+  .mitre-sub .mitre-tname{font-size:.63rem;color:var(--text2)}
+  .mitre-subs{border-top:1px solid var(--border)}
 </style>
 </head>
 <body><div id="root"></div>
@@ -210,17 +224,38 @@ function Accordion(props) {
 
 function MitreMatrix(props) {
   var tacs = props.tactics || [];
-  return e('div',{className:'mitre-grid'},
+  return e('div',{className:'mitre-matrix'},
     tacs.map(function(t,i){
-      return e('div',{className:'mitre-cell',key:i,title:t.id},
-        e('div',{className:'tac'},t.n),
-        e('div',{className:'t'},t.id)
+      var techs = t.techniques || [];
+      var parents = techs.filter(function(x){return !x.is_sub});
+      var subs = techs.filter(function(x){return x.is_sub});
+      return e('div',{className:'mitre-col',key:i},
+        e('div',{className:'mitre-col-hdr'},
+          e('span',{className:'mitre-ta'},t.id),
+          e('span',{className:'mitre-tn'},t.name)
+        ),
+        e('div',{className:'mitre-techs'},
+          parents.map(function(pt,pi){
+            return e('div',{className:'mitre-tech',key:'p'+pi,title:pt.id},
+              e('span',{className:'mitre-tid'},pt.id),
+              e('span',{className:'mitre-tname'},pt.name)
+            );
+          })
+        ),
+        subs.length > 0 ? e('div',{className:'mitre-subs'},
+          subs.map(function(st,si){
+            return e('div',{className:'mitre-sub',key:'s'+si,title:st.id},
+              e('span',{className:'mitre-tid'},st.id),
+              e('span',{className:'mitre-tname'},st.name)
+            );
+          })
+        ) : null
       );
     })
   );
 }
 
-function renderContent(block, tactics) {
+function renderContent(block, mitreMatrix) {
   switch(block.type) {
     case 'table': return e(TableView,{headers:block.h,rows:block.r});
     case 'grid': return e(GridView,{items:block.items});
@@ -228,7 +263,7 @@ function renderContent(block, tactics) {
     case 'callout': return e(Callout,{style:block.s,title:block.title,body:block.body});
     case 'tabs': return e(TabSwitcher,{tabs:block.tabs});
     case 'accordion': return e(Accordion,{items:block.items});
-    case 'mitre': return e(MitreMatrix, {tactics: tactics});
+    case 'mitre': return e(MitreMatrix, {tactics: mitreMatrix});
     case 'sub': return e('div',{className:'subtitle'},block.title);
     default: return null;
   }
@@ -236,7 +271,7 @@ function renderContent(block, tactics) {
 
 // ===== SECTION COMPONENT =====
 function SectionCard(props) {
-  var s = props.section, isOpen = props.isOpen, toggle = props.toggle, tactics = props.tactics;
+  var s = props.section, isOpen = props.isOpen, toggle = props.toggle, mitreMatrix = props.mitreMatrix;
   return e('div',{className:'section-card',id:s.id},
     e('div',{className:'section-hdr',onClick:function(){toggle(s.id)}},
       e('div',{className:'left'},
@@ -248,7 +283,7 @@ function SectionCard(props) {
     ),
     e('div',{className:'section-body'+(isOpen?' open':'')},
       s.desc ? e('div',{className:'section-intro'},e('p',null,s.desc)) : null,
-      s.content ? s.content.map(function(b,i){return e(React.Fragment,{key:i},renderContent(b))}) : null
+      s.content ? s.content.map(function(b,i){return e(React.Fragment,{key:i},renderContent(b, mitreMatrix))}) : null
     )
   );
 }
@@ -410,7 +445,8 @@ function App() {
           '\uD83D\uDD0E Resultados para "',e('strong',{style:{color:'var(--text)'}},searchQ),'": ',filtered.length,' secci\u00F3n(es)'
         ) : null,
         filtered.length > 0 ? filtered.map(function(s){
-          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection,tactics:data.mitreTactics});
+          var mtx = data.mitreMatrix || [];
+          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection,mitreMatrix:mtx});
         }) : e('div',{style:{padding:40,textAlign:'center',color:'var(--text2)'}},
           e('p',{style:{fontSize:'1.5rem',marginBottom:8}},'\uD83D\uDD0D'),
           e('p',null,'No se encontraron resultados para "'+searchQ+'"'),
