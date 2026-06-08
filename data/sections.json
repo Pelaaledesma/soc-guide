@@ -1038,26 +1038,86 @@
       "id": "malware",
       "icon": "🦠",
       "title": "Análisis de Malware",
-      "badge": "Triage rápido",
+      "badge": "Triage rápido + herramientas",
+      "desc": "Pipeline de análisis rápido de malware. El orden importa: estático → dinámico → reversing. Nunca ejecutes una muestra sin aislarla antes.",
       "content": [
         {
-          "type": "code",
-          "lang": "shell",
-          "lines": [
-            "# 1. Hashes (para VirusTotal)",
-            "sha256sum muestra.exe",
-            "# 2. Tipo de archivo real",
-            "file muestra.exe",
-            "# 3. Strings: buscar URLs, IPs",
-            "strings muestra.exe | grep -ioE 'https?://[^\"\\'<> ]+'",
-            "strings muestra.exe | grep -oE '\\\\b[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\b' | sort -u",
-            "# 4. Secciones PE (packed?)",
-            "objdump -h muestra.exe | grep -E \"\\\\.text|\\\\.data|\\\\.rdata\"",
-            "# 5. Imports sospechosos",
-            "pedump --imports muestra.exe | grep -E \"(VirtualAlloc|CreateRemoteThread|URLDownload)\"",
-            "# 6. Timestamp de compilación",
-            "exiftool muestra.exe | grep -i \"time|date\""
+          "type": "callout",
+          "s": "d",
+          "title": "☣️ Seguridad ante todo",
+          "body": "Toda muestra se analiza en sandbox aislado (FLARE VM, REMnux, Cuckoo/CAPE). NO conectes la muestra a la red corporativa. NO confíes en el extension del archivo (un .pdf puede ser un .exe). Siempre usar máquina virtual SIN acceso a recursos corporativos."
+        },
+        {
+          "type": "sub",
+          "title": "Fase 1: Triage Estático (5 min)"
+        },
+        {
+          "type": "table",
+          "h": ["Paso", "Comando", "Qué buscar"],
+          "r": [
+            ["1. Hash", "sha256sum muestra.exe", "Cruzarlo con VirusTotal, Hybrid Analysis, Any.Run. Si ya lo vieron → leer análisis de otros"],
+            ["2. Tipo real", "file muestra.exe", "Si dice 'data' o 'MS-DOS executable' está raro. Los PE legítimos dicen 'PE32 executable'"],
+            ["3. Packer", "detect-it-easy --file muestra.exe", "Si detecta UPX/MPRESS/Themida → está empaquetado. UPX se puede desempaquetar, Themida no sin reversing"],
+            ["4. Entropía", "binwalk -E muestra.exe", "Entropía > 7.0 → packed/cifrado. Entropía baja (<5) con código sospechoso → posible ofuscación artesanal"],
+            ["5. URLs/IPs", "strings muestra.exe | grep -ioE 'https?://[^\"<> ]+'", "Buscar C2, dominios de staging, URLs de callback. Prestar atención a puertos no estándar"],
+            ["6. Imports PE", "pedump --imports muestra.exe | grep -E '(VirtualAlloc|CreateRemoteThread|WriteProcessMemory|URLDownloadToFile|WinExec|RegSetValue)'", "VirtualAlloc+WriteProcessMemory+CreateRemoteThread → classic injection. URLDownloadToFile → downloader"],
+            ["7. Timestamp PE", "exiftool muestra.exe | grep -i 'time\\|date'", "Si dice '0' o una fecha futura → falso. Si dice fecha antigua y el malware es nuevo → podría ser un compiler falso"]
           ]
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Triage rápido: pipeline completo",
+            "echo '=== HASH ===' && sha256sum muestra.exe",
+            "echo '=== TIPO ===' && file muestra.exe",
+            "echo '=== STRINGS (lo que importa) ==='",
+            "strings muestra.exe | grep -ioE 'https?://[^\"<> ]+' | sort -u",
+            "strings muestra.exe | grep -oE '\\\\b[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\.[0-9]{1,3}\\\\b' | sort -u",
+            "echo '=== IMPORTS SOSPECHOSOS ==='",
+            "pedump --imports muestra.exe | grep -i -E '(VirtualAlloc|CreateRemote|WriteProcess|URLDownload|WinExec|RegSetValue|Socket|Connect|HttpOpenRequest)' || echo '(no imports sospechosos)'"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Fase 2: Triage Dinámico (15 min)"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {"i":"1️⃣","t":"Ejecutá en sandbox","d":"FLARE VM + Procmon + Wireshark + API Monitor. Capturá: procesos creados, archivos escritos, claves de registro creadas, conexiones DNS/HTTP.","c":"r"},
+            {"i":"2️⃣","t":"Monitoreá cambios","d":"Usar Procmon filter: Process Name is malware.exe. Grabá: CreateFile, RegSetValue, CreateProcess, TCP Send/Recv.","c":"y"},
+            {"i":"3️⃣","t":"Capturá tráfico","d":"Wireshark en el host de análisis. Filtrá por IP de destino. Buscar: DNS TXT exfil, HTTP POST regulares, beaconing cada N segundos.","c":"b"},
+            {"i":"4️⃣","t":"YARA sobre el dump","d":"Ejecutar YARA con reglas de Malpedia/yarasalooza sobre la muestra y los procesos hijos que spawnée.","c":"g"},
+            {"i":"5️⃣","t":"Analizá persistencia","d":"Ejecutar Autoruns desde sandbox. Buscar: Run Keys, Scheduled Tasks, Service, Start Menu, WMI Event Subscription.","c":"y"},
+            {"i":"6️⃣","t":"Chequeá mutex","d":"Herramienta: Handle (Sysinternals) para ver mutex creados. Los mutex son IOCs que sirven para detection.","c":"g"}
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Fase 3: Reversing (si aplica)"
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Herramientas de reversing",
+            "ghidra                           # Analizador estático (abrir el .exe y buscar strings, imports, graph)",
+            "x64dbg                           # Debugger dinámico (breakpoints en VirtualAlloc, CreateRemoteThread)",
+            "dnSpy                            # Para .NET: decompila directo a C#",
+            "de4dot -d muestra.dll            # Deobfuscador de .NET ofuscado",
+            "flare-floss muestra.exe          # FLOSS: extrae strings que 'strings' no ve (decoded, unpacked)",
+            "",
+            "# FLOSS es ORO - te saca strings que 'strings' no detecta",
+            "# Buscar URLs, IPs, claves de registro, nombres de pipe",
+            "floss -n 6 muestra.exe | grep -E '(http|https?://|\\\\d+\\\\.\\\\d+\\\\.\\\\d+\\\\.\\\\d+|createfile|writefile|regcreate)'"
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "🧠 Análisis sin tener la muestra",
+          "body": "Si NO tenés la muestra (ej: el EDR ya la borró): (1) Buscar en VirusTotal por los hashes reportados. (2) Buscar en Any.Run/Hybrid Analysis por comportamiento similar. (3) Usar YARA hunting sobre los endpoints con reglas de la familia (Lazarus, Trickbot, etc). (4) Reconstruir IoCs de EventLogs: 4688 (process creation), 5156 (conexiones), 11 (driver load)."
         }
       ]
     },
@@ -1065,94 +1125,143 @@
       "id": "tools",
       "icon": "🛠️",
       "title": "Toolbox del SOC Analyst",
-      "badge": "12 herramientas",
+      "badge": "18 herramientas + usos",
+      "desc": "Toolbox completo de un SOC Analyst, organizado por función. No es solo 'qué herramienta' sino 'cuándo usarla y por qué'.",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🎯 Mentalidad toolbox",
+          "body": "Un analista no usa todas las herramientas todo el tiempo. Sabé cuál usar en cada fase: Triage (VT + Any.Run) → Hunting (SIEM + EDR) → Deep Dive (Volatility + Wireshark) → Intel (MISP + OTX) → Automation (Velociraptor + SOAR)."
+        },
         {
           "type": "grid",
           "items": [
             {
               "i": "🔍",
-              "t": "Splunk / Sentinel / Elastic",
-              "d": "SIEM principal.",
+              "t": "SIEM: Splunk / Sentinel / Elastic",
+              "d": "Motor de búsqueda central. Todas las alertas pasan por acá. Dominá SPL/KQL/ES|QL. Hunting proactivo, correlación, dashboards, notables.",
               "g": "SIEM",
               "c": "b"
             },
             {
               "i": "🟢",
-              "t": "CrowdStrike / S1 / MDE",
-              "d": "EDR. Hunting, isolation.",
+              "t": "EDR: CrowdStrike / S1 / MDE / SentinelOne",
+              "d": "Detección en endpoint, aislamiento, rollback, hunting de procesos. Si el EDR no detecta → no significa que esté limpio. Siempre verificar con Volatility.",
               "g": "EDR",
               "c": "g"
             },
             {
               "i": "🟠",
-              "t": "VirusTotal + GreyNoise",
-              "d": "Enriquecimiento de IoCs.",
+              "t": "VirusTotal + GreyNoise + AlienVault OTX",
+              "d": "Enriquecimiento de IoCs. VT: hash, URL, IP. GreyNoise: ¿es ruido de internet o ataque real? OTX: pulses con contexto de campaña.",
               "g": "CTI",
               "c": "p"
             },
             {
               "i": "📸",
-              "t": "URLScan.io",
-              "d": "Análisis de URLs.",
+              "t": "URLScan.io + PhishTank + OpenPhish",
+              "d": "Análisis de URLs. URLScan: screenshot + DOM + redirects. PhishTank: URLs de phishing reportadas. OpenPhish: feed de phishing activo.",
               "g": "CTI",
               "c": "p"
             },
             {
               "i": "🔎",
-              "t": "Shodan / Censys",
-              "d": "Buscar infraestructura C2.",
+              "t": "Shodan / Censys / CriminalIP",
+              "d": "Buscar infraestructura C2. Shodan: puertos, banners, servicios. Censys: certificados SSL, búsqueda inversa por IP/domino. CriminalIP: reputación.",
               "g": "OSINT",
               "c": "p"
             },
             {
+              "i": "🎭",
+              "t": "Any.Run + Hybrid Analysis + Joe Sandbox",
+              "d": "Sandbox online. Any.Run: interactivo (podés ver la ejecución en vivo). Hybrid Analysis: reporte automático. Joe Sandbox: deep analysis con MITRE mapping.",
+              "g": "Malware",
+              "c": "r"
+            },
+            {
               "i": "🔧",
-              "t": "Wireshark / tshark",
-              "d": "Análisis de PCAP.",
+              "t": "Wireshark / tshark / Zeek",
+              "d": "Análisis de PCAP. Wireshark: GUI. tshark: CLI (para pipelines). Zeek: logs estructurados de tráfico (conn.log, dns.log, http.log).",
               "g": "Red",
               "c": "o"
             },
             {
               "i": "🧠",
-              "t": "Volatility 3",
-              "d": "Análisis de memoria RAM.",
+              "t": "Volatility 3 + Rekall",
+              "d": "Análisis de memoria RAM. Volatility 3: plugins para procesos ocultos, código inyectado, conexiones, credenciales. Rekall: alternativa open source.",
               "g": "Forensia",
               "c": "b"
             },
             {
               "i": "🧬",
               "t": "Velociraptor",
-              "d": "DFIR a escala.",
+              "d": "DFIR a escala. Hunting remoto, recolección de artifacts, timelines. Un solo binario deploya agent y server. Killer feature: VQL (Velociraptor Query Language) para hunting personalizado.",
               "g": "Forensia",
               "c": "b"
             },
             {
               "i": "📊",
-              "t": "Hayabusa",
-              "d": "Análisis de EventLogs.",
+              "t": "Hayabusa + Chainsaw",
+              "d": "Análisis de EventLogs Windows. Hayabusa: reglas Sigma-like, output timeline CSV. Chainsaw: hunting rápido de EventIDs conocidos. Los dos son OFFLINE (sin SIEM).",
               "g": "Win",
               "c": "y"
             },
             {
               "i": "🔩",
-              "t": "Procmon / Process Hacker",
-              "d": "Monitoreo de procesos.",
+              "t": "Procmon / Process Hacker / AutoRuns",
+              "d": "Monitoreo de procesos en vivo. Procmon: filtros por proceso. Process Hacker: tree view + properties. AutoRuns: puntos de persistencia al bootear.",
               "g": "Win",
               "c": "y"
             },
             {
               "i": "📂",
-              "t": "MISP / OTX",
-              "d": "Threat intel sharing.",
+              "t": "MISP / OpenCTI / ThreatConnect",
+              "d": "Threat intel sharing. MISP: feed de IoCs propios + compartidos. OpenCTI: plataforma de CTI con relaciones. ThreatConnect: comercial con SOAR integrado.",
               "g": "CTI",
               "c": "p"
             },
             {
               "i": "🔗",
               "t": "CyberChef",
-              "d": "Decode todo: base64, hex, XOR.",
+              "d": "Decode todo: base64, hex, XOR, ROT, URL decode, zip, deflate, recursive decode. 'The Cyber Swiss Army Knife'. No hay analista que no lo use a diario.",
               "g": "Util",
               "c": "g"
+            },
+            {
+              "i": "📱",
+              "t": "KAPE + Eric Zimmerman Tools",
+              "d": "KAPE: adquisición forense targeteada (solo lo que necesitás). EZ Tools: Timeline Explorer, Registry Explorer, MFT Explorer, ShellBags Explorer.",
+              "g": "Forensia",
+              "c": "b"
+            },
+            {
+              "i": "🐍",
+              "t": "REMnux + FLARE VM",
+              "d": "Distros de análisis. REMnux: Linux con herramientas de reversing (Ghidra, x64dbg wine, FLOSS). FLARE VM: Windows con todo para análisis de malware.",
+              "g": "Malware",
+              "c": "r"
+            },
+            {
+              "i": "🤖",
+              "t": "YARA + Sigma + KQL v2",
+              "d": "Reglas de detección. YARA: binario (muestras de malware). Sigma: logs (SIEM). KQL v2: queries de hunting para Windows Event Log. Escribir y compartir.",
+              "g": "Detección",
+              "c": "y"
+            },
+            {
+              "i": "⚡",
+              "t": "SOAR: Splunk SOAR / Shuffle / Tines",
+              "d": "Automatización de respuesta. Splunk SOAR: playbooks visuales. Shuffle: open source. Tines: low-code, buen UX. Automatizá lo repetitivo (enriquecimiento de IoCs, blocking).",
+              "g": "Automation",
+              "c": "p"
+            },
+            {
+              "i": "📝",
+              "t": "TheHive + IRIS + DFIR-IRIS",
+              "d": "Case management para incidentes. TheHive: open source, se integra con MISP. IRIS: WebSockets, colaboración en vivo. DFIR-IRIS: full incident response platform.",
+              "g": "Caso",
+              "c": "o"
             }
           ]
         }
@@ -1162,87 +1271,158 @@
       "id": "cheat",
       "icon": "📄",
       "title": "Cheat Sheet",
-      "badge": "Comandos rápidos",
+      "badge": "Comandos rápidos por categoría",
+      "desc": "Comandos esenciales organizados por escenario. No memorices todo — sabé dónde buscar. Actualizalo con tus propios descubrimientos.",
       "content": [
         {
           "type": "sub",
-          "title": "Windows"
+          "title": "🐞 Windows — Procesos y Red"
         },
         {
           "type": "code",
           "lang": "ps",
           "lines": [
-            "netstat -ano | findstr ESTABLISHED",
-            "Get-Process -Id 4321 | Select-Object *",
-            "Get-CimInstance Win32_Service | Select Name, PathName, StartName",
-            "Search-ADAccount -LockedOut | Select Name, SamAccountName"
+            "# Procesos",
+            "Get-Process | Where-Object {$_.CPU -gt 10}              # Procesos con alto CPU",
+            "Get-Process -Id 4321 | Select-Object *                   # Todo sobre un PID",
+            "tasklist /svc /fi \"PID gt 1000\"                         # Servicios por proceso",
+            "wmic process where name=\"cmd.exe\" get ProcessId,CommandLine  # CLI alternativa",
+            "",
+            "# Red",
+            "netstat -ano -p tcp | findstr ESTABLISHED               # Conexiones activas TCP",
+            "netstat -ano | findstr LISTENING                         # Puertos en escucha",
+            "Get-NetTCPConnection -RemotePort 443                     # PowerShell: conexiones a 443",
+            "Get-NetFirewallRule -Direction Outbound -Enabled True | Select DisplayName,Action",
+            "",
+            "# DNS",
+            "ipconfig /displaydns | findstr \"Record Name\"           # Cache DNS local",
+            "nslookup -type=any dominio.com 8.8.8.8                   # Consulta DNS externa",
+            "Resolve-DnsName dominio.com -Type TXT                     # TXT records (exfiltration)",
+            "",
+            "# Sesiones y usuarios",
+            "qwinsta /server:SERVER01                                 # Sesiones RDP activas",
+            "net session                                              # Sesiones SMB activas",
+            "Get-WmiObject -Class Win32_ComputerSystem | Select-Object UserName  # Usuario logueado",
+            "Get-LocalUser | Select Name, Enabled, LastLogon         # Usuarios locales"
           ]
         },
         {
           "type": "sub",
-          "title": "Linux"
+          "title": "🐧 Linux — Procesos y Red"
         },
         {
           "type": "code",
           "lang": "bash",
           "lines": [
-            "find / -perm -4000 -type f 2>/dev/null   # SUID",
-            "ss -tunap | grep ESTAB",
-            "dpkg --verify",
-            "last -10",
-            "find /tmp /dev/shm -type f -mtime -1 2>/dev/null"
+            "# Procesos",
+            "ps aux --sort=-%cpu | head -10                           # Top 10 por CPU",
+            "ps aux --sort=-%mem | head -10                           # Top 10 por RAM",
+            "lsof -i :443                                             # Qué proceso usa puerto 443",
+            "ls -la /proc/$(pgrep bash)/fd/                           # File descriptors abiertos",
+            "cat /proc/$(pidof malware)/maps | grep rwx               # Memoria RWX (posible inyección)",
+            "",
+            "# Red",
+            "ss -tunap | grep ESTAB                                   # Conexiones establecidas (moderno)",
+            "ss -tulnp                                               # Puertos en escucha (TCP+UDP)",
+            "tcpdump -i eth0 -nn port 53 -c 100                       # Capturar 100 paquetes DNS",
+            "tcpdump -i eth0 -nn host 10.0.0.5 -w captura.pcap       # Capturar tráfico de un host a PCAP",
+            "",
+            "# Archivos y sesiones",
+            "find /tmp /dev/shm /var/tmp -type f -mtime -7 -ls 2>/dev/null  # Archivos recientes en temp",
+            "find / -perm -4000 -type f 2>/dev/null                   # SUID (privilege escalation)",
+            "find / -perm -2000 -type f 2>/dev/null                   # SGID",
+            "last -10                                                 # Últimos logins",
+            "lastb -10                                               # Últimos logins fallidos",
+            "w                                                       # Quién está logueado ahora",
+            "",
+            "# Logs críticos",
+            "journalctl -u sshd --since '24 hours ago' | grep 'Failed password'  # Intentos SSH fallidos",
+            "journalctl -k --since '24 hours ago' | grep -i 'denied\\|error\\|fail'  # Kernel denials",
+            "ausearch -ts today -i | grep -i 'syscall=execve'          # Ejecuciones auditadas (auditd)"
           ]
         },
         {
           "type": "sub",
-          "title": "Red"
+          "title": "🔌 Red — PCAP y Tráfico"
         },
         {
           "type": "code",
-          "lang": "shell",
+          "lang": "bash",
           "lines": [
-            "tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u",
-            "tshark -r cap.pcap -Y \"dns.flags.response == 0\" -T fields -e dns.qry.name | sort | uniq -c | sort -rn",
-            "tcpdump -i eth0 -n port 53"
+            "# tshark — queries rápidas sobre PCAP",
+            "tshark -r cap.pcap -T fields -e ip.src -e ip.dst | sort -u  # IPs únicas",
+            "tshark -r cap.pcap -Y 'dns.flags.response == 0' -T fields -e dns.qry.name | sort -u  # Consultas DNS",
+            "tshark -r cap.pcap -Y 'http.request.method == POST' -T fields -e http.host -e http.request.uri  # POST HTTP",
+            "tshark -r cap.pcap -Y 'tls.handshake.type == 1' -T fields -e tls.handshake.extensions_server_name  # SNI (qué dominios consultan)",
+            "tshark -r cap.pcap -z conv,tcp -q                        # Tabla de conversaciones TCP",
+            "tshark -r cap.pcap -z io,stat,60,\"COUNT(dns) or COUNT(tcp.connection.syn)\" -q  # Estadísticas por minuto (beaconing)",
+            "",
+            "# zeek / bro",
+            "zeek -r cap.pcap                                         # Genera logs: conn.log, dns.log, http.log, ssl.log, etc.",
+            "cat conn.log | zeek-cut uid proto id.resp_p orig_ip_bytes resp_ip_bytes | sort -rn -k5 | head -10",
+            "",
+            "# Detección rápida de beaconing",
+            "tshark -r cap.pcap -T fields -e frame.time_epoch -e ip.src -e ip.dst -e tcp.dstport | awk '!seen[$2,$3] {print; seen[$2,$3]=1}' | head -20",
+            "# Si ves intervalos regulares (cada 60s exactos) → beaconing"
           ]
         },
         {
           "type": "sub",
-          "title": "Conversiones"
+          "title": "🪟 Windows — Seguridad y Persistencia"
+        },
+        {
+          "type": "code",
+          "lang": "ps",
+          "lines": [
+            "# Scheduled Tasks",
+            "schtasks /query /fo LIST /v | findstr /i \"TaskName\\|Task To Run\\|Next Run\"",
+            "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Format-Table TaskName,State",
+            "",
+            "# Services",
+            "Get-CimInstance Win32_Service | Select Name, PathName, StartName, State",
+            "sc query type= service state= all | findstr /i \"SERVICE_NAME\\|DISPLAY_NAME\\|BINARY_PATH_NAME\"",
+            "",
+            "# Startup / Run keys",
+            "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'",
+            "Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'",
+            "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'",
+            "",
+            "# EventLogs (últimas 24h)",
+            "Get-WinEvent -FilterHashtable @{LogName='Security';Id=4688;StartTime=(Get-Date).AddHours(-24)} | Format-Table TimeCreated,Message -Wrap",
+            "Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' -MaxEvents 100 | Format-Table TimeCreated,Id,Message -Wrap",
+            "",
+            "# Active Directory",
+            "Search-ADAccount -LockedOut | Select Name, SamAccountName, LockedOut",
+            "Get-ADUser -Filter * -Properties LastLogonDate, PasswordLastSet, Enabled | Select Name,Enabled,LastLogonDate,PasswordLastSet",
+            "Get-ADComputer -Filter * -Properties LastLogonDate, OperatingSystem | Select Name,LastLogonDate,OperatingSystem",
+            "",
+            "# Bits de integridad",
+            "icacls C:\\Windows\\System32\\evil.dll",
+            "Get-Acl C:\\Windows\\System32\\evil.dll | fl",
+            "certutil -hashfile C:\\Windows\\System32\\evil.dll SHA256",
+            "",
+            "# EventID 1102 (log borrado)",
+            "Get-WinEvent -FilterHashtable @{LogName='Security';Id=1102} -MaxEvents 5 | Fl TimeCreated,Message",
+            "# Si ves un 1102 → ALERTA: alguien borró el Security log"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "🧮 Conversiones y Utilidades"
         },
         {
           "type": "grid",
           "items": [
-            {
-              "i": "🧮",
-              "t": "Bytes a GB",
-              "d": "bytes / 1073741824"
-            },
-            {
-              "i": "⏰",
-              "t": "Epoch a fecha",
-              "d": "date -d @1700000000"
-            },
-            {
-              "i": "🔢",
-              "t": "Hex a Decimal",
-              "d": "printf \"%d\" 0x7F"
-            },
-            {
-              "i": "🔄",
-              "t": "Base64 Decode",
-              "d": "echo \"dGVzdA==\" | base64 -d"
-            },
-            {
-              "i": "🔐",
-              "t": "Hash rápido",
-              "d": "sha256sum archivo"
-            },
-            {
-              "i": "🌐",
-              "t": "URL Decode",
-              "d": "python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'"
-            }
+            {"i":"🧮","t":"Bytes a GB","d":"bytes / 1073741824 (bash/ps) o calculadora mental","c":"b"},
+            {"i":"⏰","t":"Epoch a fecha Unix","d":"date -d @1700000000 (Linux) / Get-Date 1700000000 -UFormat '%Y-%m-%d %H:%M' (PS)","c":"b"},
+            {"i":"🔢","t":"Hex a Decimal","d":"printf '%d\\n' 0x7F (bash) / [Convert]::ToInt32('0x7F',16) (PS)","c":"g"},
+            {"i":"🔄","t":"Base64 Decode","d":"echo dGVzdA== | base64 -d (bash) / [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('dGVzdA==')) (PS)","c":"g"},
+            {"i":"🔐","t":"Hash de archivo","d":"sha256sum archivo (bash) / Get-FileHash archivo -Algorithm SHA256 (PS)","c":"y"},
+            {"i":"🌐","t":"URL Decode","d":"python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'","c":"p"},
+            {"i":"🔀","t":"XOR bytes (CyberChef)","d":"https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')XOR({'option':'Hex','string':'key'},'Standard',false)To_Hex('Space')","c":"o"},
+            {"i":"📅","t":"17201 → datetime","d":"Convert 17201 (Windows FileTime / LDAP) con CyberChef o https://www.epochconverter.com/ldap","c":"p"},
+            {"i":"🔍","t":"GUID a registry","d":"Los GUIDs en registry se guardan en formato invertido. Usar PowerShell: [GUID]::new('{GUID}').ToByteArray()","c":"r"},
+            {"i":"📐","t":"Timeline CSV","d":"tshark, Hayabusa, y Volatility tienen -o csv. Pegar en Excel/Timeline Explorer y pivotear","c":"b"}
           ]
         }
       ]
@@ -1347,11 +1527,95 @@
           "i": "🎯",
           "l": "MITRE"
         },
+    {
+      "id": "forensics",
+      "icon": "🔬",
+      "title": "Forensia de Memoria RAM",
+      "badge": "Volatility 3 + comandos",
+      "desc": "Análisis forense de memoria volátil. El orden importa: no hagas dump de RAM y después apagues sin preservar volátil.",
+      "content": [
         {
-          "id": "forensics",
-          "i": "🔬",
-          "l": "Forensia"
+          "type": "callout",
+          "s": "i",
+          "title": "🎯 ¿Cuándo hacer RAM forensics?",
+          "body": "Cuando necesitás: (1) encontrar malware in-memory/fileless, (2) recuperar procesos ocultos/inyectados, (3) extraer credenciales de LSASS, (4) reconstruir conexiones de red activas al momento del dump, (5) detectar rootkits. NO sirve para recuperar archivos borrados (para eso está disk forensics)."
         },
+        {
+          "type": "sub",
+          "title": "Adquisición de RAM (en caliente)"
+        },
+        {
+          "type": "table",
+          "h": ["Herramienta", "Comando", "Output", "Notas"],
+          "r": [
+            ["WinPMEM (recomendado)", "winpmem_mini_x64_rc2.exe mem.raw", "mem.raw (raw format)", "Open source. Funciona en Win 7-11. No deja el sistema inestable"],
+            ["FTK Imager", "FTK Imager → File → Capture Memory", "mem.raw + pagefile.sys", "Gratuito. Lento en equipos con mucha RAM (>16GB)"],
+            ["Magnet RAM Capture", "MagnetRAMCapture.exe", "mem.raw (aff4)", "Gratuito. Fácil de usar. Output en AFF4"],
+            ["DumpIt (Comae)", "DumpIt.exe", "mem.dmp (crash dump)", "Rápido. Paga para uso comercial. Output crash dump"],
+            ["LiME (Linux)", "insmod lime.ko path=mem.lkz format=lime", "mem.lkz (lime format)", "Para Linux. Cargar como módulo de kernel. Dump en formato lime"],
+            ["Avml (Linux)", "avml mem.lime", "mem.lime", "Open source. No requiere módulo de kernel. Escribe a stdout para pipe"]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "⚠️ Reglas de oro del dump de RAM",
+          "body": "(1) Volcar a unidad DIFERENTE al sistema (USB externo, red). (2) NO apagar el sistema antes de volcar. (3) Documentar: hora exacta del dump, estado del sistema (procesos visibles, conexiones), herramientas usadas. (4) Hacer hash SHA256 del dump inmediatamente después de volcar."
+        },
+        {
+          "type": "sub",
+          "title": "Análisis con Volatility 3"
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Plugins esenciales de Volatility 3",
+            "vol -f mem.raw windows.psscan          # Procesos (incluye ocultos)",
+            "vol -f mem.raw windows.netscan         # Conexiones de red en el momento del dump",
+            "vol -f mem.raw windows.malfind          # Código inyectado en procesos",
+            "vol -f mem.raw windows.cmdline         # Línea de comandos de cada proceso",
+            "vol -f mem.raw windows.dlllist         # DLLs cargadas por proceso",
+            "vol -f mem.raw windows.modscan          # Módulos de kernel (rootkits)",
+            "vol -f mem.raw windows.cmdscan          # Comandos en consola",
+            "vol -f mem.raw windows.pstree           # Árbol de procesos",
+            "vol -f mem.raw windows.filescan         # Archivos abiertos",
+            "vol -f mem.raw windows.registry.hives   # Hives del registro cargados",
+            "vol -f mem.raw windows.hashdump         # Hashes de usuarios (SAM)",
+            "vol -f mem.raw windows.lsadump          # Secrets de LSA",
+            "",
+            "# Timeline y evidencia",
+            "vol -f mem.raw windows.timeliner        # Timeline completo de eventos",
+            "vol -f mem.raw windows.mftinfo          # Información de MFT",
+            "vol -f mem.raw windows.callbacks        # Callbacks del kernel (antivirus, rootkits)",
+            "",
+            "# Dump de procesos individuales",
+            "vol -f mem.raw windows.dumpfiles --virtaddr 0x...  # Dump de archivo específico por dirección virtual"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Análisis rápido de un dump"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {"i":"1️⃣","t":"¿Hay procesos ocultos?","d":"Ejecutar psscan y comparar con pstree. Si un proceso aparece en psscan pero no en pstree → está oculto (posible rootkit/malware).","c":"r"},
+            {"i":"2️⃣","t":"¿Hay código inyectado?","d":"Ejecutar malfind. Buscar regiones de memoria con PAGE_EXECUTE_READWRITE que no deberían tener código ejecutable.","c":"r"},
+            {"i":"3️⃣","t":"¿Credenciales en memoria?","d":"Ejecutar hashdump y lsadump. Si hay hashes NTLM en memoria, el atacante pudo haberlos extraído.","c":"y"},
+            {"i":"4️⃣","t":"¿Conexiones activas al dump?","d":"Ejecutar netscan. Buscar conexiones a IPs externas en puertos no estándar, o conexiones establecidas desde procesos inyectados.","c":"b"},
+            {"i":"5️⃣","t":"¿Líneas de comando sospechosas?","d":"Ejecutar cmdline. Buscar: -enc, IEX, DownloadString, wget, curl, powershell oculto (-w hidden).","c":"y"},
+            {"i":"6️⃣","t":"¿Rootkit a nivel kernel?","d":"Ejecutar modscan y verificar módulos contra baseline. Módulos con nombres aleatorios o sin firma digital.","c":"r"}
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "⏱️ Triage de un dump: 5 minutos",
+          "body": "Si tenés poco tiempo: psscan (procesos ocultos) → netscan (conexiones activas) → malfind (inyección) → cmdline (comandos). Esto te da el 90% de la historia. Lo demás (registry, files, timeline) es para profundizar."
+        }
+      ]
+    },
         {
           "id": "malware",
           "i": "🦠",
