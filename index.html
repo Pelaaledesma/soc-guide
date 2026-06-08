@@ -274,6 +274,7 @@ function NavGroup(props) {
 
 // ===== APP =====
 function App() {
+  // ── ALL hooks unconditionally (Rules of Hooks) ──
   var _a = React.useState(null), data = _a[0], setData = _a[1];
   var _b = React.useState(true), loading = _b[0], setLoading = _b[1];
   var _c = React.useState(null), error = _c[0], setError = _c[1];
@@ -285,6 +286,52 @@ function App() {
       .catch(function(e){ setError(e.message); setLoading(false); });
   },[]);
 
+  var _d = React.useState(function(){
+    try { return JSON.parse(localStorage.getItem('soc-guide-open')) || {triage:true,queries:true,cheat:true}; }
+    catch(e) { return {triage:true,queries:true,cheat:true}; }
+  }), openSections = _d[0], setOpenSections = _d[1];
+
+  var _e = React.useState('triage'), activeSection = _e[0], setActive = _e[1];
+  var _f = React.useState(false), sideOpen = _f[0], setSideOpen = _f[1];
+  var _g = React.useState(''), searchQ = _g[0], setSearchQ = _g[1];
+  var searchRef = React.useRef(null);
+
+  React.useEffect(function(){
+    function handler(e) {
+      if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); searchRef.current && searchRef.current.focus(); }
+      if (e.key==='Escape') { setSearchQ(''); searchRef.current && searchRef.current.blur(); }
+    }
+    document.addEventListener('keydown',handler);
+    return function(){document.removeEventListener('keydown',handler)};
+  },[]);
+
+  // Hooks that depend on data — must also be unconditional but guard inside
+  var sections = data && data.sections ? data.sections : [];
+  var navGroups = data && data.navGroups ? data.navGroups : [];
+
+  React.useEffect(function(){
+    if (!data || !data.sections) return;
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting) setActive(e.target.id)});
+    },{rootMargin:'-80px 0px -70% 0px'});
+    data.sections.forEach(function(s){
+      var el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
+    return function(){observer.disconnect()};
+  },[data]);
+
+  var filtered = React.useMemo(function(){
+    if (!data || !data.sections || !searchQ.trim()) return sections;
+    var q = searchQ.toLowerCase().trim();
+    return sections.filter(function(s){
+      return s.title.toLowerCase().includes(q) ||
+        (s.badge && s.badge.toLowerCase().includes(q)) ||
+        (s.desc && s.desc.toLowerCase().includes(q));
+    });
+  },[searchQ, data]);
+
+  // ── Early returns (safe: all hooks already ran) ──
   if (loading) return e("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg)",color:"var(--text2)",flexDirection:"column",gap:"12px"}},
     e("div",{style:{width:32,height:32,border:"3px solid var(--border)",borderTopColor:"var(--accent)",borderRadius:"50%",animation:"spin 1s linear infinite"}}),
     e("p",{style:{fontSize:".85rem"}},"Cargando...")
@@ -296,25 +343,6 @@ function App() {
   );
 
   if (!data) return null;
-  var SECTIONS = data.sections, NAV_GROUPS = data.navGroups;
-  var _React$useState = React.useState(function(){
-    try { return JSON.parse(localStorage.getItem('soc-guide-open')) || {triage:true,queries:true,cheat:true}; }
-    catch(e) { return {triage:true,queries:true,cheat:true}; }
-  }), openSections = _React$useState[0], setOpenSections = _React$useState[1];
-
-  var _React$useState2 = React.useState('triage'), activeSection = _React$useState2[0], setActive = _React$useState2[1];
-  var _React$useState3 = React.useState(false), sideOpen = _React$useState3[0], setSideOpen = _React$useState3[1];
-  var _React$useState4 = React.useState(''), searchQ = _React$useState4[0], setSearchQ = _React$useState4[1];
-  var searchRef = React.useRef(null);
-
-  React.useEffect(function(){
-    function handler(e) {
-      if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); searchRef.current && searchRef.current.focus(); }
-      if (e.key==='Escape') { setSearchQ(''); searchRef.current && searchRef.current.blur(); }
-    }
-    document.addEventListener('keydown',handler);
-    return function(){document.removeEventListener('keydown',handler)};
-  },[]);
 
   function toggleSection(id) {
     setOpenSections(function(prev){
@@ -343,27 +371,6 @@ function App() {
     if (window.innerWidth <= 900) setSideOpen(false);
   }
 
-  React.useEffect(function(){
-    var observer = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){if(e.isIntersecting) setActive(e.target.id)});
-    },{rootMargin:'-80px 0px -70% 0px'});
-    SECTIONS.forEach(function(s){
-      var el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
-    return function(){observer.disconnect()};
-  },[]);
-
-  var filtered = React.useMemo(function(){
-    if (!searchQ.trim()) return SECTIONS;
-    var q = searchQ.toLowerCase().trim();
-    return SECTIONS.filter(function(s){
-      return s.title.toLowerCase().includes(q) ||
-        (s.badge && s.badge.toLowerCase().includes(q)) ||
-        (s.desc && s.desc.toLowerCase().includes(q));
-    });
-  },[searchQ]);
-
   var mdPadding = {padding:'20px 0 10px',fontSize:'.72rem',color:'var(--text2)',textAlign:'center',borderTop:'1px solid var(--border)',marginTop:20};
   var bannerStyle = {
     background:'linear-gradient(135deg, rgba(74,158,255,.08) 0%, rgba(180,124,255,.06) 100%)',
@@ -377,14 +384,14 @@ function App() {
     e('aside',{className:'sidebar'+(sideOpen?' open':''),key:'sidebar'},
       e('div',{className:'side-hdr'},e('h1',null,'\uD83D\uDEE1\uFE0F SOC Guide'),e('span',{className:'badge'},'v4.0')),
       e('div',{className:'side-search'},e('input',{ref:searchRef,type:'text',placeholder:'Buscar... (Ctrl+K)',value:searchQ,onChange:function(e){setSearchQ(e.target.value)}})),
-      e('nav',{className:'nav'},NAV_GROUPS.map(function(g,i){return e(NavGroup,{key:i,group:g,active:activeSection,onNav:navigateTo})}))
+      e('nav',{className:'nav'},navGroups.map(function(g,i){return e(NavGroup,{key:i,group:g,active:activeSection,onNav:navigateTo})}))
     ),
     e('div',{className:'overlay'+(sideOpen?' open':''),onClick:function(){setSideOpen(false)},key:'overlay'}),
     e('div',{className:'main',key:'main'},
       e('header',{className:'topbar'},
         e('button',{className:'menu-btn',onClick:function(){setSideOpen(!sideOpen)}},'\u2630'),
         e('div',{className:'bc'},e('span',{className:'dot'}),e('span',null,'Gu\u00EDa Interactiva del SOC Analyst')),
-        e('div',{className:'stats'},e('span',null,'\uD83D\uDCDA '+SECTIONS.length+' secciones'))
+        e('div',{className:'stats'},e('span',null,'\uD83D\uDCDA '+sections.length+' secciones'))
       ),
       e('div',{className:'content'},
         !searchQ ? e('div',{style:bannerStyle},
