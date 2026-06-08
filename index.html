@@ -70,18 +70,20 @@
 
   .section-card{margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;scroll-margin-top:65px}
   .section-card:hover{border-color:var(--bg4)}
-  .section-hdr{padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;gap:12px}
-  .section-hdr:hover{background:var(--bg3)}
+  .section-hdr{padding:16px 20px;display:flex;align-items:center;gap:12px}
   .section-hdr .left{display:flex;align-items:center;gap:10px}
   .section-hdr .left .icon{font-size:1.2rem}
   .section-hdr h2{font-size:1.05rem;font-weight:600;color:var(--text)}
   .section-hdr .badge{font-size:.62rem;background:var(--bg4);color:var(--text2);padding:2px 9px;border-radius:10px;font-weight:500}
-  .section-hdr .toggle{color:var(--text2);font-size:.8rem;transition:transform .25s;flex-shrink:0}
-  .section-hdr .toggle.open{transform:rotate(180deg)}
-  .section-body{padding:0 20px 20px;display:none}
-  .section-body.open{display:block;animation:fadeIn .25s ease}
+  .section-body{padding:0 20px 20px;display:block;animation:fadeIn .25s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
   .section-intro{margin-bottom:16px}.section-intro p{color:var(--text2);font-size:.85rem;max-width:750px}
+
+  .search-hit{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+  .search-hit:hover{border-color:var(--accent)}
+  .search-hit-icon{font-size:1.3rem}
+  .search-hit-title{font-size:.9rem;font-weight:500;color:var(--text)}
+  .search-hit-desc{font-size:.75rem;color:var(--text2);margin-top:2px}
   .grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:12px 0}
   .grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:12px 0}
   .info-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px}
