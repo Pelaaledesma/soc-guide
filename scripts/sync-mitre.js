@@ -96,10 +96,14 @@ function buildMatrix(objects) {
     for (const phase of phases) {
       if (phase.kill_chain_name === 'mitre-attack') {
         if (!techByShort[phase.phase_name]) techByShort[phase.phase_name] = [];
+        const fullDesc = tech.description || '';
+        const shortDesc = fullDesc.split('. ').slice(0,2).join('. ').trim().slice(0,200)+(fullDesc.length>200?'...':'');
         techByShort[phase.phase_name].push({
           id: techId,
           name: tech.name,
+          desc: shortDesc || '',
           is_sub: tech.x_mitre_is_subtechnique || false,
+          url: tech.external_references?.[0]?.url || '',
         });
       }
     }
