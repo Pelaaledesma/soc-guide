@@ -305,24 +305,56 @@
       "id": "win-cmd",
       "icon": "💻",
       "title": "Comandos Forense Windows",
-      "badge": "PowerShell",
-      "desc": "Comandos para ejecutar en caliente durante una investigación.",
+      "badge": "12 comandos",
+      "desc": "Comandos PowerShell para ejecutar en caliente durante una investigación. Priorizá volátil primero (conexiones → procesos → tokens → luego disco).",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "📌 Orden de recolección (Volatility Order)",
+          "body": "RAM → Conexiones de red → Procesos → Scheduled Tasks → Services → Registry → Disco. Lo que está en RAM desaparece cuando apagás. NO apagues el host hasta tener esta data."
+        },
+        {
+          "type": "sub",
+          "title": "Recolección en caliente"
+        },
+        {
+          "type": "table",
+          "h": ["Objetivo", "Comando", "Qué buscar"],
+          "r": [
+            ["Conexiones activas", "Get-NetTCPConnection | Where State -eq Established", "IPs externas, puertos no estándar, procesos no navegador conectando a internet"],
+            ["Procesos con red", "Get-Process | Where {$_.TCPConnections.Count -gt 0} | Select Name,Id,Path", "Procesos sin nombre reconocible ejecutándose desde AppData/Temp"],
+            ["Scheduled tasks no-MS", "Get-ScheduledTask | Where TaskPath -notlike '\\Microsoft\\*'", "Tareas con nombres genéricos ('UpdateTask', 'SystemHealth'), triggers sospechosos"],
+            ["Servicios con paths raros", "Get-CimInstance Win32_Service | Where PathName -match '(temp|users|appdata)'", "Servicios cuyo ejecutable vive en directorios de usuario o temp"],
+            ["Persistencia Run keys", "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'", "Ejecutables con paths a AppData, nombres ofuscados, binarios sin firma"],
+            ["Startup folder", "Get-ChildItem 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'", "Archivos .lnk, .vbs, .ps1 en startup que no pusiste vos"],
+            ["RDP logins recientes", "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624;LogonType=10}", "Logins RDP desde IPs externas, en horario no laboral, o desde IPs no habituales"],
+            ["Procesos padre-hijo (EventID 4688)", "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4688} | Select TimeCreated, Properties[5].Value", "Office→cmd, PDF→powershell, browser→wscript - cualquier child process anómalo"],
+            ["Usuarios locales/administradores", "Get-LocalGroupMember Administradores", "Usuarios agregados recientemente, cuentas con nombres de servicio"],
+            ["WMI persistence", "Get-WmiObject -Namespace root\\subscription -Class __EventFilter", "Event filters que ejecutan scripts ante eventos del sistema"],
+            ["AMSI bypass check", "Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-Windows Defender/Operational';ID=5001}", "AMSI deshabilitado (5001) o desactivación de real-time protection (5007)"],
+            ["Recent files (forense)", "Get-ChildItem 'C:\\Users' -Recurse -Include '*.lnk' | Where LastWriteTime -gt (Get-Date).AddDays(-7)", "Archivos .lnk recientes en AppData\\Roaming\\Microsoft\\Windows\\Recent"]
+          ]
+        },
         {
           "type": "code",
           "lang": "powershell",
           "lines": [
-            "# Procesos con conexiones de red activas",
-            "Get-NetTCPConnection | Where-Object State -eq Established",
-            "# Scheduled tasks no-Microsoft",
-            "Get-ScheduledTask | Where-Object TaskPath -notlike \"\\Microsoft\\*\"",
-            "# Servicios con paths raros",
-            "Get-CimInstance Win32_Service | Where-Object PathName -match \"(temp|users|appdata)\"",
-            "# Run keys - persistencia",
-            "Get-ItemProperty -Path \"HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\"",
-            "# Logins remotos RDP",
-            "Get-WinEvent -FilterHashtable @{LogName=\"Security\";ID=4624;LogonType=10}"
+            "# Script completo de recolección rápida (ejecutar como Admin)",
+            "$report = \"report_$($env:COMPUTERNAME)_$(Get-Date -f yyyyMMdd_HHmm).txt\"",
+            "Get-NetTCPConnection | Out-File $report -Append",
+            "Get-Process | Select Name,Id,Path,StartTime | Sort StartTime | Out-File $report -Append",
+            "Get-ScheduledTask | Where TaskPath -notlike '\\Microsoft\\*' | Out-File $report -Append",
+            "Get-CimInstance Win32_Service | Format-Table Name,PathName,State | Out-File $report -Append",
+            "Get-LocalGroupMember Administradores | Out-File $report -Append",
+            "Write-Host 'Recolección completa en' $report"
           ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "⚠️ PSRemoting vs local",
+          "body": "Si el host no responde PSRemoting (WinRM), necesitás acceso interactivo o RDP. Como alternativa: usar psexec \\\\host -s powershell.exe o ejecutar el script via GPO/SCCM si no hay acceso directo."
         }
       ]
     },
@@ -330,58 +362,42 @@
       "id": "lolbins",
       "icon": "⚡",
       "title": "Living Off the Land Binaries",
-      "badge": "LOLBins",
+      "badge": "12 binarios",
+      "desc": "Binarios legítimos de Windows usados por atacantes para ejecución, descarga y persistencia. Si estos binarios se ejecutan desde directorios de usuario, es CRÍTICO.",
       "content": [
         {
+          "type": "callout",
+          "s": "w",
+          "title": "🔑 El patrón que mata: child process anómalo",
+          "body": "Office (WINWORD/EXCEL/OUTLOOK) → cmd/powershell/wscript = CRÍTICO. PDF → cmd.exe = CRÍTICO. Browser → any shell = CRÍTICO. No importa qué LOLBin usen — si el paren no es legítimo, el caso está abierto."
+        },
+        {
           "type": "table",
-          "h": [
-            "Binario",
-            "Uso malicioso",
-            "Qué monitorear"
-          ],
+          "h": ["Binario", "Uso malicioso", "Parent esperado", "Detección"],
           "r": [
-            [
-              "powershell.exe",
-              "Download cradle, ofuscación -enc",
-              "4104 ScriptBlock, líneas con -enc / IEX"
-            ],
-            [
-              "rundll32.exe",
-              "Cargar DLL, ejecutar JavaScript",
-              "Child process sin parent Office. Conexiones de red."
-            ],
-            [
-              "regsvr32.exe",
-              "Ejecutar .sct (Squiblydoo)",
-              "regsvr32 /s /n /u /i: con argumento URL"
-            ],
-            [
-              "mshta.exe",
-              "Ejecutar HTA malicioso",
-              "Mshta.exe desde temp/downloads"
-            ],
-            [
-              "certutil.exe",
-              "Descargar payloads, decode base64",
-              "certutil -urlcache -f, certutil -decode"
-            ],
-            [
-              "wmic.exe",
-              "Ejecución remota",
-              "wmic process call create"
-            ],
-            [
-              "bitsadmin.exe",
-              "Descarga via BITS",
-              "bitsadmin /transfer a dominio externo"
-            ]
+            ["powershell.exe", "Download cradle (IEX), ofuscación base64, in-memory execution (T1059.001)", "explorer.exe, admin legítimo", "4104 ScriptBlock, líneas con -enc / IEX / DownloadString. Correlacionar con EventID 4688 parent process"],
+            ["rundll32.exe", "Cargar DLL maliciosa, ejecutar JavaScript via URL (T1218.011)", "explorer.exe, svchost.exe", "Rundll32 con URL en argumento o desde temp. Ej: rundll32.exe javascript:\"\\..\\mshtml,RunHTMLApplication\""],
+            ["regsvr32.exe", "Ejecutar .sct remoto (Squiblydoo T1218.010)", "explorer.exe", "regsvr32 /s /n /u /i:http://... . No hay razón legítima para regsvr32 descargar algo de internet"],
+            ["mshta.exe", "Ejecutar HTA malicioso (T1218.005)", "explorer.exe", "Mshta.exe desde temp/downloads o http. Parent office/browser = CRÍTICO"],
+            ["certutil.exe", "Descargar payloads, decode base64 (T1105)", "cmd.exe, admin tasks", "certutil -urlcache -f (descarga). certutil -decode (decode base64 a binary)"],
+            ["wmic.exe", "Ejecución remota, recolectar info (T1047)", "svchost.exe", "wmic process call create (ejecución remota). wmic /node: (ejecución en host remoto)"],
+            ["bitsadmin.exe", "Descarga via BITS (T1197)", "cmd.exe, explorer.exe", "bitsadmin /transfer /download a dominio externo. BITS evade firewalls porque usa HTTP genérico"],
+            ["cscript.exe / wscript.exe", "Ejecutar .vbs, .js, .jse (T1059.005/007)", "explorer.exe, office", "Scripts desde temp/downloads/email attachments. Parent office = CRÍTICO"],
+            ["msbuild.exe", "Compilar y ejecutar C# inline (T1127.001)", "cmd.exe, devenv.exe", "Msbuild.exe ejecutando .csproj desde temp. Los atacantes compilan payloads en memoria"],
+            ["cmstp.exe", "Instalar perfil de conexión malicioso (T1218.003)", "explorer.exe", "cmstp.exe con .inf desde temp. Técnica de evasión poco monitoreada"],
+            ["msiexec.exe", "Instalar .msi malicioso remoto (T1218.007)", "explorer.exe, services.exe", "msiexec /i http://... . Instalación desde URL no esperada"],
+            ["forfiles.exe", "Ejecución condicional de binarios (T1218)", "cmd.exe, task scheduler", "Usado para ejecutar payloads con retardo o como LOLBin secundario en cadenas de ataque"]
           ]
         },
         {
+          "type": "sub",
+          "title": "Cadena de ataque típica con LOLBins"
+        },
+        {
           "type": "callout",
-          "s": "d",
-          "title": "⚠️ Regla",
-          "body": "CUALQUIER ejecución de estos binarios desde %TEMP%, %APPDATA% o %USERPROFILE% merece investigación inmediata."
+          "s": "w",
+          "title": "🚨 Ejemplo: phishing → LOLBin → C2",
+          "body": "1. User abre adjunto Excel. 2. Excel ejecuta mshta.exe desde temp. 3. mshta.exe descarga y ejecuta HTA con PowerShell. 4. PowerShell corre IEX (Net.WebClient.DownloadString) → C2. Cada paso usa un binario legítimo. La detección está en las relaciones: OFFICE→MSHTA→POWERSHELL."
         }
       ]
     },
@@ -389,33 +405,57 @@
       "id": "linux-cmd",
       "icon": "🐧",
       "title": "Comandos Forense Linux",
-      "badge": "Bash",
-      "desc": "Para investigación en caliente de endpoints Linux.",
+      "badge": "12 comandos",
+      "desc": "Comandos para recolección en caliente de endpoints Linux. Priorizá: procesos → red → persistencia → disco.",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "📌 Diferencia clave con Windows",
+          "body": "En Linux el atacante suele tener acceso root si llegó a explotar. No confíes en los comandos del sistema si sospechás rootkit — usá herramientas estáticas desde un medio externo (statically compiled busybox, chkrootkit desde USB)."
+        },
+        {
+          "type": "table",
+          "h": ["Objetivo", "Comando", "Qué buscar"],
+          "r": [
+            ["Procesos ocultos", "ps auxf", "Procesos con nombres similares a system (scvhost en vez de sshd), procesos corriendo como root sin razón"],
+            ["Binarios eliminados en ejecución", "ls -la /proc/*/exe 2>/dev/null | grep '(deleted)'", "Malware que se autoborra después de ejecutarse. El binary ya no existe en disco pero sigue en memoria"],
+            ["Archivos en /dev/shm (tmpfs)", "ls -la /dev/shm/", "/dev/shm es memoria RAM. Atacantes dejan payloads ahí para no escribir a disco. Si hay algo, es sospechoso"],
+            ["Módulos de kernel", "lsmod | sort", "Rootkits a nivel kernel se esconden como módulos. Comparar con baseline de módulos legítimos del servidor"],
+            ["Conexiones de red activas", "ss -tunap", "IPs en puertos no estándar, conexiones a países donde la empresa no opera, procesos con netstat -ss no visible"],
+            ["Persistencia cron", "ls -la /etc/cron* /var/spool/cron/crontabs/", "Crontabs de root o usuarios de servicio que no deberían tener. Entradas con wget, curl, bash -c"],
+            ["Archivos SUID (privesc)", "find / -perm -4000 -type f 2>/dev/null", "Binarios SUID no estándar. Atacantes dejan copias de /bin/bash con SUID para backdoor"],
+            ["Historial de comandos", "cat ~/.bash_history | grep -E '(wget|curl -o|nc |bash -i|python -c)'", "Comandos de descarga y reverse shell. Atacantes suelen limpiar el history — si está vacío siendo root, es sospechoso"],
+            ["Logins recientes", "last -5 && lastb -5", "Logins desde IPs externas fuera de horario. lastb muestra intentos fallidos"],
+            ["Procesos sin binary en disco", "for p in /proc/*/exe; do readlink $p 2>/dev/null; done | grep '(deleted)'", "Malware fileless o que se borró. Si un proceso no tiene binary, está siendo ejecutado desde memoria"],
+            ["Systemd services nuevos", "systemctl list-units --type=service --state=running | grep -v systemd", "Servicios con nombres genéricos o que no forman parte del baseline del servidor"],
+            ["Archivos con puertas traseras", "find /usr -name '*.so' -newer /etc/passwd -type f 2>/dev/null", "Librerías compartidas modificadas recientemente = posible LD_PRELOAD rootkit"]
+          ]
+        },
         {
           "type": "code",
           "lang": "bash",
           "lines": [
-            "# Procesos ocultos",
-            "ps auxf",
-            "ls -la /proc/*/exe 2>/dev/null | grep -E \"(deleted|tmp|dev/shm)\"",
-            "# Módulos de kernel (rootkits)",
-            "lsmod | sort",
-            "# Archivos modificados últimas 24h",
-            "find / -xdev -mtime -1 -type f -not -path \"/proc/*\" -not -path \"/sys/*\" 2>/dev/null",
-            "# Persistencia via cron",
-            "ls -la /etc/cron* /var/spool/cron/crontabs/",
-            "# Conexiones de red activas",
-            "ss -tunap",
-            "# Archivos SUID (privilege escalation)",
-            "find / -perm -4000 -type f 2>/dev/null",
-            "# Comandos sospechosos en history",
-            "cat ~/.bash_history 2>/dev/null | grep -E \"(wget|curl -o|nc |bash -i|python -c)\"",
-            "# Archivos en /dev/shm",
-            "ls -la /dev/shm/",
-            "# Últimos logins",
-            "last -10"
+            "# Recolección rápida todo-en-uno",
+            "echo '=== PROCESOS ===' >> /tmp/forensic.txt",
+            "ps auxf >> /tmp/forensic.txt",
+            "echo '=== RED ===' >> /tmp/forensic.txt",
+            "ss -tunap >> /tmp/forensic.txt",
+            "echo '=== CRON ===' >> /tmp/forensic.txt",
+            "cat /etc/crontab /etc/cron.*/* 2>/dev/null >> /tmp/forensic.txt",
+            "echo '=== ARCHIVOS SUID ===' >> /tmp/forensic.txt",
+            "find / -perm -4000 -type f 2>/dev/null >> /tmp/forensic.txt",
+            "echo '=== MODULOS KERNEL ===' >> /tmp/forensic.txt",
+            "lsmod >> /tmp/forensic.txt",
+            "echo '=== LOGINS ===' >> /tmp/forensic.txt",
+            "last -20 >> /tmp/forensic.txt"
           ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "⚠️ Rootkits: no confíes en nada",
+          "body": "Si hay un rootkit a nivel kernel, lsmod, ps y ss pueden mentir. Señales de rootkit: procesos invisibles en ps pero visibles en /proc, módulos de kernel con nombres aleatorios, diferencias entre netstat y ss, CPU alta sin proceso visible."
         }
       ]
     },
@@ -423,37 +463,53 @@
       "id": "linux-logs",
       "icon": "📝",
       "title": "Logs Críticos en Linux",
-      "badge": "Ubicaciones",
+      "badge": "Ubicaciones + detección",
+      "desc": "Archivos de log esenciales y qué buscar en cada uno durante una investigación.",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "📌 journalctl vs archivos de texto",
+          "body": "Las distros modernas usan systemd-journald. Los logs están en binary, no en texto. Usá 'journalctl' en vez de leer archivos. Los logs en texto (auth.log, syslog) pueden estar en /var/log/ o en /run/systemd/journal/ dependiendo de la configuración de rsyslog."
+        },
+        {
           "type": "table",
-          "h": [
-            "Archivo",
-            "Qué contiene",
-            "Comando rápido"
-          ],
+          "h": ["Archivo/Comando", "Qué contiene", "Qué buscar", "Frecuencia"],
           "r": [
-            [
-              "/var/log/auth.log",
-              "Autenticaciones SSH, sudo, login",
-              "grep \"Failed password\" auth.log | awk '{print $11}' | sort | uniq -c | sort -rn"
-            ],
-            [
-              "/var/log/syslog",
-              "Eventos del sistema",
-              "grep -i \"error|fail|critical\" syslog"
-            ],
-            [
-              "/var/log/audit/audit.log",
-              "Auditd: execve, syscalls",
-              "ausearch -m execve -ts today"
-            ],
-            [
-              "dmesg",
-              "Buffer de kernel",
-              "dmesg --level=err,warn"
-            ]
+            ["journalctl -u sshd", "Intentos de conexión SSH", "Failed password, Invalid user, conexiones desde IPs no autorizadas", "Crítico"],
+            ["/var/log/auth.log", "Autenticaciones: SSH, sudo, su, login", "sudo: session opened for root sin ser admin, Failed password para users válidos (spraying)", "Crítico"],
+            ["/var/log/syslog / messages", "Eventos del sistema", "Errores de servicios, OOM killer, mensajes de kernel inesperados", "Alta"],
+            ["/var/log/audit/audit.log", "Auditd: execve, syscalls (T1059, T1055)", "Ejecución de comandos sospechosos (wget, curl, nc, python -c), cambios a archivos binarios", "Crítica"],
+            ["/var/log/kern.log", "Mensajes del kernel", "Módulos de kernel cargados inesperadamente (posible rootkit), errores de memoria", "Alta"],
+            ["/var/log/btmp", "Intentos de login fallidos", "Brute force SSH. Usar 'lastb' para leerlo", "Media"],
+            ["/var/log/wtmp", "Historial de logins exitosos", "Logins desde IPs inusuales, fuera de horario. Usar 'last' para leerlo", "Alta"],
+            ["/var/log/dpkg.log", "Paquetes instalados/actualizados", "Paquetes instalados sin coordinación, versiones downgrade (posible supply chain)", "Media"],
+            ["journalctl -k", "Mensajes del kernel (arranque)", "Errores de drivers, módulos cargados, memoria reservada", "Baja"],
+            ["/var/log/faillog", "Fallos de autenticación acumulativos", "Usuarios con múltiples fallos, indicadores de password spraying", "Media"]
           ]
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Buscar intentos de SSH desde IPs externas",
+            "journalctl _COMM=sshd --since '24 hours ago' | grep 'Failed password' | awk '{print $11}' | sort | uniq -c | sort -rn",
+            "",
+            "# Buscar ejecución de comandos peligrosos via auditd",
+            "ausearch -m execve -ts yesterday -i | grep -E '(wget|curl -o|chmod \+x|python -c|bash -i)'",
+            "",
+            "# Ver logins exitosos sospechosos",
+            "last -10 -i | awk '{print $1,$3}' | grep -vE '(127\\.0\\.|192\\.168\\.|10\\.)'",
+            "",
+            "# Buscar modificaciones a binarios del sistema vía auditd",
+            "ausearch -m path -ts yesterday -i | grep -E '(/bin/|/sbin/|/usr/bin/)' | grep -i 'write\\|openat'"
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🔥 auditd: tu mejor amigo en Linux forense",
+          "body": "Si auditd está corriendo, tenés un registro de TODOS los comandos ejecutados via execve. Esto es ORO. Sin auditd, estás limitado a bash_history que el atacante puede haber limpiado. Configurá auditd con reglas como: -w /bin -p wa -k binary-changes"
         }
       ]
     },
