@@ -1,22 +1,19 @@
 #!/usr/bin/env node
 /**
- * sync-mitre.js — Sync MITRE ATT&CK data into data/sections.json
+ * sync-mitre.js — Sync real MITRE ATT&CK tactics + techniques into data/
  *
  * Usage:
  *   node scripts/sync-mitre.js               # dry-run (show changes)
  *   node scripts/sync-mitre.js --apply        # write updates
- *   node scripts/sync-mitre.js --light        # use built-in list (no network)
+ *   node scripts/sync-mitre.js --light        # use built-in fallback list
  *   node scripts/sync-mitre.js --light --apply
+ *   node scripts/sync-mitre.js --force-fetch  # re-download bundle
  *
  * Fetches from: https://raw.githubusercontent.com/mitre/cti/master/
- *   enterprise-attack/enterprise-attack.json  (full STIX bundle, ~47MB)
+ *   enterprise-attack/enterprise-attack.json
  *
- * Cached in .cache/ after first fetch. Subsequent runs reuse cache.
- * Use --force-fetch to re-download.
- *
- * The --light flag skips the network fetch entirely and uses a built-in
- * fallback tactic list (updated 2025-12). Useful for environments without
- * network access or when you just want to update the mitreTactics format.
+ * Cached in .cache/ after first fetch (enterprise-bundle.json, ~47MB).
+ * Subsequent runs reuse cache. Use --force-fetch to re-download.
  */
 
 const fs = require('fs');
@@ -27,22 +24,22 @@ const CACHE_DIR = path.join(__dirname, '..', '.cache');
 const BUNDLE_URL =
   'https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json';
 
-// Built-in fallback (enterprise tactics, updated 2025-12)
+// Built-in fallback tactics (enterprise, updated 2025-12)
 const BUILTIN_TACTICS = [
-  {id:'TA0043',n:'Reconnaissance'},
-  {id:'TA0042',n:'Resource Development'},
-  {id:'TA0001',n:'Initial Access'},
-  {id:'TA0002',n:'Execution'},
-  {id:'TA0003',n:'Persistence'},
-  {id:'TA0004',n:'Privilege Escalation'},
-  {id:'TA0005',n:'Defense Evasion'},
-  {id:'TA0006',n:'Credential Access'},
-  {id:'TA0007',n:'Discovery'},
-  {id:'TA0008',n:'Lateral Movement'},
-  {id:'TA0009',n:'Collection'},
-  {id:'TA0011',n:'Command and Control'},
-  {id:'TA0010',n:'Exfiltration'},
-  {id:'TA0040',n:'Impact'},
+  { id: 'TA0001', n: 'Initial Access' },
+  { id: 'TA0002', n: 'Execution' },
+  { id: 'TA0003', n: 'Persistence' },
+  { id: 'TA0004', n: 'Privilege Escalation' },
+  { id: 'TA0005', n: 'Defense Evasion' },
+  { id: 'TA0006', n: 'Credential Access' },
+  { id: 'TA0007', n: 'Discovery' },
+  { id: 'TA0008', n: 'Lateral Movement' },
+  { id: 'TA0009', n: 'Collection' },
+  { id: 'TA0010', n: 'Exfiltration' },
+  { id: 'TA0011', n: 'Command and Control' },
+  { id: 'TA0040', n: 'Impact' },
+  { id: 'TA0042', n: 'Resource Development' },
+  { id: 'TA0043', n: 'Reconnaissance' },
 ];
 
 // ─── CLI flags ───────────────────────────────────────────────────────────────
@@ -72,17 +69,67 @@ function writeCache(key, data) {
   fs.writeFileSync(path.join(CACHE_DIR, key + '.json'), JSON.stringify(data));
 }
 
+// ─── Build matrix from bundle objects ────────────────────────────────────────
+function buildMatrix(objects) {
+  // Tactics
+  const tactics = objects
+    .filter(obj => obj.type === 'x-mitre-tactic')
+    .map(obj => ({
+      short: obj.x_mitre_shortname,
+      name: obj.name,
+      id: obj.external_references?.[0]?.external_id,
+    }))
+    .filter(t => t.id && t.id.startsWith('TA'))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  // Map shortname -> { id, name }
+  const shortTo = {};
+  for (const t of tactics) shortTo[t.short] = t;
+
+  // Techniques grouped by tactic shortname
+  const techByShort = {};
+  const patterns = objects.filter(obj => obj.type === 'attack-pattern');
+  for (const tech of patterns) {
+    const phases = tech.kill_chain_phases || [];
+    const techId = tech.external_references?.[0]?.external_id || '';
+    if (!techId) continue;
+    for (const phase of phases) {
+      if (phase.kill_chain_name === 'mitre-attack') {
+        if (!techByShort[phase.phase_name]) techByShort[phase.phase_name] = [];
+        techByShort[phase.phase_name].push({
+          id: techId,
+          name: tech.name,
+          is_sub: tech.x_mitre_is_subtechnique || false,
+        });
+      }
+    }
+  }
+
+  // Sort techniques within each tactic
+  for (const short of Object.keys(techByShort)) {
+    techByShort[short].sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  // Build final matrix
+  return tactics.map(t => ({
+    id: t.id,
+    name: t.name,
+    techniques: techByShort[t.short] || [],
+  }));
+}
+
 // ─── Sync ────────────────────────────────────────────────────────────────────
 async function sync() {
-  log('Syncing MITRE ATT&CK enterprise tactics...');
+  log('Syncing MITRE ATT&CK tactics + techniques...');
 
-  // Step 1: Get tactics list
-  let tactics, objects;
+  // Step 1: Get tactics list + techniques
+  let mitreMatrix = [];
   if (LIGHT) {
-    log('Using built-in tactic list (--light). No network fetch.');
-    tactics = BUILTIN_TACTICS;
+    log('Using built-in tactic list (--light). NO TECHNIQUES will be synced.');
+    const tactics = BUILTIN_TACTICS.map(t => ({ id: t.id, name: t.n, techniques: [] }));
+    mitreMatrix = tactics;
   } else {
-    log('Fetching/stix bundle...');
+    log('Fetching STIX bundle...');
     const cacheKey = 'enterprise-bundle';
     const cached = !FORCE_FETCH ? readCache(cacheKey) : null;
     const bundle = cached || await fetchJSON(BUNDLE_URL);
@@ -90,78 +137,63 @@ async function sync() {
       writeCache(cacheKey, bundle);
       log(`Cached to .cache/${cacheKey}.json`);
     }
-    objects = bundle.objects || bundle;
-
-    tactics = objects
-      .filter(obj => obj.type === 'x-mitre-tactic')
-      .map(obj => ({
-        id: obj.x_mitre_shortname || '',
-        name: obj.name || '',
-      }))
-      .filter(t => t.id.startsWith('TA'))
-      .sort((a, b) => a.id.localeCompare(b.id));
+    const objects = bundle.objects || bundle;
+    mitreMatrix = buildMatrix(objects);
+    log(`Built matrix: ${mitreMatrix.length} tactics, ${mitreMatrix.reduce((s,t)=>s+t.techniques.length,0)} techniques`);
   }
 
-  if (tactics.length === 0) {
+  if (mitreMatrix.length === 0) {
     log('WARNING: No tactics found. Using built-in fallback.');
-    tactics = BUILTIN_TACTICS;
+    mitreMatrix = BUILTIN_TACTICS.map(t => ({ id: t.id, name: t.n, techniques: [] }));
   }
 
-  // Step 2: Count techniques per tactic (only available with full bundle)
-  let techCounts = {};
-  if (objects) {
-    const techniques = objects.filter(obj => obj.type === 'attack-pattern');
-    for (const tech of techniques) {
-      const phases = tech.kill_chain_phases || [];
-      for (const phase of phases) {
-        if (phase.kill_chain_name === 'mitre-attack') {
-          techCounts[phase.phase_name] = (techCounts[phase.phase_name] || 0) + 1;
-        }
-      }
-    }
-    log(`Counted ${techniques.length} attack-patterns across ${Object.keys(techCounts).length} tactics.`);
-  } else {
-    log('Skipping technique count (--light mode or no bundle data).');
-  }
+  // Step 2: Also build the flat mitreTactics list
+  const newTactics = mitreMatrix.map(t => ({ id: t.id, n: t.name }));
 
   // Step 3: Load current data and diff
   const current = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
+  const oldMatrix = current.mitreMatrix || [];
   const oldTactics = current.mitreTactics || [];
 
-  const newTactics = tactics.map(t => ({
-    id: t.id,
-    n: t.name || t.n,
-    ...(techCounts[t.id] ? { c: techCounts[t.id] } : {}),
-  }));
-
-  const oldMap = {};
-  for (const t of oldTactics) oldMap[t.id] = t;
-
+  // Diff tactics
   let changes = 0;
+  const oldTMap = {};
+  for (const t of oldTactics) oldTMap[t.id] = t;
   for (const t2 of newTactics) {
-    const t1 = oldMap[t2.id];
+    const t1 = oldTMap[t2.id];
     if (!t1) {
-      log(`  + NEW tactic: ${t2.id} ${t2.n}${t2.c ? ' ('+t2.c+' techs)' : ''}`);
+      log(`  + NEW tactic: ${t2.id} ${t2.n}`);
       changes++;
     } else if (t1.n !== t2.n) {
-      log(`  ~ UPDATED ${t2.id}: "${t1.n}" → "${t2.n}"`);
-      changes++;
-    } else if (t1.c !== t2.c) {
-      log(`  ~ TECH COUNT ${t2.id}: ${t1.c||0} → ${t2.c}`);
+      log(`  ~ RENAMED ${t2.id}: "${t1.n}" → "${t2.n}"`);
       changes++;
     }
   }
-  const newMap = {};
-  for (const t of newTactics) newMap[t.id] = t;
+  const newTMap = {};
+  for (const t of newTactics) newTMap[t.id] = t;
   for (const t of oldTactics) {
-    if (!newMap[t.id]) {
+    if (!newTMap[t.id]) {
       log(`  - REMOVED tactic: ${t.id} ${t.n}`);
       changes++;
     }
   }
 
+  // Diff technique counts
+  const oldTechCount = {};
+  for (const t of oldMatrix) {
+    oldTechCount[t.id] = (t.techniques || []).length;
+  }
+  for (const t of mitreMatrix) {
+    const oldCount = oldTechCount[t.id] || 0;
+    const newCount = t.techniques.length;
+    if (oldCount !== newCount) {
+      log(`  ~ TECH COUNT ${t.id}: ${oldCount} → ${newCount}${newCount > oldCount ? ' (+'+(newCount-oldCount)+')' : ' ('+(newCount-oldCount)+')'}`);
+      changes++;
+    }
+  }
+
   if (changes === 0) {
-    log('No changes — MITRE tactics are up to date.');
+    log('No changes — MITRE data is up to date.');
     return;
   }
 
@@ -172,8 +204,9 @@ async function sync() {
   }
 
   current.mitreTactics = newTactics;
+  current.mitreMatrix = mitreMatrix;
   fs.writeFileSync(DATA_PATH, JSON.stringify(current, null, 2) + '\n', 'utf8');
-  log(`✅ Updated — ${changes} change(s). New: ${newTactics.length} tactics synced.`);
+  log(`✅ Updated — ${changes} change(s). ${mitreMatrix.length} tactics with ${mitreMatrix.reduce((s,t)=>s+t.techniques.length,0)} techniques synced.`);
 }
 
 sync().catch(err => {

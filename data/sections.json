@@ -693,7 +693,7 @@
       "id": "mitre",
       "icon": "🎯",
       "title": "MITRE ATT&CK",
-      "badge": "15 tácticas",
+      "badge": "858 técnicas",
       "content": [
         {
           "type": "mitre"
