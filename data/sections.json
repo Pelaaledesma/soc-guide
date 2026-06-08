@@ -517,99 +517,73 @@
       "id": "network",
       "icon": "🌐",
       "title": "Análisis de Red",
-      "badge": "7 preguntas",
-      "desc": "Indicadores de compromiso en tráfico de red.",
+      "badge": "Detectives",
+      "desc": "Indicadores de compromiso en tráfico de red. Usá Zeek/Bro, Suricata, o NetFlow para capturar estos patrones.",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🧠 La red no miente",
+          "body": "El atacante puede borrar logs locales, modificar procesos, hasta limpiar bash_history. Pero NO puede esconder el tráfico de red que salió de su host (a menos que use packet encryption + sleep). La red es la fuente de verdad más confiable."
+        },
+        {
+          "type": "sub",
+          "title": "Indicadores de compromiso en tráfico"
+        },
         {
           "type": "grid",
           "items": [
-            {
-              "i": "🔄",
-              "t": "Beaconing",
-              "d": "Tráfico periódico a IP externa (C2). Mismo intervalo, mismo payload size.",
-              "g": "C2",
-              "c": "r"
-            },
-            {
-              "i": "🌐",
-              "t": "DGA Domains",
-              "d": "Dominios aleatorios, TLDs raros (.xyz, .top, .gq). Alta entropía.",
-              "g": "C2",
-              "c": "r"
-            },
-            {
-              "i": "📤",
-              "t": "Data Exfil",
-              "d": "Tráfico saliente anómalo en volumen, horario (3 AM), puerto no estándar.",
-              "g": "Exfil",
-              "c": "r"
-            },
-            {
-              "i": "🔁",
-              "t": "DNS Tunneling",
-              "d": "Subdominios largos de alta entropía. Respuestas DNS > 200B.",
-              "g": "Túnel",
-              "c": "o"
-            },
-            {
-              "i": "🔍",
-              "t": "Port Scan",
-              "d": "Múltiples conexiones a distintos puertos en poco tiempo.",
-              "g": "Recon",
-              "c": "y"
-            },
-            {
-              "i": "📦",
-              "t": "Protocol Anomaly",
-              "d": "HTTP en puerto 22, SSH en 443, DNS sobre TCP sin consulta.",
-              "g": "Anómalo",
-              "c": "o"
-            }
+            {"i":"🔄","t":"Beaconing (C2)","d":"Tráfico periódico a IP externa con intervalos regulares. Mismo payload size, mismo intervalo +-jitter. No hay actividad humana porque no hay tráfico de fondo.","c":"r","g":"T1071"},
+            {"i":"🌐","t":"DGA Domains","d":"Dominios generados algorítmicamente: alta entropía, TLDs raros (.xyz, .top, .gq, .cf), subdominios largos. Consultas a dominios que no existen o que rotan cada hora.","c":"r","g":"T1568"},
+            {"i":"📤","t":"Exfiltración de datos","d":"Tráfico saliente anómalo en volumen (GB), horario no laboral (3 AM), puerto no estándar, protocolo no habitual (DNS con datos, HTTP con POST grandes, ICMP con payload).","c":"r","g":"T1041"},
+            {"i":"🔁","t":"DNS Tunneling","d":"Consultas DNS con subdominios extremadamente largos (60+ chars), alta frecuencia a un mismo dominio, respuestas DNS con tamaño > 200 bytes (más que una IP).","c":"o","g":"T1572"},
+            {"i":"🔍","t":"Port Scan / Recon","d":"Conexiones secuenciales a múltiples puertos desde una misma IP en poco tiempo. SYN scan, FIN scan. También: conexiones a puertos cerrados (ICMP unreachable).","c":"y","g":"T1595"},
+            {"i":"📦","t":"Protocol Anomaly","d":"HTTP en puerto 22, SSH en puerto 443, DNS sobre TCP sin consulta previa, tráfico en puerto no asignado. Casi siempre es C2 usando protocolo no estándar para evadir firewalls.","c":"o","g":"T1571"}
           ]
         },
         {
+          "type": "sub",
+          "title": "Las 7 preguntas del analista de red"
+        },
+        {
           "type": "table",
-          "h": [
-            "#",
-            "Pregunta",
-            "Cómo responder"
-          ],
+          "h": ["#", "Pregunta", "Cómo responder", "Herramienta"],
           "r": [
-            [
-              "1",
-              "¿Conexiones a IPs maliciosas conocidas?",
-              "Correlacionar con OTX, VirusTotal, GreyNoise"
-            ],
-            [
-              "2",
-              "¿Tráfico en puertos no estándar?",
-              "Buscar servicios conocidos en puertos >1024"
-            ],
-            [
-              "3",
-              "¿Patrón humano o automatizado?",
-              "Automático = mismo intervalo + payload size"
-            ],
-            [
-              "4",
-              "¿Certificados TLS sospechosos?",
-              "Self-signed, expired, mismatch, issuer inusual"
-            ],
-            [
-              "5",
-              "¿DNS queries legítimos?",
-              "Alta entropía, TTLs inusuales, NXDOMAIN alto"
-            ],
-            [
-              "6",
-              "¿Tráfico en horarios no laborales?",
-              "Conexiones fuera del horario del usuario"
-            ],
-            [
-              "7",
-              "¿HTTP User-Agent inusual?",
-              "Vacío, Python-requests, curl sin navegador"
-            ]
+            ["1", "¿Conexiones a IPs maliciosas conocidas?", "Correlacionar IPs destino con threat intel feeds (OTX, VirusTotal, GreyNoise). IPs con score alto + tráfico periódico = C2", "VT, OTX, GreyNoise"],
+            ["2", "¿Tráfico en puertos no estándar?", "Servicios conocidos (HTTP, SSH, DNS, RDP) en puertos >1024. O cualquier puerto no asignado por IANA. Capturar muestra del tráfico y analizar", "Tcpdump, Wireshark, Zeek"],
+            ["3", "¿Patrón humano o automatizado?", "Humano: horario laboral, tráfico variado (navegación, email, chat). Automático: mismo intervalo exacto (o con jitter), mismo payload size, sin tráfico de fondo entre beats", "Zeek conn.log, time series plot"],
+            ["4", "¿Certificados TLS sospechosos?", "Self-signed, expired, issuer no conocido, SAN con dominios genéricos (cloudfront, azure sin tenant), mismatch entre SNI y host real", "Zeek ssl.log, JA3/S scans"],
+            ["5", "¿DNS queries legítimos?", "Dominios de alta entropía (DGA), TTLs inusualmente cortos (<300), rate de NXDOMAIN alto (>20%), consultas a dominios no existentes", "Zeek dns.log, Passive DNS"],
+            ["6", "¿Tráfico en horarios no laborales?", "Conexiones salientes fuera del horario del usuario. Correlacionar con Office 365 login log para ver si el user estaba activo", "Zeek conn.log + timestamps"],
+            ["7", "¿User-Agent HTTP inusual?", "Vacío, Python-requests, Go-http-client, curl, wget, o navegador antiguo. Navegadores modernos mandan User-Agent completo con versión", "Zeek http.log, Suricata HTTP log"]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🔴 Beaconing: el patrón que delata C2",
+          "body": "Los beacons C2 suelen tener: (1) intervalo fijo con jitter de ±30%, (2) payload size constante (+-200 bytes), (3) sin tráfico de usuario entre beats, (4) destino a IP/domino no categorizado, (5) mismo protocolo siempre. Buscá en Zeek conn.log hosts donde la duración y el tamaño de paquete sean casi idénticos en cada conexión."
+        },
+        {
+          "type": "sub",
+          "title": "PCAP analysis quick-start"
+        },
+        {
+          "type": "code",
+          "lang": "bash",
+          "lines": [
+            "# Comandos rápidos para análisis de PCAP",
+            "tcpdump -nnr capture.pcap | awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -rn | head -20",
+            "# → IPs con más tráfico (top talkers)",
+            "",
+            "tshark -nr capture.pcap -Y 'http.request' -T fields -e http.host -e http.request.uri | sort | uniq -c | sort -rn | head -20",
+            "# → Dominios HTTP visitados",
+            "",
+            "tshark -nr capture.pcap -Y 'tls.handshake.type == 1' -T fields -e tls.handshake.extensions_server_name | sort | uniq -c | sort -rn | head -20",
+            "# → SNI de conexiones TLS",
+            "",
+            "tshark -nr capture.pcap -Y 'dns' -T fields -e dns.qry.name | sort | uniq -c | sort -rn | head -30",
+            "# → Consultas DNS (buscar DGA: alta entropía, TLDs raros)"
           ]
         }
       ]
@@ -619,8 +593,14 @@
       "icon": "⚡",
       "title": "Queries Útiles",
       "badge": "KQL / SPL / ESQL",
-      "desc": "Queries prácticos para los SIEM más usados.",
+      "desc": "Queries listos para copiar y pegar en Sentinel, Splunk o Elastic. Organizados por táctica de detección.",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "💡 Cómo usar estas queries",
+          "body": "No ejecutes queries sin modificar — adaptá los nombres de tabla según tu data source. En Sentinel son DeviceProcessEvents/DeviceNetworkEvents. En Splunk podés tener índices como 'windows', 'endpoint', 'network'. En Elastic depende del integration."
+        },
         {
           "type": "tabs",
           "tabs": [
@@ -628,55 +608,163 @@
               "label": "KQL (Sentinel)",
               "lang": "kql",
               "lines": [
-                "# Office spawn -> proceso hijo (phishing)",
+                "// ── Exec ──────────────────────────────────────────",
+                "// Office spawn -> proceso hijo (T1566 + T1204)",
                 "let Office = dynamic([\"winword.exe\",\"excel.exe\",\"outlook.exe\"]);",
-                "let LOL = dynamic([\"powershell.exe\",\"cmd.exe\",\"rundll32.exe\",\"mshta.exe\"]);",
+                "let LOL = dynamic([\"powershell\",\"cmd\",\"rundll32\",\"mshta\",\"wscript\",\"cscript\"]);",
                 "DeviceProcessEvents",
                 "| where InitiatingProcessFileName has_any Office and FileName has_any LOL",
                 "| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName",
                 "",
-                "# Lateral movement via RDP",
+                "// PowerShell download cradle (T1059.001)",
+                "DeviceProcessEvents",
+                "| where FileName == \"powershell.exe\"",
+                "| where ProcessCommandLine has_any (\"DownloadString\", \"Invoke-WebRequest\", \"Net.WebClient\")",
+                "| project Timestamp, DeviceName, ProcessCommandLine, InitiatingProcessFileName",
+                "",
+                "// ── Credential Access ────────────────────────────",
+                "// Acceso a LSASS (T1003.001)",
+                "DeviceProcessEvents",
+                "| where FileName in~ (\"procdump.exe\", \"procdump64.exe\") or ProcessCommandLine has \"comsvcs.dll\"",
+                "| project Timestamp, DeviceName, FileName, ProcessCommandLine",
+                "",
+                "// ── Lateral Movement ────────────────────────────",
+                "// RDP connections (T1021.001)",
                 "DeviceNetworkEvents",
                 "| where RemotePort == 3389 and ActionType == \"ConnectionSuccess\"",
-                "| summarize Count = count() by DeviceName, RemoteIP, LocalIP",
-                "| where Count > 3"
+                "| summarize Count = count() by DeviceName, RemoteIP, LocalIP, bin(Timestamp, 1h)",
+                "| where Count > 3",
+                "",
+                "// ── Persistence ────────────────────────────────",
+                "// Scheduled tasks creation (T1053.005)",
+                "DeviceProcessEvents",
+                "| where ProcessCommandLine has \"schtasks\" and ProcessCommandLine has \"/create\"",
+                "| project Timestamp, DeviceName, AccountName, ProcessCommandLine",
+                "",
+                "// ── Defense Evasion ────────────────────────────",
+                "// Security log cleared (T1070.001)",
+                "SecurityEvent",
+                "| where EventID == 1102 or EventID == 1105",
+                "| project TimeGenerated, Account, Computer, Activity"
               ]
             },
             {
               "label": "SPL (Splunk)",
               "lang": "spl",
               "lines": [
-                "# Procesos hijos de Office",
+                "# ── Execution ──────────────────────────────────",
+                "# Process creation con parent office (T1566)",
                 "index=windows EventCode=4688 (ParentProcess=\"winword.exe\" OR ParentProcess=\"excel.exe\" OR ParentProcess=\"outlook.exe\")",
-                "| table _time, host, Account_Name, ProcessName, ParentProcess, CommandLine",
-                "# Password spraying",
+                "| table _time, host, Account_Name, ProcessName, CommandLine",
+                "",
+                "# Password spraying detection (T1110)",
                 "index=windows EventCode=4625",
                 "| bucket _time span=5m",
                 "| stats count by _time, Account_Name, Source_Network_Address",
-                "| where count > 10",
-                "# DNS queries DGA",
+                "| where count > 10 | sort - count",
+                "",
+                "# ── C2 ────────────────────────────────────────",
+                "# DNS queries: high entropy (DGA detection T1568)",
                 "index=dns",
-                "| eval entropy=len(query)-len(replace(query, \"[a-z]\", \"\"))",
-                "| where len(query) > 20 AND entropy > 10"
+                "| eval entropy=len(query)-len(replace(query, \"[a-z0-9]\", \"\"))",
+                "| where len(query) > 25 AND entropy > 12",
+                "| stats count by query, src_ip | sort - count",
+                "",
+                "# Beaconing detection via time series",
+                "index=proxy OR index=netflow",
+                "| bin _time span=1h",
+                "| stats count by _time, src_ip, dest_ip | where count < 50 AND count > 2",
+                "| eval hour=strftime(_time, \"%H\") | where hour < 7 OR hour > 19",
+                "| stats dc(hour) by src_ip, dest_ip | where dc(hour) > 3",
+                "",
+                "# ── Exfiltration ─────────────────────────────",
+                "# Large outbound connections (T1041)",
+                "index=proxy",
+                "| stats sum(bytes_out) as total by src_ip, dest_ip, _time",
+                "| where total > 10000000 | sort - total"
               ]
             },
             {
               "label": "ESQL (Elastic)",
               "lang": "esql",
               "lines": [
-                "// Procesos desde directorios temporales",
+                "// ── Execution ──────────────────────────────────",
+                "// Process from temp directory (T1204)",
                 "FROM logs-endpoint.events.process-*",
                 "| WHERE STARTS_WITH(process.executable, \"C:\\\\Users\\\\\")",
                 "    AND process.executable LIKE \"*\\\\AppData\\\\Local\\\\Temp\\\\*\"",
-                "| STAT count = COUNT() BY host.hostname, process.name",
+                "| STAT count = COUNT() BY host.hostname, process.name, process.executable",
+                "| SORT count DESC | LIMIT 50",
                 "",
-                "// Conexiones salientes a puertos no estándar",
+                "// ── Network ──────────────────────────────────",
+                "// Non-standard outbound ports (T1571)",
                 "FROM logs-endpoint.events.network-*",
-                "| WHERE destination.port NOT IN (80, 443, 22, 53, 3389)",
-                "| STAT count = COUNT() BY host.hostname, destination.address, destination.port"
+                "| WHERE destination.port NOT IN (80, 443, 22, 53, 3389, 139, 445)",
+                "    AND network.direction == \"outbound\"",
+                "    AND NOT CIDR_MATCH(destination.address, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\")",
+                "| STAT count = COUNT() BY host.hostname, destination.address, destination.port, network.protocol",
+                "| SORT count DESC",
+                "",
+                "// ── Persistence ──────────────────────────────",
+                "// Registry Run keys (T1547.001)",
+                "FROM logs-endpoint.events.registry-*",
+                "| WHERE registry.path LIKE \"*CurrentVersion\\\\Run*\"",
+                "    AND registry.data.strings LIKE \"*\\\\Users\\\\*\"",
+                "| STAT count = COUNT() BY host.hostname, registry.path, registry.data.strings",
+                "",
+                "// ── Credential Access ────────────────────────",
+                "// LSASS process access (T1003.001)",
+                "FROM logs-endpoint.events.api-*",
+                "| WHERE process.name == \"lsass.exe\" AND api.name LIKE \"*OpenProcess*\"",
+                "| STAT source_host = COUNT() BY host.hostname, process.name, process.pid"
+              ]
+            },
+            {
+              "label": "Sigma",
+              "lang": "sigma",
+              "lines": [
+                "# Sigma: PowerShell Download Cradle (T1059.001)",
+                "title: PowerShell Download Cradle",
+                "logsource:",
+                "  category: process_creation",
+                "  product: windows",
+                "detection:",
+                "  selection:",
+                "    Image|endswith: '\\\\powershell.exe'",
+                "    CommandLine|contains:",
+                "      - 'DownloadString'",
+                "      - 'Invoke-WebRequest'",
+                "      - 'Net.WebClient'",
+                "      - 'Start-BitsTransfer'",
+                "  condition: selection",
+                "falsepositives:",
+                "  - Administrative scripts",
+                "level: high",
+                "",
+                "# Sigma: Suspicious Service Installation (T1543.003)",
+                "title: Suspicious Service Install",
+                "logsource:",
+                "  category: process_creation",
+                "  product: windows",
+                "detection:",
+                "  selection:",
+                "    Image|endswith: '\\\\sc.exe'",
+                "    CommandLine|contains: 'create'",
+                "    CommandLine|contains: 'binPath'",
+                "    CommandLine|contains|all:",
+                "      - '\\\\AppData'",
+                "      - '\\\\Temp'",
+                "  condition: selection",
+                "level: high"
               ]
             }
           ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "🔍 Hunting pro tip",
+          "body": "Las queries más efectivas no buscan IoCs conocidos — buscan ANOMALÍAS en el comportamiento: Office→shell, procesos desde temp, conexiones a horas no laborales, cert self-signed. Los IoCs cambian cada hora, los patrones de comportamiento tardan años en cambiar."
         }
       ]
     },
@@ -685,66 +773,50 @@
       "icon": "⛔",
       "title": "Contención Rápida",
       "badge": "7 escenarios",
-      "desc": "Acciones inmediatas por tipo de incidente. La contención es PRIORIDAD sobre la investigación.",
+      "desc": "Acciones inmediatas por tipo de incidente. La contención es PRIORIDAD sobre la investigación. No esperes a tener toda la evidencia — contené primero, preguntá después.",
       "content": [
         {
+          "type": "callout",
+          "s": "d",
+          "title": "🔥 Regla de oro de la contención",
+          "body": "En incidente confirmado: CONTENÉ PRIMERO, INVESTIGÁ DESPUÉS. Cada minuto que el atacante tiene acceso, puede moverse lateralmente, exfiltrar datos, o desplegar ransomware. No necesitás el vector de entrada para aislar un host."
+        },
+        {
+          "type": "sub",
+          "title": "Matriz de contención por escenario"
+        },
+        {
           "type": "table",
-          "h": [
-            "Escenario",
-            "Acción",
-            "Impacto",
-            "Tiempo"
-          ],
+          "h": ["Escenario", "Acción inmediata", "Acción secundaria", "Impacto", "No hacer", "SLA"],
           "r": [
-            [
-              "Ransomware",
-              "Aislar host de red (EDR isolate)",
-              "Usuario pierde acceso",
-              "< 5 min"
-            ],
-            [
-              "Cuenta comprometida",
-              "Deshabilitar cuenta, resetear pass, revocar tokens",
-              "Usuario sin acceso",
-              "< 2 min"
-            ],
-            [
-              "C2 beaconing",
-              "Bloquear IP en firewall + aislar host",
-              "Posible pérdida conectividad",
-              "< 3 min"
-            ],
-            [
-              "Phishing masivo",
-              "Bloquear remitente en gateway, eliminar correos",
-              "Pérdida correos legítimos",
-              "< 10 min"
-            ],
-            [
-              "Data exfiltration",
-              "Bloquear tráfico saliente a IP + aislar host",
-              "Interrupción parcial de red",
-              "< 5 min"
-            ],
-            [
-              "Malware detectado",
-              "Aislar host, bloquear hash en AV/EDR",
-              "Usuario sin acceso",
-              "< 5 min"
-            ],
-            [
-              "Lateral movement",
-              "Aislar host origen y destino, revocar credenciales",
-              "Múltiples usuarios",
-              "< 10 min"
-            ]
+            ["Ransomware", "Aislar host de red (EDR isolate). Desconectar cable si no hay EDR", "Identificar drive afectado. Desmontar shares mapeadas", "Usuario pierde acceso", "NO apagar. NO pagar rescate. NO reiniciar", "< 5 min"],
+            ["Cuenta comprometida", "Deshabilitar cuenta AD. Resetear contraseña", "Revocar tokens de sesión. Revisar mailbox rules (forwarding)", "Usuario sin acceso", "NO borrar cuenta (pierde evidencia de lateral movement)", "< 2 min"],
+            ["C2 beaconing", "Bloquear IP destino en firewall/perímetro. Aislar host", "Agregar IP a blocklist. Revisar otros hosts con misma conexión", "Posible pérdida conectividad legítima", "NO aislar sin confirmar que no es CDN compartido", "< 3 min"],
+            ["Phishing masivo", "Bloquear remitente en gateway email. Eliminar correos de inboxes", "Buscar campaigns similares. Revisar si hubo clicks", "Pérdida de correos legítimos (recuperable)", "NO responder al remitente. NO hacer clic para 'verificar'", "< 10 min"],
+            ["Data exfiltration", "Bloquear tráfico saliente a IP destino. Aislar host origen", "Revisar qué datos se exfiltraron. Notificar a DPO/legal si datos personales", "Interrupción parcial de red", "NO borrar logs de red (necesitás timeline forense)", "< 5 min"],
+            ["Malware detectado", "Aislar host (EDR isolate). Bloquear hash en AV/EDR", "Capturar volátil antes de aislar (procesos, conexiones activas)", "Usuario sin acceso", "NO apagar — se pierde RAM con C2 activo, credenciales en memoria", "< 5 min"],
+            ["Lateral movement", "Aislar host origen y destino. Revocar credenciales involucradas", "Revisar EventID 4624 desde host origen a otros destinos. Escalar a IR", "Múltiples usuarios afectados", "NO cambiar todas las contraseñas sin identificar el alcance primero", "< 10 min"],
+            ["Insider threat", "Suspender cuenta de usuario. No alertar al usuario", "Preservar evidencia (logs de acceso, email, file access). Coordinar con RRHH", "Usuario sospecha", "NO confrontar al usuario sin RRHH/legal presentes", "< 15 min"]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Checklist de contención"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {"i":"🟢","t":"Host aislado","d":"¿El host ya no tiene conectividad de red? EDR isolate, firewall block, o desconexión física. Verificar que el aislamiento funcione (ping test, netstat desde el host).","c":"g"},
+            {"i":"🟡","t":"Cuenta deshabilitada","d":"¿La cuenta comprometida ya no puede autenticarse? Deshabilitar en AD, revocar sesiones activas (ForceLogoff), revocar tokens de refresh (Azure AD Revoke-AzureADUserAllRefreshToken).","c":"y"},
+            {"i":"🔴","t":"Entry point bloqueado","d":"¿El vector de entrada está bloqueado? IP en firewall, remitente en gateway, RDP bloqueado, hash en AV. Si no bloqueás el entry point, el atacante puede volver a atacar.","c":"r"},
+            {"i":"🔵","t":"Alcance determinado","d":"¿Sabés qué otros hosts/cuentas están afectados? Revisar conexiones entrantes y salientes del host aislado, correlacionar con logs de acceso, buscar mismos IoCs en otros endpoints.","c":"b"}
           ]
         },
         {
           "type": "callout",
-          "s": "d",
-          "title": "🔥 Regla de oro",
-          "body": "En incidente confirmado, contené primero, investigá después."
+          "s": "w",
+          "title": "⚠️ Aislar no significa apagar",
+          "body": "Apagar un host comprometido destruye evidencia volátil: procesos en memoria, conexiones C2 activas, credenciales en LSASS, malware inyectado. SIEMPRE preferir EDR isolate (corto conectividad de red pero el host sigue encendido). Solo apagar si el aislamiento de red no es posible Y hay riesgo de propagación activa."
         }
       ]
     },
@@ -752,34 +824,123 @@
       "id": "playbooks",
       "icon": "📋",
       "title": "Playbooks",
-      "badge": "Phishing / Ransomware",
+      "badge": "Phishing / Ransomware / BEC / Takedown",
+      "desc": "Playbooks paso a paso para los escenarios más comunes en un SOC. Seguilos en orden — no te saltees pasos.",
       "content": [
         {
           "type": "accordion",
           "items": [
             {
-              "title": "🐟 Phishing",
+              "title": "🐟 Phishing (email malicioso)",
               "lines": [
-                "1. RECOLECTAR: Pedir EML/MSG original. Headers, adjuntos, URLs.",
-                "2. HEADERS: SPF, DKIM, DMARC. IP de origen.",
-                "3. URLs: VirusTotal + URLScan.io.",
-                "4. ADJUNTOS: Hash SHA256 -> VT. Tipo real.",
-                "5. ACCIÓN: Si malicioso -> bloquear remitente, eliminar correos.",
-                "6. ESCALAR: Si hubo click/ejecución -> IR."
+                "FASE 1: RECOLECCIÓN",
+                "  1. Pedir EML/MSG original al usuario (no reenviar — adjuntar original).",
+                "  2. Extraer headers completos del email.",
+                "  3. Identificar: remitente, Reply-To, IP de origen, SPF/DKIM/DMARC.",
+                "",
+                "FASE 2: ANÁLISIS",
+                "  4. URLs: extraer todas las URLs y analizar en URLScan.io + VirusTotal.",
+                "  5. Adjuntos: hash SHA256 → VirusTotal. Determinar tipo real (no confiar en extensión).",
+                "  6. Si .doc/.xls con macros: analizar macros en cualquier.run o oledump.",
+                "",
+                "FASE 3: VEREDICTO",
+                "  7. MALICIOSO: Si SPF fail + URL maliciosa + adjunto con macro.→ bloquear remitente, eliminar correos.",
+                "  8. SOSPECHOSO: Si algunos indicadores pero no todos.→ escalar a threat intel.",
+                "  9. LIMPIO: Si todo legítimo.→ documentar FP y educar al usuario.",
+                "",
+                "FASE 4: POST-INCENDENTE",
+                "  10. Si hubo click: revisar 4688 Process Creation, 4624 Logons, 5156 conexiones post-click.",
+                "  11. Si hubo ejecución: escalar a IR inmediatamente.",
+                "  12. Bloquear hash/IoC en todos los sensores."
               ]
             },
             {
               "title": "💣 Ransomware",
               "lines": [
-                "1. CONFIRMAR: Alertas EDR masivas. Notas de rescate.",
-                "2. AISLAR: Aislar host de RED (NO apagar).",
-                "3. ALCANCE: ¿Sólo 1 host? ¿Se propagó?",
-                "4. EVIDENCIA: Volcar RAM. Preservar logs.",
-                "5. VECTOR: ¿RDP? Phishing? VPN sin MFA?",
-                "6. RECOVERY: Restaurar backup. NO pagar rescate."
+                "FASE 1: CONFIRMACIÓN",
+                "  1. Verificar alertas EDR: ¿archivos siendo modificados masivamente?",
+                "  2. ¿Notas de rescate visibles? ¿Extensiones de archivos cambiadas (.encrypted, .lock, .xyz)?",
+                "  3. ¿Alertas de detención masiva de servicios? (Volcrypt/VSS admin/backup services deteniéndose)",
+                "",
+                "FASE 2: CONTENCIÓN",
+                "  4. AISLAR: Aislar TODOS los hosts afectados de la red (EDR isolate o desconexión física).",
+                "  5. NO APAGAR: Se pierde RAM con procesos de crypto y posible C2.",
+                "  6. Desmontar shares de red y unidades mapeadas.",
+                "  7. Bloquear puerto SMB (445) saliente para evitar propagación.",
+                "",
+                "FASE 3: ALCANCE",
+                "  8. Identificar: ¿1 host? ¿Varios en mismo segmento? ¿Cross-site?",
+                "  9. RDP logs (EventID 4624 LogonType 10): buscar vector de entrada.",
+                "  10. VPN logs: buscar conexiones desde IPs externas no autorizadas.",
+                "  11. Si usa PSExec/WMI (SMB): bloquear SMB y detectar propagación activa.",
+                "",
+                "FASE 4: RECUPERACIÓN",
+                "  12. NO PAGAR RESCATE: no garantiza recuperación y financia al crimen.",
+                "  13. Restaurar desde backup OFFLINE (no conectado a la red comprometida).",
+                "  14. Antes de restaurar: asegurarse de que el vector de entrada esté cerrado.",
+                "  15. Reconstruir hosts desde imagen limpia, no restaurar desde backup comprometido.",
+                "",
+                "FASE 5: POST-MORTEM",
+                "  16. Preservar evidencia completa: RAM dump, logs, imágenes de disco.",
+                "  17. Documentar timeline completo del incidente.",
+                "  18. Notificar a legal/compliance si hay datos personales afectados."
+              ]
+            },
+            {
+              "title": "📧 BEC (Business Email Compromise)",
+              "lines": [
+                "FASE 1: DETECCIÓN",
+                "  1. Identificar: email suplantando a CEO/CFO pidiendo transferencia urgente.",
+                "  2. Verificar: ¿El dominio del remitente es legítimo o suplantado? (diferencia de 1-2 caracteres).",
+                "  3. ¿Reply-To apunta a dominio diferente?",
+                "",
+                "FASE 2: CONTENCIÓN",
+                "  4. Si la transferencia NO ocurrió: alertar al financial team, bloquear remitente.",
+                "  5. Si la transferencia YA ocurrió (la plata ya se fue):",
+                "     a. Contactar BANCO inmediatamente para reversión.",
+                "     b. Contactar FBI/FSI (Financial Crimes) si aplica.",
+                "     c. No hay mucho más — BEC es casi siempre irrecuperable post-transferencia.",
+                "",
+                "FASE 3: INVESTIGACIÓN",
+                "  6. Revisar mailbox rules: ¿el atacante creó reglas de forwarding/inbox para espiar?",
+                "  7. Revisar logins a Office 365: ¿acceso desde IPs externas?",
+                "  8. Revisar si otras cuentas C-suite fueron comprometidas.",
+                "",
+                "FASE 4: POST-MORTEM",
+                "  9. Implementar MFA obligatorio en email (especialmente C-suite).",
+                "  10. Implementar alertas de forwarding rules automáticas.",
+                "  11. Training: BEC awareness para financial team + C-suite."
+              ]
+            },
+            {
+              "title": "🌐 Takedown de C2 o Phishing site",
+              "lines": [
+                "FASE 1: RECOLECCIÓN",
+                "  1. IP del C2: verificar con VT, GreyNoise, Shodan.",
+                "  2. Dominio: Whois, registrar, fechas de creación.",
+                "  3. Hosting: ¿Cloudflare? ¿AWS? ¿OVH? ¿Bulletproof?",
+                "  4. Certificado TLS: buscar en crt.sh para ver otros dominios en mismo IP.",
+                "",
+                "FASE 2: REPORTE",
+                "  5. Abusar del registrador de dominio (GoDaddy, Namecheap, etc).",
+                "  6. Abusar del hosting provider (AWS abuse, OVH abuse, etc).",
+                "  7. Reportar a Google Safe Browsing (si es phishing).",
+                "  8. Reportar a APWG (si es phishing).",
+                "  9. Si es C2: reportar a equipos de threat intel compartido (MISP, FS-ISAC).",
+                "",
+                "FASE 3: MONITOREO",
+                "  10. Si el C2 baja: monitorear si reaparece en otra IP (muchos tienen failover).",
+                "  11. Si el dominio se toma down: asegurarse de que no haya fallback domains.",
+                "  12. Compartir IoCs con la comunidad (MISP, OTX)."
               ]
             }
           ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "📌 Los playbooks no son religión",
+          "body": "Adaptá los pasos a tu contexto. No todos los pasos aplican a todos los casos. Pero NO te saltees FASE 1 (confirmación) ni FASE 2 (contención). Son las que más errores previenen."
         }
       ]
     },
