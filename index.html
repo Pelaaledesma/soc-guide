@@ -209,8 +209,9 @@ function Accordion(props) {
 }
 
 function MitreMatrix(props) {
+  var tacs = props.tactics || [];
   return e('div',{className:'mitre-grid'},
-    props.tactics.map(function(t,i){
+    tacs.map(function(t,i){
       return e('div',{className:'mitre-cell',key:i,title:t.id},
         e('div',{className:'tac'},t.n),
         e('div',{className:'t'},t.id)
