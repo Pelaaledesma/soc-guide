@@ -125,14 +125,16 @@
   .mitre-col-hdr{background:var(--bg4);padding:8px 10px;text-align:center;border-bottom:1px solid var(--border)}
   .mitre-col-hdr .mitre-ta{display:block;font-size:.68rem;font-weight:700;color:var(--accent);letter-spacing:.03em}
   .mitre-col-hdr .mitre-tn{display:block;font-size:.72rem;color:var(--text);font-weight:500;margin-top:2px}
-  .mitre-techs{padding:2px 0;max-height:400px;overflow-y:auto}
-  .mitre-tech,.mitre-sub{padding:3px 8px;border-bottom:1px solid rgba(255,255,255,.02);cursor:default}
-  .mitre-tech:hover,.mitre-sub:hover{background:rgba(74,158,255,.06)}
+  .mitre-techs{padding:2px 0;max-height:360px;overflow-y:auto}
+  .mitre-tech,.mitre-sub{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.02);cursor:pointer;transition:background .12s}
+  .mitre-tech:hover,.mitre-sub:hover{background:rgba(74,158,255,.1)}
   .mitre-tech .mitre-tid,.mitre-sub .mitre-tid{font-size:.6rem;font-weight:600;color:var(--yellow);font-family:var(--mono)}
-  .mitre-tech .mitre-tname,.mitre-sub .mitre-tname{font-size:.63rem;color:var(--text2);display:block;line-height:1.25;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mitre-tech .mitre-tname,.mitre-sub .mitre-tname{font-size:.65rem;color:var(--text);display:block;line-height:1.25;margin-top:1px}
+  .mitre-tech .mitre-desc,.mitre-sub .mitre-desc{font-size:.6rem;color:var(--text2);display:block;line-height:1.3;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .mitre-sub{padding-left:14px;background:rgba(0,0,0,.12)}
-  .mitre-sub .mitre-tname{font-size:.6rem;color:var(--text2)}
-  .mitre-subs{border-top:1px solid var(--border);max-height:200px;overflow-y:auto}
+  .mitre-sub .mitre-tname{font-size:.62rem}
+  .mitre-sub .mitre-desc{font-size:.58rem}
+  .mitre-subs{border-top:1px solid var(--border);max-height:180px;overflow-y:auto}
 </style>
 </head>
 <body><div id="root"></div>
@@ -223,6 +225,21 @@ function Accordion(props) {
   }));
 }
 
+function MitreTech(props) {
+  var t = props.tech, isSub = props.isSub;
+  var cls = isSub ? 'mitre-sub' : 'mitre-tech';
+  var url = t.url || 'https://attack.mitre.org/techniques/'+t.id.replace('.','/');
+  function openUrl(e) {
+    e.stopPropagation();
+    window.open(url, '_blank', 'noopener');
+  }
+  return e('div',{className:cls,onClick:openUrl,title:'Click para ver en MITRE ATT&CK'},
+    e('span',{className:'mitre-tid'},t.id),
+    e('span',{className:'mitre-tname'},t.name),
+    t.desc ? e('span',{className:'mitre-desc'},t.desc) : null
+  );
+}
+
 function MitreMatrix(props) {
   var tacs = props.tactics || [];
   return e('div',{className:'mitre-matrix'},
@@ -237,18 +254,12 @@ function MitreMatrix(props) {
         ),
         e('div',{className:'mitre-techs'},
           parents.map(function(pt,pi){
-            return e('div',{className:'mitre-tech',key:'p'+pi,title:pt.id},
-              e('span',{className:'mitre-tid'},pt.id),
-              e('span',{className:'mitre-tname'},pt.name)
-            );
+            return e(MitreTech,{key:'p'+pi,tech:pt,isSub:false});
           })
         ),
         subs.length > 0 ? e('div',{className:'mitre-subs'},
           subs.map(function(st,si){
-            return e('div',{className:'mitre-sub',key:'s'+si,title:st.id},
-              e('span',{className:'mitre-tid'},st.id),
-              e('span',{className:'mitre-tname'},st.name)
-            );
+            return e(MitreTech,{key:'s'+si,tech:st,isSub:true});
           })
         ) : null
       );
