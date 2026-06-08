@@ -4,55 +4,92 @@
       "id": "triage",
       "icon": "🔍",
       "title": "Triage de Alertas",
-      "badge": "5 pasos",
-      "desc": "Proceso de clasificación, priorización y escalado de alertas.",
+      "badge": "Guía completa",
+      "desc": "Proceso completo de clasificación, priorización, investigación y escalado de alertas.",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "🧠 El mindset del triage",
+          "body": "Cada alerta es una hipótesis. Tu trabajo es juntar evidencia para probarla o descartarla. No tenés que resolver el caso en 5 minutos — tenés que decidir si merece 5 minutos o 5 horas."
+        },
+        {
+          "type": "sub",
+          "title": "Los 5 pasos del triage"
+        },
+        {
           "type": "table",
-          "h": [
-            "#",
-            "Paso",
-            "Acción",
-            "Pregunta clave"
-          ],
+          "h": ["#", "Paso", "Acción", "Pregunta clave", "Tiempo"],
           "r": [
-            [
-              "1",
-              "Validar",
-              "Revisar timestamp, fuente, tipo de evento",
-              "¿Es un evento real o error de parsing?"
-            ],
-            [
-              "2",
-              "Clasificar",
-              "Tipo: malware, phishing, acceso no autorizado, DDoS",
-              "¿Qué categoría de ataque?"
-            ],
-            [
-              "3",
-              "Priorizar",
-              "Criticidad del activo x tipo de amenaza x evidencia",
-              "¿A quién afecta y qué tan grave es?"
-            ],
-            [
-              "4",
-              "Contener",
-              "Si riesgo alto: aislar host, bloquear IP, suspender usuario",
-              "¿Puedo contener sin escalar?"
-            ],
-            [
-              "5",
-              "Escalar/Cerrar",
-              "Con evidencia sólida -> L2. Falso positivo -> documentar",
-              "¿Necesito más recursos?"
-            ]
+            ["1", "Validar", "Revisar timestamp, fuente, tipo de evento. ¿El source IP existe? ¿El user está activo?", "¿Es un evento real o error de parsing/falso positivo?", "30 seg"],
+            ["2", "Clasificar", "Tipo: malware, phishing, acceso no autorizado, DDoS, insider threat, policy violation", "¿Qué categoría de ataque? ¿MITRE tactic inicial?", "30 seg"],
+            ["3", "Priorizar", "Criticidad del activo × tipo de amenaza × solidez de evidencia", "¿A quién afecta y qué tan grave es realmente?", "60 seg"],
+            ["4", "Investigar", "Correlacionar logs: proceso padre, conexiones de red, usuarios relacionados, timeline", "¿Qué más pasó antes/después? ¿Esto es aislado o systemic?", "5-15 min"],
+            ["5", "Actuar/Cerrar", "Contener si aplica (aislar, bloquear, suspender) o documentar como FP", "¿Necesito escalar o puedo cerrar con evidencia?", "2 min"]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Árbol de decisión rápido"
+        },
+        {
+          "type": "callout",
+          "s": "g",
+          "title": "✅ Falso positivo confirmado",
+          "body": "El evento coincide con una excepción conocida (scan interno, admin haciendo mantenimiento, update legítimo). → Documentar en el ticket con captura de evidencia y cerrar."
+        },
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🔍 Alerta no concluyente (Suspicious)",
+          "body": "Hay indicios pero falta evidencia sólida. → Escalar a L2 con nota: 'Requiere correlación con más fuentes. Posible T1078 / T1059. Sin confirmar.'"
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "⚠️ Malware / Compromiso confirmado",
+          "body": "Ejecutable malicioso, C2 communication, o credenciales robadas con evidencia. → Escalar a IR inmediatamente. No apagar el host sin coordinación (puede perder evidencia forense)."
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🚨 Incidente crítico en curso",
+          "body": "Ransomware en ejecución, lateral movement activo, o exfiltración en progreso. → Activar IR plan. Aislar host críticos. NO apagar — desconectar de red. Preservar volátil."
+        },
+        {
+          "type": "sub",
+          "title": "Preguntas guía por tipo de alerta"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {"i":"🦠","t":"Malware","d":"¿El binary tiene firma válida? ¿Pasó por email/web/removable? ¿Qué proceso lo lanzó? ¿Llamadas a C2?","c":"r"},
+            {"i":"🎣","t":"Phishing","d":"¿El user reportó o lo detectó el gateway? ¿Hizo click? ¿Credenciales capturadas? ¿Hay ejecución posterior?","c":"y"},
+            {"i":"🔑","t":"Acceso no autorizado","d":"¿Login desde IP desconocida? ¿Horario inusual? ¿Account nunca usada? ¿Múltiples failures previas?","c":"o"},
+            {"i":"💣","t":"Ransomware","d":"¿Qué extensión? ¿Nota de rescate? ¿Archivos modificados? ¿Proceso de crypto detectado? ¿Propagación a shares?","c":"r"},
+            {"i":"🌐","t":"C2 / Beaconing","d":"¿IP reputación? ¿Dominio recién registrado? ¿Patrón temporal (jitter)? ¿Protocolo no estándar?","c":"p"},
+            {"i":"📤","t":"Exfiltración","d":"¿Volumen de datos anormal? ¿Horario fuera de oficina? ¿A IP externa no conocida? ¿Protocolo de transferencia?","c":"b"}
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Contención rápida por tipo"
+        },
+        {
+          "type": "table",
+          "h": ["Escenario", "Acción inmediata", "No hacer"],
+          "r": [
+            ["Host con malware", "Aislar de red (no apagar). Capturar volátil.", "No apagar — se pierde RAM con procesos, C2, credenciales"],
+            ["Cuenta comprometida", "Resetear contraseña, revocar sessions, revisar mailbox rules", "No borrar usuario — perderías evidencia de lateral movement"],
+            ["IP maliciosa saliente", "Bloquear en firewall y proxy. Revisar otros hosts que conectaron", "No bloquear sin revisar si es IP compartida (CDN, cloud)"],
+            ["Phishing reportado", "Eliminar de todos los inboxes. Verificar si otros usuarios recibieron igual", "No responder al sender ni dar clic a links para 'verificar'"]
           ]
         },
         {
           "type": "callout",
           "s": "w",
-          "title": "💡 En triage",
-          "body": "cada alerta es una hipótesis. Tu trabajo es juntar evidencia para probarla o descartarla."
+          "title": "⏱ Regla del 80/20 en triage",
+          "body": "El 80% de las alertas se resuelven en los primeros 2 pasos (validar + clasificar). Si en 10 minutos no tenés un veredicto claro, escalá con lo que tengas. Mejor escalar temprano que retener un incidente crítico."
         }
       ]
     },
@@ -60,47 +97,61 @@
       "id": "severidad",
       "icon": "🏷️",
       "title": "Matriz de Severidad",
-      "badge": "Clasificación",
+      "badge": "Priorización",
+      "desc": "Cómo determinar la severidad real de una alerta combinando criticidad del activo, tipo de amenaza y solidez de la evidencia.",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "🎯 La fórmula de severidad",
+          "body": "Severidad = Criticidad del Activo × Tipo de Amenaza × Calidad de Evidencia. No alcanza con que el evento sea malicioso — si el activo es un servidor de pruebas, la severidad baja. Y viceversa: un evento dudoso en un Domain Controller es HIGH hasta que se demuestre lo contrario."
+        },
+        {
+          "type": "sub",
+          "title": "Matriz de severidad"
+        },
+        {
           "type": "table",
-          "h": [
-            "Severidad",
-            "Activo",
-            "Evidencia",
-            "Ejemplo",
-            "Acción"
-          ],
+          "h": ["Severidad", "Activo", "Evidencia", "Ejemplo", "Acción", "SLA"],
           "r": [
-            [
-              "CRITICAL",
-              "Crítico (DC, SQL, ERP)",
-              "Sólida",
-              "Ransomware en DC",
-              "Contener YA, escalar a IR"
-            ],
-            [
-              "HIGH",
-              "Importante",
-              "Moderada-Fuerte",
-              "Lateral movement, C2",
-              "Aislar, escalar urgente"
-            ],
-            [
-              "MEDIUM",
-              "Estándar",
-              "Parcial",
-              "Binary desde temp",
-              "Investigar en 24h"
-            ],
-            [
-              "LOW",
-              "Bajo",
-              "Débil",
-              "Login IP inusual",
-              "Ticket, revisión semanal"
-            ]
+            ["CRITICAL", "Crítico (DC, SQL, ERP, FW)", "Sólida (técnica confirmada)", "Ransomware en DC, C2 desde domain controller, exfiltración desde SQL", "Contener YA, escalar a IR", "10 min"],
+            ["HIGH", "Importante (servidores prod)", "Moderada-Fuerte", "Lateral movement, credenciales robadas, binary sin firma en servidor", "Aislar, escalar urgente", "30 min"],
+            ["MEDIUM", "Estándar (workstations, users)", "Parcial (indicio sin confirmar)", "Binary desde temp en workstation, login desde IP inusual", "Investigar en 24h", "4 hs"],
+            ["LOW", "Bajo (test, periféricos)", "Débil (anomalía sin contexto)", "Login IP inusual a cuenta deshabilitada, scan a puerto no crítico", "Ticket, revisión semanal", "7 días"],
+            ["INFO", "Cualquier activo", "Sin evidencia de daño", "Evento aislado sin correlación, block genérico de AV", "Monitorear, no investigar", "-"]
           ]
+        },
+        {
+          "type": "sub",
+          "title": "Calculadora rápida de criticidad de activo"
+        },
+        {
+          "type": "table",
+          "h": ["Criticidad", "Activos", "Impacto si cae"],
+          "r": [
+            ["Crítico", "Domain Controllers, Firewalls, SIEM, ERP, bases de datos productivas", "Caída del negocio, pérdida de datos, imposibilidad de operar"],
+            ["Alto", "Servidores de aplicación, file servers, exchange, proxies", "Productividad afectada, datos no disponibles"],
+            ["Medio", "Workstations, impresoras, switches de acceso", "Impacto local, usuario individual afectado"],
+            ["Bajo", "Servidores de test, VMs no productivas, IoT no crítico", "Sin impacto al negocio"]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Factores que modifican la severidad"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {"i":"⬆️","t":"Suben severidad","d":"Múltiples hosts afectados, dato sensible involucrado, horario no laboral, cuenta privilegiada, evidencia de movimento lateral, técnica conocida de APT","c":"r"},
+            {"i":"⬇️","t":"Bajan severidad","d":"Evento aislado, IP interna conocida (scan interno), usuario reportó el evento, no hay dato sensible en riesgo, actividad en horario laboral con ticket de cambio","c":"g"},
+            {"i":"🔄","t":"Requieren contexto","d":"Alerta de AV sin ejecución confirmada, login fallido sin patrón, conexión a CDN/IP conocida, proceso firmado por vendor legítimo","c":"y"}
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "⚠️ Error común: confundir criticidad del activo con severidad de la alerta",
+          "body": "Un evento CRITICAL en un servidor de test no es CRITICAL — es MEDIUM como máximo. Al revés: un evento LOW (login fallido) en un Domain Controller merece atención porque podría ser el primer paso de un password spraying. El activo define el impacto potencial, la evidencia define la probabilidad."
         }
       ]
     },
@@ -109,83 +160,70 @@
       "icon": "📋",
       "title": "Windows EventLogs Clave",
       "badge": "15 EventIDs",
-      "desc": "EventIDs que todo SOC Analyst debe reconocer al instante.",
+      "desc": "EventIDs que todo SOC Analyst debe reconocer al instante, con detección y contexto de investigación.",
       "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "📌 Dónde buscar cada log",
+          "body": "Security → EventID 4624-4779 (logon/logoff), 4688 (process), 4720-4780 (account mgmt). System → EventID 7045 (services), 1001 (crash). PowerShell Operational → 4103/4104 (script execution). Sysmon → Operational log (ID 1-255)."
+        },
         {
           "type": "table",
           "h": [
             "EventID",
             "Nombre",
             "Qué detecta",
+            "Detección rápida",
             "Riesgo"
           ],
           "r": [
-            [
-              "4624",
-              "Logon Success",
-              "Login fuera de horario, IP externa",
-              "Ver contexto"
-            ],
-            [
-              "4625",
-              "Logon Failure",
-              "Password spraying, brute force",
-              "Media"
-            ],
-            [
-              "4672",
-              "Admin Logon",
-              "Privilegios asignados (SeDebug)",
-              "Alta"
-            ],
-            [
-              "4688",
-              "Process Creation",
-              "LOLBins, child process de Office",
-              "Crítica"
-            ],
-            [
-              "4698",
-              "Scheduled Task",
-              "Creación de tarea (persistencia)",
-              "Alta"
-            ],
-            [
-              "4719",
-              "Audit Policy Change",
-              "Atacante desactivando logging",
-              "Crítica"
-            ],
-            [
-              "4720",
-              "User Created",
-              "Creación de cuenta nueva",
-              "Alta"
-            ],
-            [
-              "4728",
-              "Group Member Added",
-              "Usuario agregado a Admin/Enterprise Admin",
-              "Crítica"
-            ],
-            [
-              "4104",
-              "PS ScriptBlock",
-              "Script malicioso, download cradle",
-              "Crítica"
-            ],
-            [
-              "5156",
-              "WFP Connection",
-              "Conexión saliente a IP sospechosa (C2)",
-              "Alta"
-            ],
-            [
-              "7045",
-              "Service Installed",
-              "Instalación de servicio (persistencia)",
-              "Alta"
-            ]
+            ["4624", "Logon Success", "Login fuera de horario, IP externa, logon type 3/10 desde IP no habitual", "Correlacionar con LogonType: 2=local, 3=red, 4=batch, 7=desbloqueo, 9=RunAs, 10=RDP", "Ver contexto"],
+            ["4625", "Logon Failure", "Password spraying, brute force, account enumeration", "Múltiples 4625 con failure code 0xC000006A (bad password) desde misma IP a distintos users = spraying", "Media"],
+            ["4634/4647", "Logoff", "Sesión terminada — útil para duración de sesión", "Combinar con 4624: sesiones de minutos desde IP externa = posible acceso no autorizado", "Baja"],
+            ["4672", "Admin Logon", "Privilegios especiales asignados (SeTcb, SeDebug, SeTakeOwnership)", "SeDebugPrivilege en proceso no esperado = posible dump de LSASS. SeTcbPrivilege por proceso no-system = sospechoso", "Alta"],
+            ["4688", "Process Creation", "LOLBins, child process de Office, ejecución desde temp", "Office (winword/outlook/excel) spawning cmd.exe/powershell.exe/wscript.exe = CRÍTICO. Procesos desde AppData/Temp = investigar", "Crítica"],
+            ["4698", "Scheduled Task", "Creación de tarea programada (persistencia T1053)", "Tarea creada por usuario no-admin o con nombre genérico ('UpdateTask', 'SystemCheck') = sospechoso", "Alta"],
+            ["4706", "Trust Created", "Nuevo trust relationship entre dominios", "Rarísimo en entornos normales. Casi siempre es atacante estableciendo persistencia a nivel de AD", "Crítica"],
+            ["4719", "Audit Policy Change", "Atacante desactivando logging o modificando audit policy", "Correlacionar con quién lo hizo. Si no es el admin de seguridad → comprometido", "Crítica"],
+            ["4720", "User Created", "Creación de cuenta nueva", "Cuenta creada fuera de HR process, o con nombre similar a admin (backup-admin, service-01)", "Alta"],
+            ["4728/4732/4756", "Group Member Added", "Usuario agregado a grupo privilegiado (Domain Admins, Enterprise Admins)", "Agregado por usuario no autorizado o fuera de horario laboral = CRÍTICO", "Crítica"],
+            ["4103/4104", "PowerShell ScriptBlock", "Script malicioso, download cradle, ejecución encoded", "4104 con script bloque completo. Buscar: -EncodedCommand, IEX, DownloadString,反射, Base64 larga", "Crítica"],
+            ["5156/5158", "WFP Connection", "Conexión saliente a IP sospechosa (C2)", "Correlacionar con threat intel. Puerto no estándar + proceso no navegador = posible C2 beaconing", "Alta"],
+            ["7036", "Service State Change", "Servicio detenido/iniciado inesperadamente", "Servicio de seguridad (defender, wf.msc) detenido por proceso no-admin = posible defensa evasion", "Media"],
+            ["7045", "Service Installed", "Instalación de servicio nuevo (persistencia T1543)", "Servicio con nombre genérico, image path desde temp/users, o con firmas no válidas", "Alta"],
+            ["1102", "Security Log Cleared", "Log de seguridad borrado por atacante", "ESTO ES ROJO. Si el security log se borró, el atacante está cubriendo tracks. Escalar inmediatamente", "Crítica"]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🚨 EventID 1102 = Security Log Cleared",
+          "body": "NUNCA es legítimo. Un admin no tiene razón para borrar el security log. Marcar como incidente, escalar a IR, y revisar qué eventos se perdieron desde el último backup de logs. Enviar alerta inmediata al equipo."
+        },
+        {
+          "type": "sub",
+          "title": "Hunting queries recomendadas"
+        },
+        {
+          "type": "code",
+          "lang": "kql",
+          "lines": [
+            "// Alertas de proceso hijo de Office (T1566 + T1204)",
+            "SecurityEvent",
+            "| where EventID == 4688 and ProcessName startswith ('C:\\\\Program Files\\\\Microsoft Office')",
+            "| where NewProcessName matches regex @'\\\\(cmd|powershell|wscript|cscript|mshta|regsvr32)\\.exe'",
+            "",
+            "// Password spraying (T1110)",
+            "SecurityEvent",
+            "| where EventID == 4625",
+            "| summarize FailureCount = count() by IpAddress, bin(TimeGenerated, 5m)",
+            "| where FailureCount > 10",
+            "",
+            "// Cuentas nuevas o agregadas a grupos privilegiados (T1098)",
+            "SecurityEvent",
+            "| where EventID == 4728 or EventID == 4720",
+            "| project TimeGenerated, Account, TargetAccount, Activity, IpAddress"
           ]
         }
       ]
@@ -195,71 +233,71 @@
       "icon": "📡",
       "title": "Sysmon Events",
       "badge": "10 EventIDs",
+      "desc": "Sysmon es el sensor más potente para detection en Windows. Instalá con la config de SwiftOnSecurity o Olaf Hartong para cubrir el 90% de las técnicas.",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "⚙️ Sysmon vs EventLogs nativos",
+          "body": "El EventID 4688 de Windows Security log te da process creation, PERO no te graba el parent process, no te da hash, no te da firma digital, no te da conexiones de red por proceso, no te da DNS queries. Sysmon te da todo eso. Si no tenés Sysmon, estás ciego."
+        },
+        {
           "type": "table",
-          "h": [
-            "EventID",
-            "Nombre",
-            "Uso",
-            "Riesgo"
-          ],
+          "h": ["EventID", "Nombre", "Qué permite detectar", "Riesgo"],
           "r": [
-            [
-              "1",
-              "Process Create",
-              "Línea de comandos completa de cada proceso",
-              "Crítica"
-            ],
-            [
-              "3",
-              "Network Connect",
-              "Conexión de red por proceso",
-              "Crítica"
-            ],
-            [
-              "7",
-              "Image Load",
-              "DLL cargada (detecta DLL hijacking)",
-              "Alta"
-            ],
-            [
-              "8",
-              "CreateRemoteThread",
-              "Inyección de hilo en otro proceso",
-              "Crítica"
-            ],
-            [
-              "10",
-              "Process Access",
-              "Acceso a LSASS (Mimikatz)",
-              "Crítica"
-            ],
-            [
-              "11",
-              "File Create",
-              "Archivos en directorios sospechosos",
-              "Alta"
-            ],
-            [
-              "12-14",
-              "Registry Events",
-              "Modificación de Run keys",
-              "Alta"
-            ],
-            [
-              "15",
-              "File Stream",
-              "Alternate Data Stream (ADS)",
-              "Alta"
-            ],
-            [
-              "22",
-              "DNS Query",
-              "Consulta DNS desde el host",
-              "Alta"
-            ]
+            ["1", "Process Create", "Ejecución de procesos con línea de comandos COMPLETA. Técnicas: T1059 (scripting), T1204 (user execution), T1218 (LOLBins via signed binaries)", "Crítica"],
+            ["3", "Network Connect", "Conexión de red saliente por proceso individual. Detecta: C2 beaconing, exfiltración, phishing callbacks. Importante: solo muestra conexiones, no payload", "Crítica"],
+            ["7", "Image Load", "DLLs cargadas por proceso. Detecta: DLL hijacking (T1574.002), sideloading, inyección. Ruidoso — requiere filtrado por DLLs conocidas maliciosas", "Alta"],
+            ["8", "CreateRemoteThread", "Hilo creado en otro proceso (inyección clásica T1055). Mimikatz, Cobalt Strike, casi todo post-exploit genera EventID 8", "Crítica"],
+            ["10", "Process Access", "Acceso a handle de proceso. Detecta: dump de LSASS (T1003.001), acceso a proceso privilegiado. Mimikatz, ProcDump, comsvcs.dll dump", "Crítica"],
+            ["11", "File Create", "Archivos creados en directorios específicos. Detecta: malware dropping files a temp, ransomware escribiendo notas, descargas de browser a AppData", "Alta"],
+            ["12-14", "Registry Events", "Modificaciones a registry keys (Run, RunOnce, Startup). Detecta: persistencia T1547.001, boot execute T1547.001", "Alta"],
+            ["15", "File Stream", "Alternate Data Stream (ADS) creado (T1564.004). Atacantes esconden malware en streams NTFS. Poco común — alta señal cuando aparece", "Alta"],
+            ["22", "DNS Query", "Todas las consultas DNS del host. Detecta: DGA domains, C2 via DNS, data exfiltration por DNS tunneling. Oro puro para threat intel", "Alta"],
+            ["25", "Process Change", "Cambios en la integridad de proceso (Process Tampering T1562.001). Atacantes parchan etw, ntdll, o minhook para evadir detección", "Crítica"]
           ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "🚨 EventID 8 y 10: inyección y dump",
+          "body": "Cualquier EventID 8 (CreateRemoteThread) de proceso no-legítimo es CRÍTICO. Cualquier EventID 10 con TargetImage conteniendo 'lsass.exe' es CRÍTICO (posible dump de credenciales). No hay razón legítima para que un proceso no-Microsoft acceda a LSASS."
+        },
+        {
+          "type": "sub",
+          "title": "Reglas de detección (Sigma)"
+        },
+        {
+          "type": "code",
+          "lang": "sigma",
+          "lines": [
+            "// Detección: PowerShell download cradle (Sysmon EventID 1)",
+            "title: PowerShell Download Cradle",
+            "detection:",
+            "  selection:",
+            "    EventID: 1",
+            "    CommandLine|contains:",
+            "      - 'DownloadString'",
+            "      - 'Invoke-WebRequest'",
+            "      - 'Net.WebClient.Download'",
+            "      - 'Start-BitsTransfer'",
+            "  condition: selection",
+            "",
+            "// Detección: Dump LSASS via comsvcs.dll (Sysmon EventID 1)",
+            "title: LSASS Dump via comsvcs",
+            "detection:",
+            "  selection:",
+            "    EventID: 1",
+            "    CommandLine|contains: 'comsvcs.dll,MiniDump'",
+            "    CommandLine|contains: 'lsass'",
+            "  condition: selection"
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "🔍 Correlación rápida con Sysmon",
+          "body": "Sysmon EventID 1 → ver línea de comandos. Sysmon EventID 3 → ver IP destino. Sysmon EventID 22 → ver dominio consultado. La triada EventID 1 + 3 + 22 te da el ciclo completo de una infección: ejecución → C2 → DNS."
         }
       ]
     },
