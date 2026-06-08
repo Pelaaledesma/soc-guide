@@ -115,6 +115,16 @@
   .p-m{background:rgba(74,158,255,.12);color:var(--accent)}
   .p-l{background:rgba(106,127,158,.14);color:var(--text2)}
   .hl{background:rgba(232,179,57,.25);padding:0 2px;border-radius:2px}
+  .accordion{border:1px solid var(--border);border-radius:8px;margin:8px 0;overflow:hidden}
+  .acc-hdr{padding:10px 14px;background:var(--bg3);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:500;color:var(--text);user-select:none}
+  .acc-hdr:hover{background:var(--bg4)}
+  .acc-hdr .arrow{font-size:.6rem;transition:transform .2s;color:var(--text2)}
+  .acc-hdr .arrow.open{transform:rotate(90deg)}
+  .acc-body{display:none;padding:0}
+  .acc-body.open{display:block}
+  .acc-line{padding:4px 14px;font-size:.75rem;color:var(--text2);font-family:var(--mono);line-height:1.45;white-space:pre-wrap;word-break:break-word}
+  .acc-line:first-child{margin-top:12px;padding-top:4px;border-top:1px solid var(--border)}
+  .acc-line:last-child{margin-bottom:12px}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
   .overlay.open{display:block}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -219,7 +229,7 @@ function Accordion(props) {
         e('span',{className:'arrow'+(isOpen?' open':'')},'\u25B6')
       ),
       e('div',{className:'acc-body'+(isOpen?' open':'')},
-        it.lines.map(function(l,li){return e('p',{key:li},l)})
+        it.lines.map(function(l,li){return e('div',{key:li,className:'acc-line'},l)})
       )
     );
   }));
