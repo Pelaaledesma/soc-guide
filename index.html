@@ -293,17 +293,16 @@ function renderContent(block, mitreMatrix) {
 
 // ===== SECTION COMPONENT =====
 function SectionCard(props) {
-  var s = props.section, isOpen = props.isOpen, toggle = props.toggle, mitreMatrix = props.mitreMatrix;
+  var s = props.section, mitreMatrix = props.mitreMatrix;
   return e('div',{className:'section-card',id:s.id},
-    e('div',{className:'section-hdr',onClick:function(){toggle(s.id)}},
+    e('div',{className:'section-hdr'},
       e('div',{className:'left'},
         e('span',{className:'icon'},s.icon),
         e('h2',null,s.title),
         s.badge ? e('span',{className:'badge'},s.badge) : null
-      ),
-      e('span',{className:'toggle'+(isOpen?' open':'')},'\u25BC')
+      )
     ),
-    e('div',{className:'section-body'+(isOpen?' open':'')},
+    e('div',{className:'section-body open'},
       s.desc ? e('div',{className:'section-intro'},e('p',null,s.desc)) : null,
       s.content ? s.content.map(function(b,i){return e(React.Fragment,{key:i},renderContent(b, mitreMatrix))}) : null
     )
@@ -344,14 +343,9 @@ function App() {
       .catch(function(e){ setError(e.message); setLoading(false); });
   },[]);
 
-  var _d = React.useState(function(){
-    try { return JSON.parse(localStorage.getItem('soc-guide-open')) || {triage:true,queries:true,cheat:true}; }
-    catch(e) { return {triage:true,queries:true,cheat:true}; }
-  }), openSections = _d[0], setOpenSections = _d[1];
-
-  var _e = React.useState('triage'), activeSection = _e[0], setActive = _e[1];
-  var _f = React.useState(false), sideOpen = _f[0], setSideOpen = _f[1];
-  var _g = React.useState(''), searchQ = _g[0], setSearchQ = _g[1];
+  var _d = React.useState('triage'), activeSection = _d[0], setActive = _d[1];
+  var _e = React.useState(false), sideOpen = _e[0], setSideOpen = _e[1];
+  var _f = React.useState(''), searchQ = _f[0], setSearchQ = _f[1];
   var searchRef = React.useRef(null);
 
   React.useEffect(function(){
@@ -367,20 +361,8 @@ function App() {
   var sections = data && data.sections ? data.sections : [];
   var navGroups = data && data.navGroups ? data.navGroups : [];
 
-  React.useEffect(function(){
-    if (!data || !data.sections) return;
-    var observer = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){if(e.isIntersecting) setActive(e.target.id)});
-    },{rootMargin:'-80px 0px -70% 0px'});
-    data.sections.forEach(function(s){
-      var el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
-    return function(){observer.disconnect()};
-  },[data]);
-
   var filtered = React.useMemo(function(){
-    if (!data || !data.sections || !searchQ.trim()) return sections;
+    if (!data || !data.sections || !searchQ.trim()) return [];
     var q = searchQ.toLowerCase().trim();
     return sections.filter(function(s){
       return s.title.toLowerCase().includes(q) ||
@@ -388,6 +370,11 @@ function App() {
         (s.desc && s.desc.toLowerCase().includes(q));
     });
   },[searchQ, data]);
+
+  var activeSectionData = React.useMemo(function(){
+    if (!data || !data.sections) return null;
+    return sections.find(function(s){return s.id === activeSection}) || sections[0] || null;
+  },[activeSection, data]);
 
   // ── Early returns (safe: all hooks already ran) ──
   if (loading) return e("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg)",color:"var(--text2)",flexDirection:"column",gap:"12px"}},
@@ -402,30 +389,9 @@ function App() {
 
   if (!data) return null;
 
-  function toggleSection(id) {
-    setOpenSections(function(prev){
-      var next = Object.assign({},prev);
-      next[id] = !next[id];
-      localStorage.setItem('soc-guide-open',JSON.stringify(next));
-      return next;
-    });
-  }
-
   function navigateTo(id) {
     setActive(id);
-    setOpenSections(function(prev){
-      if (!prev[id]) {
-        var next = Object.assign({},prev);
-        next[id] = true;
-        localStorage.setItem('soc-guide-open',JSON.stringify(next));
-        return next;
-      }
-      return prev;
-    });
-    setTimeout(function(){
-      var el = document.getElementById(id);
-      if (el) el.scrollIntoView({behavior:'smooth',block:'start'});
-    },50);
+    setSearchQ('');
     if (window.innerWidth <= 900) setSideOpen(false);
   }
 
@@ -452,29 +418,24 @@ function App() {
         e('div',{className:'stats'},e('span',null,'\uD83D\uDCDA '+sections.length+' secciones'))
       ),
       e('div',{className:'content'},
-        !searchQ ? e('div',{style:bannerStyle},
-          e('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
-            e('span',{style:{fontSize:'1.5rem'}},'\uD83D\uDEE1\uFE0F'),
-            e('div',null,
-              e('h3',{style:{fontSize:'1rem',fontWeight:600,marginBottom:2}},'SOC Analyst - Gu\u00EDa de Consulta R\u00E1pida'),
-              e('p',{style:{fontSize:'.8rem',color:'var(--text2)'}},
-                'Hac\u00E9 click en cualquier secci\u00F3n para expandir. Us\u00E1 Ctrl+K para buscar. C\u00F3digos copiables con un click.'
+        searchQ ? [
+          e('div',{style:{marginBottom:16,fontSize:'.85rem',color:'var(--text2)'}},
+            '\uD83D\uDD0E Resultados para "',e('strong',{style:{color:'var(--text)'}},searchQ),'": ',filtered.length,' secci\u00F3n(es)'
+          ),
+          filtered.length > 0 ? filtered.map(function(s){
+            return e('div',{key:s.id,className:'search-hit',onClick:function(){navigateTo(s.id)}},
+              e('span',{className:'search-hit-icon'},s.icon),
+              e('div',null,
+                e('div',{className:'search-hit-title'},s.title),
+                s.desc ? e('div',{className:'search-hit-desc'},s.desc) : null
               )
-            )
+            );
+          }) : e('div',{style:{padding:40,textAlign:'center',color:'var(--text2)'}},
+            e('p',{style:{fontSize:'1.5rem',marginBottom:8}},'\uD83D\uDD0D'),
+            e('p',null,'No se encontraron resultados para "'+searchQ+'"'),
+            e('p',{style:{fontSize:'.78rem',marginTop:4}},'Prob\u00E1 con: phishing, ransomware, KQL, EventID, MITRE, etc.')
           )
-        ) : null,
-        searchQ ? e('div',{style:{marginBottom:16,fontSize:'.85rem',color:'var(--text2)'}},
-          '\uD83D\uDD0E Resultados para "',e('strong',{style:{color:'var(--text)'}},searchQ),'": ',filtered.length,' secci\u00F3n(es)'
-        ) : null,
-        filtered.length > 0 ? filtered.map(function(s){
-          var mtx = data.mitreMatrix || [];
-          return e(SectionCard,{key:s.id,section:s,isOpen:!!openSections[s.id],toggle:toggleSection,mitreMatrix:mtx});
-        }) : e('div',{style:{padding:40,textAlign:'center',color:'var(--text2)'}},
-          e('p',{style:{fontSize:'1.5rem',marginBottom:8}},'\uD83D\uDD0D'),
-          e('p',null,'No se encontraron resultados para "'+searchQ+'"'),
-          e('p',{style:{fontSize:'.78rem',marginTop:4}},'Prob\u00E1 con: phishing, ransomware, KQL, EventID, MITRE, etc.')
-        ),
-        e('div',{style:mdPadding},'SOC Analyst Guide v4.0 - Hecho para consulta diaria.')
+        ] : (activeSectionData ? e(SectionCard,{key:activeSectionData.id,section:activeSectionData,mitreMatrix:data.mitreMatrix||[]}) : null)
       )
     )
   ];
