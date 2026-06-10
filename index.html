@@ -41,12 +41,15 @@
   .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
 
   /* ===== HERO ===== */
-  .hero{background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 50%,var(--g3) 100%);border-bottom:1px solid var(--bd);padding:48px 0 24px;position:relative;overflow:hidden}
+  .hero{background:linear-gradient(180deg,rgba(10,14,20,.92) 0%,rgba(10,14,20,.7) 50%,rgba(15,19,26,.95) 100%),url('https://cybercrim.com/wp-content/uploads/2025/04/establishing_blue_team_soc.jpg') center/cover no-repeat;border-bottom:1px solid var(--bd);padding:64px 0 32px;position:relative;overflow:hidden}
   .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(38,198,218,.3) 50%,transparent 100%)}
   .hero .wrap{position:relative}
   .hero-grid{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
   .hero-main{flex:1}
   .hero-ascii{font-family:var(--mono);font-size:.5rem;line-height:1.3;color:rgba(38,198,218,.12);white-space:pre;text-align:right;user-select:none;pointer-events:none;margin-top:-4px}
+  .hero-title-wrap{display:flex;align-items:center;gap:16px}
+  .hero-icon{flex-shrink:0;width:48px;height:48px}
+  .hero-icon svg{width:100%;height:100%;display:block}
   .hero-title{font-family:var(--mono);font-size:2.4rem;font-weight:700;letter-spacing:-.02em;line-height:1.15;background:linear-gradient(180deg,#fff 0%,var(--text) 60%,rgba(212,220,232,.5) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .hero-title .accent{color:var(--cyan);-webkit-text-fill-color:var(--cyan)}
   .hero-sub{font-size:.78rem;color:var(--text2);margin-top:6px;font-family:var(--mono)}
@@ -167,8 +170,9 @@
   /* ===== RESPONSIVE ===== */
   @media(max-width:700px){
     .wrap{padding:0 14px}
-    .hero{padding:32px 0 20px}
+    .hero{padding:40px 0 24px}
     .hero-title{font-size:1.6rem}
+    .hero-icon{width:36px;height:36px}
     .hero-ascii{display:none}
     .hero-meta{gap:12px}
     .hero-meta-item{font-size:.6rem}
@@ -336,6 +340,9 @@ var FILTERS = [
   {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat']}
 ];
 
+// ===== HERO SVG ICON =====
+var HERO_ICON = '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 4L8 12v10c0 12.2 6.3 19.5 16 22 9.7-2.5 16-9.8 16-22V12L24 4z" fill="url(#sg)"/><path d="M24 4L8 12v10c0 12.2 6.3 19.5 16 22 9.7-2.5 16-9.8 16-22V12L24 4z" stroke="rgba(38,198,218,.3)" stroke-width=".8"/><path d="M20 28l-4-4-2 2 6 6 12-12-2-2-10 10z" fill="rgba(102,187,106,.8)"/><circle cx="38" cy="10" r="5" fill="none" stroke="rgba(38,198,218,.5)" stroke-width=".8"/><circle cx="38" cy="10" r="3" fill="rgba(38,198,218,.15)"/><path d="M41 7l-4 4M39 7l-2 2" stroke="rgba(38,198,218,.3)" stroke-width=".7"/><defs><linearGradient id="sg" x1="12" y1="6" x2="36" y2="42"><stop offset="0%" stop-color="rgba(38,198,218,.12)"/><stop offset="100%" stop-color="rgba(38,198,218,.04)"/></linearGradient></defs></svg>';
+
 // ===== RENDER CONTENT =====
 function renderBlock(block,mitreMatrix){
   switch(block.type){
@@ -423,7 +430,10 @@ function App(){
       e('div',{className:'wrap'},
         e('div',{className:'hero-grid'},
           e('div',{className:'hero-main'},
-            e('div',{className:'hero-title'},'SOC Guide'),
+            e('div',{className:'hero-title-wrap'},
+              e('div',{className:'hero-icon',dangerouslySetInnerHTML:{__html:HERO_ICON}}),
+              e('div',{className:'hero-title'},'SOC Guide')
+            ),
             e('div',{className:'hero-sub'},'Guía de referencia para operaciones ',e('span',{className:'hl'},'SOC')),
             e('div',{className:'hero-meta'},
               e('div',{className:'hero-meta-item'},
