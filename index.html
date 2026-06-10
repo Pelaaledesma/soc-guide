@@ -75,6 +75,9 @@
   .f-search .clear{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.6rem;padding:2px 4px;opacity:0;transition:opacity .12s;font-family:var(--mono)}
   .f-search .clear.show{opacity:.5}
   .f-search .clear:hover{opacity:1}
+  .f-search .g-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.6rem;padding:2px 6px;opacity:0;transition:opacity .12s;font-family:var(--mono);text-decoration:none}
+  .f-search .g-btn.show{opacity:.4}
+  .f-search .g-btn:hover{opacity:.8;color:var(--cyan)}
   .f-search-divider{width:1px;height:18px;background:var(--bd);flex-shrink:0;margin:0 4px}
   .f-btn{padding:7px 16px;font-size:.7rem;font-family:var(--mono);font-weight:500;background:transparent;border:none;color:var(--text2);cursor:pointer;white-space:nowrap;border-radius:var(--r);transition:all .12s;flex-shrink:0}
   .f-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
@@ -83,6 +86,13 @@
 
   /* ===== SECTIONS ===== */
   .sections{padding:24px 0 48px}
+
+  /* external refs */
+  .x-refs{margin-bottom:16px;padding:12px 16px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r)}
+  .x-refs-hdr{font-size:.6rem;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .x-refs-list{display:flex;flex-wrap:wrap;gap:6px}
+  .x-refs-link{font-size:.7rem;font-family:var(--mono);padding:4px 10px;background:rgba(38,198,218,.04);border:1px solid rgba(38,198,218,.1);border-radius:4px;color:var(--cyan);text-decoration:none;transition:all .12s}
+  .x-refs-link:hover{background:rgba(38,198,218,.08);border-color:rgba(38,198,218,.2)}
   .section{margin-bottom:24px;display:block}
   .section.hidden{display:none}
   .section-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--bg3);border:1px solid var(--bd);border-bottom:none;border-radius:var(--r) var(--r) 0 0;cursor:pointer;user-select:none;transition:background .12s}
@@ -353,6 +363,69 @@ var FILTERS = [
   {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat']}
 ];
 
+// ===== EXTERNAL REFERENCES =====
+var EXTERNAL_LINKS = [
+  {q:'4624',url:'https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4624',label:'Event 4624 (Microsoft)'},
+  {q:'4688',url:'https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4688',label:'Event 4688 (Microsoft)'},
+  {q:'4104',url:'https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_powershell_events',label:'Event 4104 ScriptBlock (Microsoft)'},
+  {q:'7045',url:'https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-7045',label:'Event 7045 (Microsoft)'},
+  {q:'sysmon 1',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-1',label:'Sysmon Event 1 (Microsoft)'},
+  {q:'sysmon 3',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-3',label:'Sysmon Event 3 (Microsoft)'},
+  {q:'sysmon 8',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-8',label:'Sysmon Event 8 (Microsoft)'},
+  {q:'sysmon 10',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-10',label:'Sysmon Event 10 (Microsoft)'},
+  {q:'sysmon 22',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-22',label:'Sysmon Event 22 (Microsoft)'},
+  {q:'t1059',url:'https://attack.mitre.org/techniques/T1059/',label:'T1059 — Command & Scripting (MITRE)'},
+  {q:'t1059.001',url:'https://attack.mitre.org/techniques/T1059/001/',label:'T1059.001 — PowerShell (MITRE)'},
+  {q:'t1566',url:'https://attack.mitre.org/techniques/T1566/',label:'T1566 — Phishing (MITRE)'},
+  {q:'t1047',url:'https://attack.mitre.org/techniques/T1047/',label:'T1047 — WMI (MITRE)'},
+  {q:'t1003',url:'https://attack.mitre.org/techniques/T1003/',label:'T1003 — Credential Dumping (MITRE)'},
+  {q:'t1485',url:'https://attack.mitre.org/techniques/T1485/',label:'T1485 — Data Destruction (MITRE)'},
+  {q:'t1070',url:'https://attack.mitre.org/techniques/T1070/',label:'T1070 — Indicator Removal (MITRE)'},
+  {q:'volatility',url:'https://volatilityfoundation.org/',label:'Volatility Foundation'},
+  {q:'malfind',url:'https://volatility3.readthedocs.io/en/latest/volatility3.plugins.html',label:'Volatility 3 Plugins (ReadTheDocs)'},
+  {q:'psscan',url:'https://volatility3.readthedocs.io/en/latest/volatility3.plugins.html',label:'Volatility 3 — psscan (ReadTheDocs)'},
+  {q:'netscan',url:'https://volatility3.readthedocs.io/en/latest/volatility3.plugins.html',label:'Volatility 3 — netscan (ReadTheDocs)'},
+  {q:'kql',url:'https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/',label:'KQL — Kusto Query Language (Microsoft)'},
+  {q:'splunk',url:'https://docs.splunk.com/Documentation/Splunk/latest/SearchReference/',label:'Splunk Search Reference'},
+  {q:'esql',url:'https://www.elastic.co/guide/en/elasticsearch/reference/current/eql.html',label:'Elastic EQL Docs'},
+  {q:'sentinel',url:'https://learn.microsoft.com/en-us/azure/sentiler/',label:'Microsoft Sentinel'},
+  {q:'sysmon',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon',label:'Sysmon (Microsoft)'},
+  {q:'lolbas',url:'https://lolbas-project.github.io/',label:'LOLBAS Project'},
+  {q:'lolbins',url:'https://lolbas-project.github.io/',label:'LOLBAS Project'},
+  {q:'wmic',url:'https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmic',label:'WMIC (Microsoft)'},
+  {q:'powershell',url:'https://learn.microsoft.com/en-us/powershell/',label:'PowerShell Docs (Microsoft)'},
+  {q:'schtasks',url:'https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page',label:'Task Scheduler (Microsoft)'},
+  {q:'beaconing',url:'https://www.cisa.gov/sites/default/files/publications/Understanding_Beaconing.pdf',label:'Understanding Beaconing (CISA)'},
+  {q:'dns tunneling',url:'https://www.cisa.gov/news-events/news/dns-tunneling',label:'DNS Tunneling (CISA)'},
+  {q:'ransomware',url:'https://www.cisa.gov/stopransomware',label:'Stop Ransomware (CISA)'},
+  {q:'phishing',url:'https://www.cisa.gov/phishing',label:'Phishing (CISA)'},
+  {q:'mitre',url:'https://attack.mitre.org/',label:'MITRE ATT&CK'},
+  {q:'attack',url:'https://attack.mitre.org/',label:'MITRE ATT&CK'},
+  {q:'tcpdump',url:'https://www.tcpdump.org/manpages/tcpdump.1.html',label:'tcpdump docs'},
+  {q:'tshark',url:'https://www.wireshark.org/docs/man-pages/tshark.html',label:'tshark docs'},
+  {q:'wireshark',url:'https://www.wireshark.org/docs/',label:'Wireshark Docs'},
+  {q:'virustotal',url:'https://www.virustotal.com/',label:'VirusTotal'},
+  {q:'yara',url:'https://virustotal.github.io/yara/',label:'YARA Docs'},
+  {q:'sigma',url:'https://sigmahq.io/',label:'Sigma HQ'},
+  {q:'elastic',url:'https://www.elastic.co/guide/en/elasticsearch/reference/current/',label:'Elasticsearch Reference'},
+  {q:'crowdstrike',url:'https://www.crowdstrike.com/',label:'CrowdStrike'},
+  {q:'wazuh',url:'https://documentation.wazuh.com/',label:'Wazuh Docs'},
+  {q:'autoruns',url:'https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns',label:'Autoruns (Sysinternals)'},
+  {q:'processhacker',url:'https://processhacker.sourceforge.io/',label:'Process Hacker'},
+  {q:'floss',url:'https://github.com/mandiant/flare-floss',label:'FLOSS (Mandiant)'},
+  {q:'exiftool',url:'https://exiftool.org/',label:'ExifTool'},
+  {q:'any.run',url:'https://any.run/',label:'ANY.RUN Sandbox'},
+  {q:'hybrid-analysis',url:'https://www.hybrid-analysis.com/',label:'Hybrid Analysis'}
+];
+
+function findExternalRefs(query){
+  if(!query||query.length<2)return[];
+  var q=query.toLowerCase();
+  return EXTERNAL_LINKS.filter(function(r){
+    return q.indexOf(r.q)>=0||r.q.indexOf(q)>=0;
+  }).slice(0,6);
+}
+
 // ===== HERO SVG ICON =====
 var HERO_ICON = '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 4L8 12v10c0 12.2 6.3 19.5 16 22 9.7-2.5 16-9.8 16-22V12L24 4z" fill="url(#sg)"/><path d="M24 4L8 12v10c0 12.2 6.3 19.5 16 22 9.7-2.5 16-9.8 16-22V12L24 4z" stroke="rgba(38,198,218,.3)" stroke-width=".8"/><path d="M20 28l-4-4-2 2 6 6 12-12-2-2-10 10z" fill="rgba(102,187,106,.8)"/><circle cx="38" cy="10" r="5" fill="none" stroke="rgba(38,198,218,.5)" stroke-width=".8"/><circle cx="38" cy="10" r="3" fill="rgba(38,198,218,.15)"/><path d="M41 7l-4 4M39 7l-2 2" stroke="rgba(38,198,218,.3)" stroke-width=".7"/><defs><linearGradient id="sg" x1="12" y1="6" x2="36" y2="42"><stop offset="0%" stop-color="rgba(38,198,218,.12)"/><stop offset="100%" stop-color="rgba(38,198,218,.04)"/></linearGradient></defs></svg>';
 
@@ -504,7 +577,8 @@ function App(){
         e('div',{className:'f-search'},
           e('svg',{width:'14',height:'14',viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2'},e('circle',{cx:'11',cy:'11',r:'8'}),e('path',{d:'M21 21l-4.35-4.35'})),
           e('input',{type:'text',placeholder:'Buscar...',value:search,onChange:function(e2){setSearch(e2.target.value)},onKeyDown:function(e2){if(e2.key==='Escape'){setSearch('')}}}),
-          e('button',{className:'clear'+(search?' show':''),onClick:function(){setSearch('')}},'x')
+          e('button',{className:'clear'+(search?' show':''),onClick:function(){setSearch('')}},'x'),
+          search?e('a',{className:'g-btn show',href:'https://www.google.com/search?q=SOC+'+encodeURIComponent(search),target:'_blank',rel:'noopener',title:'Buscar en Google'},'G'):null
         ),
         e('span',{className:'f-search-divider'}),
         FILTERS.map(function(f){
@@ -519,6 +593,13 @@ function App(){
     // CONTENT
     e('div',{className:'sections',key:'content'},
       e('div',{className:'wrap'},
+        search?function(){
+          var refs=findExternalRefs(search);
+          return refs.length?e('div',{className:'x-refs'},
+            e('div',{className:'x-refs-hdr'},'📎 Referencias externas'),
+            e('div',{className:'x-refs-list'},refs.map(function(r,i){return e('a',{key:i,className:'x-refs-link',href:r.url,target:'_blank',rel:'noopener'},r.label)}))
+          ):null;
+        }():null,
         filteredSections.map(function(s){
           return e(SectionCard,{key:s.id,section:s,mitreMatrix:mitreMatrix});
         }),
