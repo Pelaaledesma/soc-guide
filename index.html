@@ -64,9 +64,19 @@
 
   /* ===== FILTER TABS ===== */
   .filters{position:sticky;top:0;z-index:99;background:rgba(15,19,26,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:0}
-  .filters .wrap{display:flex;gap:2px;padding:8px 0;overflow-x:auto;flex-wrap:nowrap}
+  .filters .wrap{display:flex;align-items:center;gap:4px;padding:8px 0;overflow-x:auto;flex-wrap:nowrap}
   .filters .wrap::-webkit-scrollbar{height:0}
-  .f-btn{padding:7px 16px;font-size:.7rem;font-family:var(--mono);font-weight:500;background:transparent;border:none;color:var(--text2);cursor:pointer;white-space:nowrap;border-radius:var(--r);transition:all .12s}
+  .f-search{display:flex;align-items:center;gap:6px;flex-shrink:0;padding:0 10px 0 4px;border:1px solid rgba(255,255,255,.06);border-radius:var(--r);background:rgba(255,255,255,.02);transition:all .15s;margin-right:6px}
+  .f-search:focus-within{border-color:rgba(38,198,218,.3);background:rgba(38,198,218,.03)}
+  .f-search svg{flex-shrink:0;opacity:.3}
+  .f-search input{background:transparent;border:none;outline:none;padding:5px 0;font-size:.7rem;font-family:var(--mono);color:var(--text);width:120px;transition:width .2s}
+  .f-search input::placeholder{color:var(--text2);opacity:.4}
+  .f-search input:focus{width:180px}
+  .f-search .clear{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.6rem;padding:2px 4px;opacity:0;transition:opacity .12s;font-family:var(--mono)}
+  .f-search .clear.show{opacity:.5}
+  .f-search .clear:hover{opacity:1}
+  .f-search-divider{width:1px;height:18px;background:var(--bd);flex-shrink:0;margin:0 4px}
+  .f-btn{padding:7px 16px;font-size:.7rem;font-family:var(--mono);font-weight:500;background:transparent;border:none;color:var(--text2);cursor:pointer;white-space:nowrap;border-radius:var(--r);transition:all .12s;flex-shrink:0}
   .f-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
   .f-btn.active{color:var(--cyan);background:rgba(38,198,218,.08)}
   .f-btn .cnt{font-size:.55rem;color:var(--text2);opacity:.5;margin-left:6px}
@@ -178,6 +188,9 @@
     .hero-meta-item{font-size:.6rem}
     .hero-meta-item .num{font-size:.95rem}
     .filters .wrap{gap:0;padding:6px 0}
+    .f-search input{width:80px;font-size:.62rem}
+    .f-search input:focus{width:120px}
+    .f-search-divider{display:none}
     .f-btn{padding:5px 12px;font-size:.65rem}
     .section-hdr{padding:12px 14px}
     .section-body.open{padding:14px 14px 18px}
@@ -396,6 +409,7 @@ function App(){
   var _b=React.useState(true),loading=_b[0],setLoading=_b[1];
   var _c=React.useState(null),err=_c[0],setErr=_c[1];
   var _d=React.useState('all'),filter=_d[0],setFilter=_d[1];
+  var _e=React.useState(''),search=_e[0],setSearch=_e[1];
 
   React.useEffect(function(){
     fetch('data/sections.json')
@@ -407,12 +421,37 @@ function App(){
   var sections=data&&data.sections?data.sections:[];
   var mitreMatrix=data&&data.mitreMatrix?data.mitreMatrix:[];
 
+  function textMatches(txt,q){
+    if(!q||!txt)return false;
+    return txt.toLowerCase().indexOf(q.toLowerCase())>=0;
+  }
+
+  function blockMatches(b,q){
+    if(!b||!q)return false;
+    switch(b.type){
+      case 'table': return b.h.some(function(h){return textMatches(h,q)})||b.r.some(function(r){return r.some(function(c){return textMatches(typeof c==='string'?c:'',q)})});
+      case 'code': return b.lines.some(function(l){return textMatches(l,q)});
+      case 'callout': return textMatches(b.title,q)||textMatches(b.body,q);
+      case 'grid': return b.items.some(function(it){return textMatches(it.t,q)||textMatches(it.d,q)||textMatches(it.g,q)});
+      case 'accordion': return b.items.some(function(it){return textMatches(it.title,q)||it.lines.some(function(l){return textMatches(l,q)})});
+      case 'tabs': return b.tabs.some(function(t){return textMatches(t.label,q)||t.lines.some(function(l){return textMatches(l,q)})});
+      case 'sub': return textMatches(b.title,q);
+      default: return false;
+    }
+  }
+
   var filteredSections=React.useMemo(function(){
-    if(filter==='all')return sections;
-    var f=FILTERS.find(function(x){return x.id===filter});
-    if(!f)return sections;
-    return sections.filter(function(s){return f.sections.indexOf(s.id)>=0});
-  },[filter,sections]);
+    var sq=search.trim();
+    var byFilter=filter==='all'?sections:function(){
+      var f=FILTERS.find(function(x){return x.id===filter});
+      return f?sections.filter(function(s){return f.sections.indexOf(s.id)>=0}):sections;
+    }();
+    if(!sq)return byFilter;
+    return byFilter.filter(function(s){
+      if(textMatches(s.title,sq)||textMatches(s.desc,sq))return true;
+      return s.content&&s.content.some(function(b){return blockMatches(b,sq)});
+    });
+  },[filter,sections,search]);
 
   // loading
   if(loading)return e('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',flexDirection:'column',gap:18,background:'var(--bg)'}},
@@ -462,6 +501,12 @@ function App(){
     // FILTERS
     e('div',{className:'filters',key:'filters'},
       e('div',{className:'wrap'},
+        e('div',{className:'f-search'},
+          e('svg',{width:'14',height:'14',viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2'},e('circle',{cx:'11',cy:'11',r:'8'}),e('path',{d:'M21 21l-4.35-4.35'})),
+          e('input',{type:'text',placeholder:'Buscar...',value:search,onChange:function(e2){setSearch(e2.target.value)},onKeyDown:function(e2){if(e2.key==='Escape'){setSearch('')}}}),
+          e('button',{className:'clear'+(search?' show':''),onClick:function(){setSearch('')}},'x')
+        ),
+        e('span',{className:'f-search-divider'}),
         FILTERS.map(function(f){
           var c = f.id==='all' ? sections.length : sections.filter(function(s){return f.sections.indexOf(s.id)>=0}).length;
           return e('button',{key:f.id,className:'f-btn'+(filter===f.id?' active':''),onClick:function(){setFilter(f.id)}},
@@ -478,7 +523,11 @@ function App(){
           return e(SectionCard,{key:s.id,section:s,mitreMatrix:mitreMatrix});
         }),
         filteredSections.length===0?
-          e('div',{style:{textAlign:'center',padding:40,color:'var(--text2)',fontSize:'.85rem'}},'No hay secciones para este filtro.')
+          e('div',{style:{textAlign:'center',padding:'60px 20px',color:'var(--text2)'}},
+            e('div',{style:{fontSize:'1.2rem',marginBottom:'6px',opacity:.3}},'🔍'),
+            e('div',{style:{fontSize:'.85rem',marginBottom:'4px'}},search?'No hay resultados para "'+search+'"':'No hay secciones para este filtro.'),
+            e('div',{style:{fontSize:'.7rem',fontFamily:'var(--mono)',opacity:.5}},search?'Probá con otros términos o limpiá la búsqueda':'Probá con otro filtro')
+          )
           :null,
         e('div',{style:{textAlign:'center',fontSize:'.55rem',color:'var(--text2)',opacity:.2,padding:'24px 0 10px',fontFamily:'var(--mono)'}},'// soc-guide')
       )
