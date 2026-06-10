@@ -1,11 +1,12 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/SOC%20Guide-v1.0-00c8ff?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/SOC%20Guide-v2.0-26c6da?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/estado-en%20desarrollo-yellow?style=flat-square" alt="estado"/>
   <img src="https://img.shields.io/badge/licencia-MIT-blue?style=flat-square" alt="license"/>
+  <img src="https://img.shields.io/badge/dise%C3%B1o-terminal-0a0e14?style=flat-square" alt="design"/>
 </p>
 
-<h1 align="center">⎔ SOC Guide</h1>
-<p align="center">Guía de consulta rápida para SOC Analytics — basada en React, data-driven, pensada para estudiar.</p>
+<h1 align="center"><code>SOC Guide</code></h1>
+<p align="center">Guía de consulta rápida para SOC Analytics — estilo terminal, filtrable, data-driven.</p>
 <p align="center">
   <a href="#-secciones">Secciones</a> •
   <a href="#-stack">Stack</a> •
@@ -51,7 +52,8 @@ La guía cubre 17 secciones con contenido ordenado para consulta rápida:
 |------|-----------|
 | UI | React 18 (vanilla, sin bundler — CDN) |
 | Datos | JSON estructurado (`data/sections.json`) |
-| Estilo | CSS custom properties, grid, sin frameworks |
+| Estilo | CSS custom properties, grid, tema terminal oscuro |
+| Filtros | Navegación por categorías: TRIAGE, WINDOWS, LINUX, NETWORK, PLAYBOOKS, MITRE, TOOLS |
 | Deploy | Render (static site) |
 | Fuente | Inter + JetBrains Mono |
 
