@@ -11,6 +11,7 @@
 
 <h1 align="center"><code>⎔ SOC Guide</code></h1>
 <p align="center"><b>Guía de referencia para SOC Analytics</b> — estilo terminal oscuro, filtrable, con búsqueda en tiempo real.</p>
+<p align="center"><a href="https://soc-guide.onrender.com" target="_blank"><code>🔗 soc-guide.onrender.com</code></a></p>
 
 <p align="center">
   <a href="#-features">Features</a> •
@@ -88,21 +89,22 @@ Las **17 secciones** cubren el espectro completo de SOC Analytics:
 
 ## 🚀 Cómo usarla
 
-```bash
-# Opción 1 — Clonar y abrir
-git clone https://github.com/Pelaaledesma/soc-guide.git
-cd soc-guide
-# Abrir index.html en el navegador
+Ya está online en **Render**, deploy automático con cada push:
 
-# Opción 2 — Servir localmente
-python3 -m http.server 8080
-# Ir a http://localhost:8080
-
-# Opción 3 — Deploy en Render
-# Fork → conectar como static site (publishPath: .) → listo
+```
+🔗 https://soc-guide.onrender.com
 ```
 
-Render deploya automáticamente con cada push gracias al `render.yaml`.
+Si querés correrla local o forkearla:
+
+```bash
+git clone https://github.com/Pelaaledesma/soc-guide.git
+cd soc-guide
+python3 -m http.server 8080
+# Ir a http://localhost:8080
+```
+
+El `render.yaml` ya está configurado — fork, conectás a Render como static site con `publishPath: .` y deploy automático listo.
 
 <br>
 
