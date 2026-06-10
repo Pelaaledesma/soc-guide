@@ -2,110 +2,149 @@
   <img src="https://img.shields.io/badge/SOC%20Guide-v2.0-26c6da?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/estado-en%20desarrollo-yellow?style=flat-square" alt="estado"/>
   <img src="https://img.shields.io/badge/licencia-MIT-blue?style=flat-square" alt="license"/>
-  <img src="https://img.shields.io/badge/dise%C3%B1o-terminal-0a0e14?style=flat-square" alt="design"/>
+  <img src="https://img.shields.io/badge/dise%C3%B1o-terminal-0a0e14?style=flat-square" alt="terminal"/>
+  <img src="https://img.shields.io/badge/buscar-sí-66bb6a?style=flat-square" alt="search"/>
+  <img src="https://img.shields.io/badge/stack-React%2018-42a5f5?style=flat-square" alt="react"/>
 </p>
 
-<h1 align="center"><code>SOC Guide</code></h1>
-<p align="center">Guía de consulta rápida para SOC Analytics — estilo terminal, filtrable, data-driven.</p>
+<br>
+
+<h1 align="center"><code>⎔ SOC Guide</code></h1>
+<p align="center"><b>Guía de referencia para SOC Analytics</b> — estilo terminal oscuro, filtrable, con búsqueda en tiempo real.</p>
+
 <p align="center">
+  <a href="#-features">Features</a> •
   <a href="#-secciones">Secciones</a> •
   <a href="#-stack">Stack</a> •
   <a href="#-cómo-usarla">Cómo usarla</a> •
-  <a href="#-cómo-contribuir">Contribuir</a>
+  <a href="#-capturas">Capturas</a>
 </p>
+
+<br>
 
 ---
 
-### ¿Por qué?
+<br>
 
-Arrancando el path de SOC Analytics me di cuenta de que cada tema implicaba buscar en mil lugares distintos. Un EventID acá, un comando de Volatility allá, una query de Sentinel en un video, un playbook en un PDF. Terminaba con más pestañas abiertas que estudio hecho.
+## ⚡ Features
 
-En lugar de seguir perdiendo tiempo, armé esto: una guía con React y datos en JSON, pensada para tener la información justa y necesaria en un solo lugar.
+|  |  |
+|---|---|
+| 🎨 **Diseño terminal oscuro** | Paleta #0a0e14, acentos cyan/orange, JetBrains Mono |
+| 🔍 **Búsqueda en tiempo real** | Filtra secciones por contenido (títulos, tablas, comandos, todo) |
+| 🏷️ **Filtros por categoría** | ALL · TRIAGE · WINDOWS · LINUX · NETWORK · PLAYBOOKS · MITRE · TOOLS |
+| 🖼️ **Hero con imagen de fondo** | Foto SOC con overlay oscuro + escudo SVG animado |
+| 📎 **Referencias externas** | Links directos a documentación oficial (Microsoft, MITRE, CISA, Volatility, etc.) al buscar |
+| 🌐 **Google Search integrado** | Botón "G" en el buscador para ampliar la consulta en Google |
+| 📋 **Copy con un clic** | Botón ⎘ copiar en todos los bloques de código |
+| 📊 **Matriz MITRE ATT&CK** | Técnicas navegables con links directos a attack.mitre.org |
+| ⚡ **Sin build ni dependencias** | React 18 vía CDN, todo en un HTML |
+| 📱 **Responsive** | Diseño adaptado a desktop y mobile |
 
-### 📋 Secciones
+<br>
 
-La guía cubre 17 secciones con contenido ordenado para consulta rápida:
+## 📋 Secciones
 
-| # | Sección | Qué incluye |
-|---|---------|-------------|
-| 🔍 | **Triage de Alertas** | Proceso de 5 pasos, árbol de decisión, preguntas guía por tipo de alerta |
-| 🏷️ | **Matriz de Severidad** | Clasificación CRITICAL / HIGH / MEDIUM / LOW con ejemplos y acciones |
-| 📋 | **Windows EventLogs Clave** | EventIDs 4624, 4688, 4104, 7045 y más con riesgo asociado |
-| 📡 | **Sysmon Events** | EventIDs 1, 3, 8, 10, 22 y más para monitoreo avanzado |
-| 💻 | **Comandos Forense Windows** | PowerShell, netstat, Get-WinEvent, Scheduled Tasks, Run keys |
-| ⚡ | **LOLBins** | 12 binarios legítimos con uso malicioso y cómo detectarlos |
-| 🐧 | **Comandos Forense Linux** | ps, ss, find, journalctl, auditd, SUID/SGID |
-| 📝 | **Logs Críticos en Linux** | auth.log, syslog, audit.log, apache, mail |
-| 🌐 | **Análisis de Red** | Beaconing, DGA, Data Exfil, DNS Tunneling con tcpdump/tshark |
-| ⚡ | **Queries Útiles** | KQL (Sentinel), SPL (Splunk), ESQL (Elastic) |
-| ⛔ | **Contención Rápida** | Acciones por escenario: ransomware, C2, cuenta comprometida, phishing |
-| 📋 | **Playbooks** | Procedimientos paso a paso para phishing y ransomware |
-| 🎯 | **MITRE ATT&CK** | 858 técnicas con descripciones, enlaces y detección rápida |
-| 🔬 | **Forensia de Memoria RAM** | Comandos de Volatility 3 (psscan, netscan, malfind, filescan) |
-| 🦠 | **Análisis de Malware** | Triage rápido, hashes, entropía, sandboxes, packers |
-| 🛠️ | **Toolbox** | Herramientas organizadas por función: SIEM, EDR, CTI, OSINT, Forensia |
-| 📄 | **Cheat Sheet** | Conversiones rápidas: bytes, hashes, epoch, hex, base64, URLs |
+Las **17 secciones** cubren el espectro completo de SOC Analytics:
 
-### 🧱 Stack
+|  | Sección | Contenido |
+|---|---|---|
+| 🔍 | **Triage de Alertas** | Proceso 5 pasos, árbol decisión, preguntas guía |
+| 🏷️ | **Matriz de Severidad** | CRITICAL / HIGH / MEDIUM / LOW con ejemplos |
+| 📋 | **Windows EventLogs** | EventIDs 4624, 4688, 4104, 7045 y más |
+| 📡 | **Sysmon Events** | EventIDs 1, 3, 8, 10, 22 |
+| 💻 | **Forense Windows** | PowerShell, netstat, Get-WinEvent, Run keys |
+| ⚡ | **LOLBins** | 12 binarios legítimos con uso malicioso |
+| 🐧 | **Forense Linux** | ps, ss, find, journalctl, auditd |
+| 📝 | **Logs Linux** | auth.log, syslog, audit.log |
+| 🌐 | **Análisis de Red** | Beaconing, DGA, Data Exfil, DNS Tunneling |
+| ⚡ | **Queries SIEM** | KQL (Sentinel), SPL (Splunk), ESQL (Elastic) |
+| ⛔ | **Contención Rápida** | Ransomware, C2, cuenta comprometida, phishing |
+| 📋 | **Playbooks** | Phishing y ransomware paso a paso |
+| 🎯 | **MITRE ATT&CK** | Técnicas con enlaces y detección rápida |
+| 🔬 | **Forensia RAM** | Volatility 3: psscan, netscan, malfind, filescan |
+| 🦠 | **Malware** | Triage, hashes, entropía, sandboxes, packers |
+| 🛠️ | **Toolbox** | SIEM, EDR, CTI, OSINT, Forensia |
+| 📄 | **Cheat Sheet** | Bytes, hashes, epoch, hex, base64, URLs |
 
-| Capa | Tecnología |
-|------|-----------|
-| UI | React 18 (vanilla, sin bundler — CDN) |
-| Datos | JSON estructurado (`data/sections.json`) |
-| Estilo | CSS custom properties, grid, tema terminal oscuro |
-| Filtros | Navegación por categorías: TRIAGE, WINDOWS, LINUX, NETWORK, PLAYBOOKS, MITRE, TOOLS |
-| Deploy | Render (static site) |
-| Fuente | Inter + JetBrains Mono |
+<br>
 
-### 🚀 Cómo usarla
-
-Es un sitio estático. No requiere build ni dependencias.
-
-**Opción 1 — Abrir directo**
+## 🧱 Stack
 
 ```
+┌─────────────────────────────────────┐
+│  UI    │  React 18 (sin bundler)    │
+│  Datos │  JSON → data/sections.json │
+│  Busc. │  Tiempo real (JS puro)     │
+│  Ext.  │  Links curados + Google     │
+│  Deploy│  Render (auto-deploy)       │
+│  Fonts │  Inter + JetBrains Mono     │
+└─────────────────────────────────────┘
+```
+
+**Sin framework CSS, sin build step, sin backend.**
+
+<br>
+
+## 🚀 Cómo usarla
+
+```bash
+# Opción 1 — Clonar y abrir
 git clone https://github.com/Pelaaledesma/soc-guide.git
 cd soc-guide
 # Abrir index.html en el navegador
-```
 
-**Opción 2 — Servir localmente (opcional)**
-
-```bash
+# Opción 2 — Servir localmente
 python3 -m http.server 8080
 # Ir a http://localhost:8080
+
+# Opción 3 — Deploy en Render
+# Fork → conectar como static site (publishPath: .) → listo
 ```
 
-**Opción 3 — Deploy propio en Render**
+Render deploya automáticamente con cada push gracias al `render.yaml`.
 
-Forkeá el repo, conectalo a Render como static site con `publishPath: .` y listo.
+<br>
 
-### 📁 Estructura
+## 📁 Estructura
 
 ```
 soc-guide/
-├── index.html              # App React (todo en un archivo)
+├── index.html              # App React 18 completa (sin bundler)
 ├── data/
-│   └── sections.json       # Contenido de todas las secciones
+│   └── sections.json       # Contenido estructurado de 17 secciones
 ├── scripts/
 │   ├── auto-commit.sh      # Auto-commit con timestamp
 │   ├── sync-mitre.js       # Sincronización MITRE ATT&CK
 │   └── update-all.sh       # Actualización completa
-├── render.yaml             # Config de Render
+├── render.yaml             # Config Render static site
 └── README.md
 ```
 
-### 🤝 Cómo contribuir
+<br>
 
-Si estás en la misma y querés aportar, bienvenido:
+## 🔎 Búsqueda y referencias
 
-- **Agregar contenido**: editá `data/sections.json` y mandá PR
-- **Corregir errores**: si algún EventID, comando o query está mal, abrí un issue
-- **Sugerir secciones**: lo que te haya hecho falta y no está, proponelo
+El buscador en tiempo real indexa **todo el contenido** localmente (títulos, tablas, comandos, descripciones) y se combina con los filtros por categoría.
 
-Cualquier crítica constructiva suma. Recién estoy arrancando y esto es parte del aprendizaje.
+Cuando encontrás un tema, el panel **📎 Referencias externas** te da acceso directo a la documentación oficial:
 
-### 📄 Licencia
+| Término | Referencia |
+|---------|-----------|
+| `4624`, `4688`, `4104` | Microsoft Docs |
+| `T1059`, `T1566`, `T1047` | MITRE ATT&CK |
+| `volatility`, `malfind` | Volatility Foundation |
+| `kql`, `splunk`, `esql` | Microsoft / Splunk / Elastic |
+| `ransomware`, `phishing` | CISA |
+| `sysmon`, `autoruns` | Sysinternals |
+| `lolbas` | LOLBAS Project |
+| `yara`, `sigma` | YARA / Sigma |
+
+Además, el botón **G** al lado del buscador abre una consulta en Google con `SOC + {término}`.
+
+<br>
+
+## 📄 Licencia
 
 MIT — podés usarlo, modificarlo y compartirlo libremente.
 
