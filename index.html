@@ -156,9 +156,15 @@
 
   /* grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin:10px 0}
-  .g-card{padding:12px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r)}
+  .g-card{padding:12px 14px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:border-color .12s,background .12s}
+  .g-card:hover{border-color:rgba(255,255,255,.08);background:var(--bg4)}
+  .g-card.g-exp{border-color:rgba(38,198,218,.12);background:rgba(38,198,218,.02)}
   .g-card h4{font-size:.8rem;font-weight:600;margin-bottom:4px;color:var(--text)}
+  .g-card .g-hdr{font-size:.8rem}
+  .g-card .g-short{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .g-card p{font-size:.72rem;color:var(--text2);line-height:1.4}
+  .g-card .g-expand{display:block;font-size:.58rem;font-family:var(--mono);color:var(--cyan);opacity:.5;margin-top:6px;transition:opacity .12s}
+  .g-card:hover .g-expand{opacity:.8}
   .g-card .g-tag{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:4px;font-size:.58rem;font-weight:500;font-family:var(--mono)}
 
   /* accordion */
@@ -211,10 +217,12 @@
 
   /* ===== TOOLS ===== */
   .t-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 10px;align-items:center}
-  .t-row-lbl{font-size:.62rem;font-family:var(--mono);color:var(--text2);width:40px;flex-shrink:0;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .t-row-lbl{font-size:.62rem;font-family:var(--mono);color:var(--text2);width:160px;flex-shrink:0;padding:6px 0;letter-spacing:.01em;font-weight:500}
+  .t-row-lbl .t-row-code{font-size:.55rem;opacity:.5;font-weight:400}
   .t-pill{padding:4px 12px;font-size:.65rem;font-family:var(--mono);background:var(--bg3);border:1px solid var(--bd);border-radius:4px;color:var(--text2);cursor:pointer;transition:all .1s}
   .t-pill:hover{border-color:rgba(255,255,255,.1);color:var(--text)}
   .t-pill.on{background:rgba(38,198,218,.1);border-color:rgba(38,198,218,.25);color:var(--cyan)}
+  .t-pill-desc{font-size:.6rem;color:var(--text2);opacity:.6;margin-left:4px;font-family:var(--mono)}
   .t-result{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .t-score{font-size:2.2rem;font-weight:700;font-family:var(--mono);line-height:1}
   .t-sev{font-size:.7rem;font-family:var(--mono);padding:2px 10px;border-radius:4px;font-weight:600;letter-spacing:.04em;display:inline-block;margin-top:4px}
@@ -331,13 +339,22 @@ function TableView(p){
 function GridView(p){
   return e('div',{className:'grid'},
     p.items.map(function(it,i){
-      var tc = {b:'t-b',g:'t-g',y:'t-y',r:'t-r',p:'t-p',o:'t-o'}[it.c]||'t-b';
-      return e('div',{className:'g-card',key:i},
-        e('h4',null,(it.i||'')+' '+it.t),
-        e('p',null,it.d||it.body),
-        it.g?e('span',{className:'g-tag '+tc},it.g):null
-      );
+      return e(GridCard,{key:i,item:it});
     })
+  );
+}
+
+function GridCard(p){
+  var _a=React.useState(false),exp=_a[0],setExp=_a[1];
+  var it=p.item;
+  var tc = {b:'t-b',g:'t-g',y:'t-y',r:'t-r',p:'t-p',o:'t-o'}[it.c]||'t-b';
+  var desc=it.d||it.body||'';
+  var short=desc.length>100?desc.slice(0,100)+'...':desc;
+  return e('div',{className:'g-card'+(exp?' g-exp':''),onClick:function(){setExp(!exp)}},
+    e('h4',null,e('span',{className:'g-hdr'},(it.i||'')+' '+it.t)),
+    e('p',{className:exp?'':'g-short'},exp?desc:short),
+    it.g?e('span',{className:'g-tag '+tc},it.g):null,
+    desc.length>100?e('span',{className:'g-expand'},exp?'▲ menos':'▼ más'):null
   );
 }
 
@@ -450,6 +467,8 @@ function md5Bytes(b){var s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(
 // ===== CVSS v3.1 =====
 var CVSS_V={AV:{N:.85,A:.62,L:.55,P:.2},AC:{L:.77,H:.44},PR_U:{N:.85,L:.62,H:.27},PR_C:{N:.85,L:.68,H:.5},UI:{N:.85,R:.62},C:{H:.56,L:.22,N:0},I:{H:.56,L:.22,N:0},A:{H:.56,L:.22,N:0}};
 var CVSS_M={AV:{N:'Network',A:'Adjacent',L:'Local',P:'Physical'},AC:{L:'Low',H:'High'},PR:{N:'None',L:'Low',H:'High'},UI:{N:'None',R:'Required'},S:{U:'Unchanged',C:'Changed'},C:{H:'High',L:'Low',N:'None'},I:{H:'High',L:'Low',N:'None'},A:{H:'High',L:'Low',N:'None'}};
+var CVSS_N={AV:'Attack Vector',AC:'Attack Complexity',PR:'Privileges Required',UI:'User Interaction',S:'Scope',C:'Confidentiality',I:'Integrity',A:'Availability'};
+var CVSS_D={AV:{N:'Red accesible remotamente',A:'Red adyacente (ej: WiFi/BT)',L:'Requiere acceso local',P:'Requiere acceso físico'},AC:{L:'Sin condiciones especiales',H:'Requiere condiciones específicas (timing, conocimiento)'},PR:{N:'Sin autenticación',L:'Autenticación básica (user)',H:'Autenticación elevada (admin)'},UI:{N:'Sin interacción del usuario',R:'Requiere acción del usuario (click, abrir)'},S:{U:'Impacto contenido en el componente',C:'Impacto se propaga a otros componentes'},C:{H:'Pérdida total de confidencialidad',L:'Pérdida parcial',N:'Sin pérdida'},I:{H:'Pérdida total de integridad',L:'Pérdida parcial',N:'Sin pérdida'},A:{H:'Pérdida total de disponibilidad',L:'Pérdida parcial',N:'Sin pérdida'}};
 
 function cvssCalc(m){
   var av=CVSS_V.AV[m.AV],ac=CVSS_V.AC[m.AC],pr=m.S==='U'?CVSS_V.PR_U[m.PR]:CVSS_V.PR_C[m.PR],ui=CVSS_V.UI[m.UI];
@@ -490,10 +509,15 @@ function CVECalculator(){
     if(p){sAv(p.AV);sAc(p.AC);sPr(p.PR);sUi(p.UI);sSc(p.S);sCo(p.C);sIn(p.I);sAvail(p.A)}
     sVIn(v);
   }
-  function pill(id,vals,cur,set){
+  function metricRow(id,vals,cur,set){
     return e('div',{className:'t-row',key:id},
-      e('span',{className:'t-row-lbl'},id),
-      Object.keys(vals).map(function(k){return e('button',{key:k,className:'t-pill'+(cur===k?' on':''),onClick:function(){set(k)}},vals[k])}));
+      e('span',{className:'t-row-lbl'},CVSS_N[id],e('span',{className:'t-row-code'},' ('+id+')')),
+      e('div',{style:{display:'flex',flexWrap:'wrap',gap:3,alignItems:'center'}},
+        Object.keys(vals).map(function(k){
+          var label=k+': '+vals[k];
+          return e('button',{key:k,className:'t-pill'+(cur===k?' on':''),onClick:function(){set(k)}},label);
+        }),
+        e('span',{className:'t-pill-desc'},CVSS_D[id][cur])));
   }
   return e('div',null,
     e('div',{className:'t-desc'},'Calculá la severidad de una vulnerabilidad usando CVSS v3.1. Seleccioná cada métrica o pegá un vector string completo.'),
@@ -508,14 +532,14 @@ function CVECalculator(){
         e('div',{style:{display:'flex',gap:14,marginTop:4,fontSize:'.58rem',fontFamily:'var(--mono)',color:'var(--text2)'}},
           e('span',null,'Impacto: ',r.imp.toFixed(2)),
           e('span',null,'Explotabilidad: ',r.exp.toFixed(2))))),
-    pill('AV',CVSS_M.AV,av,sAv),
-    pill('AC',CVSS_M.AC,ac,sAc),
-    pill('PR',CVSS_M.PR,pr,sPr),
-    pill('UI',CVSS_M.UI,ui,sUi),
-    pill('S',CVSS_M.S,sc,sSc),
-    pill('C',CVSS_M.C,co,sCo),
-    pill('I',CVSS_M.I,in_,sIn),
-    pill('A',CVSS_M.A,avail,sAvail),
+    metricRow('AV',CVSS_M.AV,av,sAv),
+    metricRow('AC',CVSS_M.AC,ac,sAc),
+    metricRow('PR',CVSS_M.PR,pr,sPr),
+    metricRow('UI',CVSS_M.UI,ui,sUi),
+    metricRow('S',CVSS_M.S,sc,sSc),
+    metricRow('C',CVSS_M.C,co,sCo),
+    metricRow('I',CVSS_M.I,in_,sIn),
+    metricRow('A',CVSS_M.A,avail,sAvail),
     e('div',{style:{marginTop:10}},
       e('div',{className:'t-sub'},'O ingresá un vector string'),
       e('input',{className:'t-input',type:'text',value:vIn,onChange:onVec,placeholder:'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'})));
