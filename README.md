@@ -1,11 +1,13 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/SOC%20Guide-v2.1-26c6da?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/SOC%20Guide-v2.2-26c6da?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/estado-en%20desarrollo-yellow?style=flat-square" alt="estado"/>
   <img src="https://img.shields.io/badge/licencia-MIT-blue?style=flat-square" alt="license"/>
   <img src="https://img.shields.io/badge/dise%C3%B1o-terminal-0a0e14?style=flat-square" alt="terminal"/>
   <img src="https://img.shields.io/badge/buscar-s%C3%AD-66bb6a?style=flat-square" alt="search"/>
   <img src="https://img.shields.io/badge/stack-React%2018-42a5f5?style=flat-square" alt="react"/>
   <img src="https://img.shields.io/badge/herramientas-2-ffa726?style=flat-square" alt="tools"/>
+  <img src="https://img.shields.io/badge/secciones-24-66bb6a?style=flat-square" alt="sections"/>
+  <img src="https://img.shields.io/badge/mindmaps-4-ab47bc?style=flat-square" alt="mindmaps"/>
 </p>
 
 <br>
