@@ -19,13 +19,49 @@
         },
         {
           "type": "table",
-          "h": ["#", "Paso", "Acción", "Pregunta clave", "Tiempo"],
+          "h": [
+            "#",
+            "Paso",
+            "Acción",
+            "Pregunta clave",
+            "Tiempo"
+          ],
           "r": [
-            ["1", "Validar", "Revisar timestamp, fuente, tipo de evento. ¿El source IP existe? ¿El user está activo?", "¿Es un evento real o error de parsing/falso positivo?", "30 seg"],
-            ["2", "Clasificar", "Tipo: malware, phishing, acceso no autorizado, DDoS, insider threat, policy violation", "¿Qué categoría de ataque? ¿MITRE tactic inicial?", "30 seg"],
-            ["3", "Priorizar", "Criticidad del activo × tipo de amenaza × solidez de evidencia", "¿A quién afecta y qué tan grave es realmente?", "60 seg"],
-            ["4", "Investigar", "Correlacionar logs: proceso padre, conexiones de red, usuarios relacionados, timeline", "¿Qué más pasó antes/después? ¿Esto es aislado o systemic?", "5-15 min"],
-            ["5", "Actuar/Cerrar", "Contener si aplica (aislar, bloquear, suspender) o documentar como FP", "¿Necesito escalar o puedo cerrar con evidencia?", "2 min"]
+            [
+              "1",
+              "Validar",
+              "Revisar timestamp, fuente, tipo de evento. ¿El source IP existe? ¿El user está activo?",
+              "¿Es un evento real o error de parsing/falso positivo?",
+              "30 seg"
+            ],
+            [
+              "2",
+              "Clasificar",
+              "Tipo: malware, phishing, acceso no autorizado, DDoS, insider threat, policy violation",
+              "¿Qué categoría de ataque? ¿MITRE tactic inicial?",
+              "30 seg"
+            ],
+            [
+              "3",
+              "Priorizar",
+              "Criticidad del activo × tipo de amenaza × solidez de evidencia",
+              "¿A quién afecta y qué tan grave es realmente?",
+              "60 seg"
+            ],
+            [
+              "4",
+              "Investigar",
+              "Correlacionar logs: proceso padre, conexiones de red, usuarios relacionados, timeline",
+              "¿Qué más pasó antes/después? ¿Esto es aislado o systemic?",
+              "5-15 min"
+            ],
+            [
+              "5",
+              "Actuar/Cerrar",
+              "Contener si aplica (aislar, bloquear, suspender) o documentar como FP",
+              "¿Necesito escalar o puedo cerrar con evidencia?",
+              "2 min"
+            ]
           ]
         },
         {
@@ -63,12 +99,42 @@
         {
           "type": "grid",
           "items": [
-            {"i":"🦠","t":"Malware","d":"¿El binary tiene firma válida? ¿Pasó por email/web/removable? ¿Qué proceso lo lanzó? ¿Llamadas a C2?","c":"r"},
-            {"i":"🎣","t":"Phishing","d":"¿El user reportó o lo detectó el gateway? ¿Hizo click? ¿Credenciales capturadas? ¿Hay ejecución posterior?","c":"y"},
-            {"i":"🔑","t":"Acceso no autorizado","d":"¿Login desde IP desconocida? ¿Horario inusual? ¿Account nunca usada? ¿Múltiples failures previas?","c":"o"},
-            {"i":"💣","t":"Ransomware","d":"¿Qué extensión? ¿Nota de rescate? ¿Archivos modificados? ¿Proceso de crypto detectado? ¿Propagación a shares?","c":"r"},
-            {"i":"🌐","t":"C2 / Beaconing","d":"¿IP reputación? ¿Dominio recién registrado? ¿Patrón temporal (jitter)? ¿Protocolo no estándar?","c":"p"},
-            {"i":"📤","t":"Exfiltración","d":"¿Volumen de datos anormal? ¿Horario fuera de oficina? ¿A IP externa no conocida? ¿Protocolo de transferencia?","c":"b"}
+            {
+              "i": "🦠",
+              "t": "Malware",
+              "d": "¿El binary tiene firma válida? ¿Pasó por email/web/removable? ¿Qué proceso lo lanzó? ¿Llamadas a C2?",
+              "c": "r"
+            },
+            {
+              "i": "🎣",
+              "t": "Phishing",
+              "d": "¿El user reportó o lo detectó el gateway? ¿Hizo click? ¿Credenciales capturadas? ¿Hay ejecución posterior?",
+              "c": "y"
+            },
+            {
+              "i": "🔑",
+              "t": "Acceso no autorizado",
+              "d": "¿Login desde IP desconocida? ¿Horario inusual? ¿Account nunca usada? ¿Múltiples failures previas?",
+              "c": "o"
+            },
+            {
+              "i": "💣",
+              "t": "Ransomware",
+              "d": "¿Qué extensión? ¿Nota de rescate? ¿Archivos modificados? ¿Proceso de crypto detectado? ¿Propagación a shares?",
+              "c": "r"
+            },
+            {
+              "i": "🌐",
+              "t": "C2 / Beaconing",
+              "d": "¿IP reputación? ¿Dominio recién registrado? ¿Patrón temporal (jitter)? ¿Protocolo no estándar?",
+              "c": "p"
+            },
+            {
+              "i": "📤",
+              "t": "Exfiltración",
+              "d": "¿Volumen de datos anormal? ¿Horario fuera de oficina? ¿A IP externa no conocida? ¿Protocolo de transferencia?",
+              "c": "b"
+            }
           ]
         },
         {
@@ -77,12 +143,32 @@
         },
         {
           "type": "table",
-          "h": ["Escenario", "Acción inmediata", "No hacer"],
+          "h": [
+            "Escenario",
+            "Acción inmediata",
+            "No hacer"
+          ],
           "r": [
-            ["Host con malware", "Aislar de red (no apagar). Capturar volátil.", "No apagar — se pierde RAM con procesos, C2, credenciales"],
-            ["Cuenta comprometida", "Resetear contraseña, revocar sessions, revisar mailbox rules", "No borrar usuario — perderías evidencia de lateral movement"],
-            ["IP maliciosa saliente", "Bloquear en firewall y proxy. Revisar otros hosts que conectaron", "No bloquear sin revisar si es IP compartida (CDN, cloud)"],
-            ["Phishing reportado", "Eliminar de todos los inboxes. Verificar si otros usuarios recibieron igual", "No responder al sender ni dar clic a links para 'verificar'"]
+            [
+              "Host con malware",
+              "Aislar de red (no apagar). Capturar volátil.",
+              "No apagar — se pierde RAM con procesos, C2, credenciales"
+            ],
+            [
+              "Cuenta comprometida",
+              "Resetear contraseña, revocar sessions, revisar mailbox rules",
+              "No borrar usuario — perderías evidencia de lateral movement"
+            ],
+            [
+              "IP maliciosa saliente",
+              "Bloquear en firewall y proxy. Revisar otros hosts que conectaron",
+              "No bloquear sin revisar si es IP compartida (CDN, cloud)"
+            ],
+            [
+              "Phishing reportado",
+              "Eliminar de todos los inboxes. Verificar si otros usuarios recibieron igual",
+              "No responder al sender ni dar clic a links para 'verificar'"
+            ]
           ]
         },
         {
@@ -112,13 +198,55 @@
         },
         {
           "type": "table",
-          "h": ["Severidad", "Activo", "Evidencia", "Ejemplo", "Acción", "SLA"],
+          "h": [
+            "Severidad",
+            "Activo",
+            "Evidencia",
+            "Ejemplo",
+            "Acción",
+            "SLA"
+          ],
           "r": [
-            ["CRITICAL", "Crítico (DC, SQL, ERP, FW)", "Sólida (técnica confirmada)", "Ransomware en DC, C2 desde domain controller, exfiltración desde SQL", "Contener YA, escalar a IR", "10 min"],
-            ["HIGH", "Importante (servidores prod)", "Moderada-Fuerte", "Lateral movement, credenciales robadas, binary sin firma en servidor", "Aislar, escalar urgente", "30 min"],
-            ["MEDIUM", "Estándar (workstations, users)", "Parcial (indicio sin confirmar)", "Binary desde temp en workstation, login desde IP inusual", "Investigar en 24h", "4 hs"],
-            ["LOW", "Bajo (test, periféricos)", "Débil (anomalía sin contexto)", "Login IP inusual a cuenta deshabilitada, scan a puerto no crítico", "Ticket, revisión semanal", "7 días"],
-            ["INFO", "Cualquier activo", "Sin evidencia de daño", "Evento aislado sin correlación, block genérico de AV", "Monitorear, no investigar", "-"]
+            [
+              "CRITICAL",
+              "Crítico (DC, SQL, ERP, FW)",
+              "Sólida (técnica confirmada)",
+              "Ransomware en DC, C2 desde domain controller, exfiltración desde SQL",
+              "Contener YA, escalar a IR",
+              "10 min"
+            ],
+            [
+              "HIGH",
+              "Importante (servidores prod)",
+              "Moderada-Fuerte",
+              "Lateral movement, credenciales robadas, binary sin firma en servidor",
+              "Aislar, escalar urgente",
+              "30 min"
+            ],
+            [
+              "MEDIUM",
+              "Estándar (workstations, users)",
+              "Parcial (indicio sin confirmar)",
+              "Binary desde temp en workstation, login desde IP inusual",
+              "Investigar en 24h",
+              "4 hs"
+            ],
+            [
+              "LOW",
+              "Bajo (test, periféricos)",
+              "Débil (anomalía sin contexto)",
+              "Login IP inusual a cuenta deshabilitada, scan a puerto no crítico",
+              "Ticket, revisión semanal",
+              "7 días"
+            ],
+            [
+              "INFO",
+              "Cualquier activo",
+              "Sin evidencia de daño",
+              "Evento aislado sin correlación, block genérico de AV",
+              "Monitorear, no investigar",
+              "-"
+            ]
           ]
         },
         {
@@ -127,12 +255,32 @@
         },
         {
           "type": "table",
-          "h": ["Criticidad", "Activos", "Impacto si cae"],
+          "h": [
+            "Criticidad",
+            "Activos",
+            "Impacto si cae"
+          ],
           "r": [
-            ["Crítico", "Domain Controllers, Firewalls, SIEM, ERP, bases de datos productivas", "Caída del negocio, pérdida de datos, imposibilidad de operar"],
-            ["Alto", "Servidores de aplicación, file servers, exchange, proxies", "Productividad afectada, datos no disponibles"],
-            ["Medio", "Workstations, impresoras, switches de acceso", "Impacto local, usuario individual afectado"],
-            ["Bajo", "Servidores de test, VMs no productivas, IoT no crítico", "Sin impacto al negocio"]
+            [
+              "Crítico",
+              "Domain Controllers, Firewalls, SIEM, ERP, bases de datos productivas",
+              "Caída del negocio, pérdida de datos, imposibilidad de operar"
+            ],
+            [
+              "Alto",
+              "Servidores de aplicación, file servers, exchange, proxies",
+              "Productividad afectada, datos no disponibles"
+            ],
+            [
+              "Medio",
+              "Workstations, impresoras, switches de acceso",
+              "Impacto local, usuario individual afectado"
+            ],
+            [
+              "Bajo",
+              "Servidores de test, VMs no productivas, IoT no crítico",
+              "Sin impacto al negocio"
+            ]
           ]
         },
         {
@@ -142,9 +290,24 @@
         {
           "type": "grid",
           "items": [
-            {"i":"⬆️","t":"Suben severidad","d":"Múltiples hosts afectados, dato sensible involucrado, horario no laboral, cuenta privilegiada, evidencia de movimento lateral, técnica conocida de APT","c":"r"},
-            {"i":"⬇️","t":"Bajan severidad","d":"Evento aislado, IP interna conocida (scan interno), usuario reportó el evento, no hay dato sensible en riesgo, actividad en horario laboral con ticket de cambio","c":"g"},
-            {"i":"🔄","t":"Requieren contexto","d":"Alerta de AV sin ejecución confirmada, login fallido sin patrón, conexión a CDN/IP conocida, proceso firmado por vendor legítimo","c":"y"}
+            {
+              "i": "⬆️",
+              "t": "Suben severidad",
+              "d": "Múltiples hosts afectados, dato sensible involucrado, horario no laboral, cuenta privilegiada, evidencia de movimento lateral, técnica conocida de APT",
+              "c": "r"
+            },
+            {
+              "i": "⬇️",
+              "t": "Bajan severidad",
+              "d": "Evento aislado, IP interna conocida (scan interno), usuario reportó el evento, no hay dato sensible en riesgo, actividad en horario laboral con ticket de cambio",
+              "c": "g"
+            },
+            {
+              "i": "🔄",
+              "t": "Requieren contexto",
+              "d": "Alerta de AV sin ejecución confirmada, login fallido sin patrón, conexión a CDN/IP conocida, proceso firmado por vendor legítimo",
+              "c": "y"
+            }
           ]
         },
         {
@@ -178,21 +341,111 @@
             "Riesgo"
           ],
           "r": [
-            ["4624", "Logon Success", "Login fuera de horario, IP externa, logon type 3/10 desde IP no habitual", "Correlacionar con LogonType: 2=local, 3=red, 4=batch, 7=desbloqueo, 9=RunAs, 10=RDP", "Ver contexto"],
-            ["4625", "Logon Failure", "Password spraying, brute force, account enumeration", "Múltiples 4625 con failure code 0xC000006A (bad password) desde misma IP a distintos users = spraying", "Media"],
-            ["4634/4647", "Logoff", "Sesión terminada — útil para duración de sesión", "Combinar con 4624: sesiones de minutos desde IP externa = posible acceso no autorizado", "Baja"],
-            ["4672", "Admin Logon", "Privilegios especiales asignados (SeTcb, SeDebug, SeTakeOwnership)", "SeDebugPrivilege en proceso no esperado = posible dump de LSASS. SeTcbPrivilege por proceso no-system = sospechoso", "Alta"],
-            ["4688", "Process Creation", "LOLBins, child process de Office, ejecución desde temp", "Office (winword/outlook/excel) spawning cmd.exe/powershell.exe/wscript.exe = CRÍTICO. Procesos desde AppData/Temp = investigar", "Crítica"],
-            ["4698", "Scheduled Task", "Creación de tarea programada (persistencia T1053)", "Tarea creada por usuario no-admin o con nombre genérico ('UpdateTask', 'SystemCheck') = sospechoso", "Alta"],
-            ["4706", "Trust Created", "Nuevo trust relationship entre dominios", "Rarísimo en entornos normales. Casi siempre es atacante estableciendo persistencia a nivel de AD", "Crítica"],
-            ["4719", "Audit Policy Change", "Atacante desactivando logging o modificando audit policy", "Correlacionar con quién lo hizo. Si no es el admin de seguridad → comprometido", "Crítica"],
-            ["4720", "User Created", "Creación de cuenta nueva", "Cuenta creada fuera de HR process, o con nombre similar a admin (backup-admin, service-01)", "Alta"],
-            ["4728/4732/4756", "Group Member Added", "Usuario agregado a grupo privilegiado (Domain Admins, Enterprise Admins)", "Agregado por usuario no autorizado o fuera de horario laboral = CRÍTICO", "Crítica"],
-            ["4103/4104", "PowerShell ScriptBlock", "Script malicioso, download cradle, ejecución encoded", "4104 con script bloque completo. Buscar: -EncodedCommand, IEX, DownloadString,反射, Base64 larga", "Crítica"],
-            ["5156/5158", "WFP Connection", "Conexión saliente a IP sospechosa (C2)", "Correlacionar con threat intel. Puerto no estándar + proceso no navegador = posible C2 beaconing", "Alta"],
-            ["7036", "Service State Change", "Servicio detenido/iniciado inesperadamente", "Servicio de seguridad (defender, wf.msc) detenido por proceso no-admin = posible defensa evasion", "Media"],
-            ["7045", "Service Installed", "Instalación de servicio nuevo (persistencia T1543)", "Servicio con nombre genérico, image path desde temp/users, o con firmas no válidas", "Alta"],
-            ["1102", "Security Log Cleared", "Log de seguridad borrado por atacante", "ESTO ES ROJO. Si el security log se borró, el atacante está cubriendo tracks. Escalar inmediatamente", "Crítica"]
+            [
+              "4624",
+              "Logon Success",
+              "Login fuera de horario, IP externa, logon type 3/10 desde IP no habitual",
+              "Correlacionar con LogonType: 2=local, 3=red, 4=batch, 7=desbloqueo, 9=RunAs, 10=RDP",
+              "Ver contexto"
+            ],
+            [
+              "4625",
+              "Logon Failure",
+              "Password spraying, brute force, account enumeration",
+              "Múltiples 4625 con failure code 0xC000006A (bad password) desde misma IP a distintos users = spraying",
+              "Media"
+            ],
+            [
+              "4634/4647",
+              "Logoff",
+              "Sesión terminada — útil para duración de sesión",
+              "Combinar con 4624: sesiones de minutos desde IP externa = posible acceso no autorizado",
+              "Baja"
+            ],
+            [
+              "4672",
+              "Admin Logon",
+              "Privilegios especiales asignados (SeTcb, SeDebug, SeTakeOwnership)",
+              "SeDebugPrivilege en proceso no esperado = posible dump de LSASS. SeTcbPrivilege por proceso no-system = sospechoso",
+              "Alta"
+            ],
+            [
+              "4688",
+              "Process Creation",
+              "LOLBins, child process de Office, ejecución desde temp",
+              "Office (winword/outlook/excel) spawning cmd.exe/powershell.exe/wscript.exe = CRÍTICO. Procesos desde AppData/Temp = investigar",
+              "Crítica"
+            ],
+            [
+              "4698",
+              "Scheduled Task",
+              "Creación de tarea programada (persistencia T1053)",
+              "Tarea creada por usuario no-admin o con nombre genérico ('UpdateTask', 'SystemCheck') = sospechoso",
+              "Alta"
+            ],
+            [
+              "4706",
+              "Trust Created",
+              "Nuevo trust relationship entre dominios",
+              "Rarísimo en entornos normales. Casi siempre es atacante estableciendo persistencia a nivel de AD",
+              "Crítica"
+            ],
+            [
+              "4719",
+              "Audit Policy Change",
+              "Atacante desactivando logging o modificando audit policy",
+              "Correlacionar con quién lo hizo. Si no es el admin de seguridad → comprometido",
+              "Crítica"
+            ],
+            [
+              "4720",
+              "User Created",
+              "Creación de cuenta nueva",
+              "Cuenta creada fuera de HR process, o con nombre similar a admin (backup-admin, service-01)",
+              "Alta"
+            ],
+            [
+              "4728/4732/4756",
+              "Group Member Added",
+              "Usuario agregado a grupo privilegiado (Domain Admins, Enterprise Admins)",
+              "Agregado por usuario no autorizado o fuera de horario laboral = CRÍTICO",
+              "Crítica"
+            ],
+            [
+              "4103/4104",
+              "PowerShell ScriptBlock",
+              "Script malicioso, download cradle, ejecución encoded",
+              "4104 con script bloque completo. Buscar: -EncodedCommand, IEX, DownloadString,反射, Base64 larga",
+              "Crítica"
+            ],
+            [
+              "5156/5158",
+              "WFP Connection",
+              "Conexión saliente a IP sospechosa (C2)",
+              "Correlacionar con threat intel. Puerto no estándar + proceso no navegador = posible C2 beaconing",
+              "Alta"
+            ],
+            [
+              "7036",
+              "Service State Change",
+              "Servicio detenido/iniciado inesperadamente",
+              "Servicio de seguridad (defender, wf.msc) detenido por proceso no-admin = posible defensa evasion",
+              "Media"
+            ],
+            [
+              "7045",
+              "Service Installed",
+              "Instalación de servicio nuevo (persistencia T1543)",
+              "Servicio con nombre genérico, image path desde temp/users, o con firmas no válidas",
+              "Alta"
+            ],
+            [
+              "1102",
+              "Security Log Cleared",
+              "Log de seguridad borrado por atacante",
+              "ESTO ES ROJO. Si el security log se borró, el atacante está cubriendo tracks. Escalar inmediatamente",
+              "Crítica"
+            ]
           ]
         },
         {
@@ -243,18 +496,73 @@
         },
         {
           "type": "table",
-          "h": ["EventID", "Nombre", "Qué permite detectar", "Riesgo"],
+          "h": [
+            "EventID",
+            "Nombre",
+            "Qué permite detectar",
+            "Riesgo"
+          ],
           "r": [
-            ["1", "Process Create", "Ejecución de procesos con línea de comandos COMPLETA. Técnicas: T1059 (scripting), T1204 (user execution), T1218 (LOLBins via signed binaries)", "Crítica"],
-            ["3", "Network Connect", "Conexión de red saliente por proceso individual. Detecta: C2 beaconing, exfiltración, phishing callbacks. Importante: solo muestra conexiones, no payload", "Crítica"],
-            ["7", "Image Load", "DLLs cargadas por proceso. Detecta: DLL hijacking (T1574.002), sideloading, inyección. Ruidoso — requiere filtrado por DLLs conocidas maliciosas", "Alta"],
-            ["8", "CreateRemoteThread", "Hilo creado en otro proceso (inyección clásica T1055). Mimikatz, Cobalt Strike, casi todo post-exploit genera EventID 8", "Crítica"],
-            ["10", "Process Access", "Acceso a handle de proceso. Detecta: dump de LSASS (T1003.001), acceso a proceso privilegiado. Mimikatz, ProcDump, comsvcs.dll dump", "Crítica"],
-            ["11", "File Create", "Archivos creados en directorios específicos. Detecta: malware dropping files a temp, ransomware escribiendo notas, descargas de browser a AppData", "Alta"],
-            ["12-14", "Registry Events", "Modificaciones a registry keys (Run, RunOnce, Startup). Detecta: persistencia T1547.001, boot execute T1547.001", "Alta"],
-            ["15", "File Stream", "Alternate Data Stream (ADS) creado (T1564.004). Atacantes esconden malware en streams NTFS. Poco común — alta señal cuando aparece", "Alta"],
-            ["22", "DNS Query", "Todas las consultas DNS del host. Detecta: DGA domains, C2 via DNS, data exfiltration por DNS tunneling. Oro puro para threat intel", "Alta"],
-            ["25", "Process Change", "Cambios en la integridad de proceso (Process Tampering T1562.001). Atacantes parchan etw, ntdll, o minhook para evadir detección", "Crítica"]
+            [
+              "1",
+              "Process Create",
+              "Ejecución de procesos con línea de comandos COMPLETA. Técnicas: T1059 (scripting), T1204 (user execution), T1218 (LOLBins via signed binaries)",
+              "Crítica"
+            ],
+            [
+              "3",
+              "Network Connect",
+              "Conexión de red saliente por proceso individual. Detecta: C2 beaconing, exfiltración, phishing callbacks. Importante: solo muestra conexiones, no payload",
+              "Crítica"
+            ],
+            [
+              "7",
+              "Image Load",
+              "DLLs cargadas por proceso. Detecta: DLL hijacking (T1574.002), sideloading, inyección. Ruidoso — requiere filtrado por DLLs conocidas maliciosas",
+              "Alta"
+            ],
+            [
+              "8",
+              "CreateRemoteThread",
+              "Hilo creado en otro proceso (inyección clásica T1055). Mimikatz, Cobalt Strike, casi todo post-exploit genera EventID 8",
+              "Crítica"
+            ],
+            [
+              "10",
+              "Process Access",
+              "Acceso a handle de proceso. Detecta: dump de LSASS (T1003.001), acceso a proceso privilegiado. Mimikatz, ProcDump, comsvcs.dll dump",
+              "Crítica"
+            ],
+            [
+              "11",
+              "File Create",
+              "Archivos creados en directorios específicos. Detecta: malware dropping files a temp, ransomware escribiendo notas, descargas de browser a AppData",
+              "Alta"
+            ],
+            [
+              "12-14",
+              "Registry Events",
+              "Modificaciones a registry keys (Run, RunOnce, Startup). Detecta: persistencia T1547.001, boot execute T1547.001",
+              "Alta"
+            ],
+            [
+              "15",
+              "File Stream",
+              "Alternate Data Stream (ADS) creado (T1564.004). Atacantes esconden malware en streams NTFS. Poco común — alta señal cuando aparece",
+              "Alta"
+            ],
+            [
+              "22",
+              "DNS Query",
+              "Todas las consultas DNS del host. Detecta: DGA domains, C2 via DNS, data exfiltration por DNS tunneling. Oro puro para threat intel",
+              "Alta"
+            ],
+            [
+              "25",
+              "Process Change",
+              "Cambios en la integridad de proceso (Process Tampering T1562.001). Atacantes parchan etw, ntdll, o minhook para evadir detección",
+              "Crítica"
+            ]
           ]
         },
         {
@@ -320,20 +628,72 @@
         },
         {
           "type": "table",
-          "h": ["Objetivo", "Comando", "Qué buscar"],
+          "h": [
+            "Objetivo",
+            "Comando",
+            "Qué buscar"
+          ],
           "r": [
-            ["Conexiones activas", "Get-NetTCPConnection | Where State -eq Established", "IPs externas, puertos no estándar, procesos no navegador conectando a internet"],
-            ["Procesos con red", "Get-Process | Where {$_.TCPConnections.Count -gt 0} | Select Name,Id,Path", "Procesos sin nombre reconocible ejecutándose desde AppData/Temp"],
-            ["Scheduled tasks no-MS", "Get-ScheduledTask | Where TaskPath -notlike '\\Microsoft\\*'", "Tareas con nombres genéricos ('UpdateTask', 'SystemHealth'), triggers sospechosos"],
-            ["Servicios con paths raros", "Get-CimInstance Win32_Service | Where PathName -match '(temp|users|appdata)'", "Servicios cuyo ejecutable vive en directorios de usuario o temp"],
-            ["Persistencia Run keys", "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'", "Ejecutables con paths a AppData, nombres ofuscados, binarios sin firma"],
-            ["Startup folder", "Get-ChildItem 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'", "Archivos .lnk, .vbs, .ps1 en startup que no pusiste vos"],
-            ["RDP logins recientes", "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624;LogonType=10}", "Logins RDP desde IPs externas, en horario no laboral, o desde IPs no habituales"],
-            ["Procesos padre-hijo (EventID 4688)", "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4688} | Select TimeCreated, Properties[5].Value", "Office→cmd, PDF→powershell, browser→wscript - cualquier child process anómalo"],
-            ["Usuarios locales/administradores", "Get-LocalGroupMember Administradores", "Usuarios agregados recientemente, cuentas con nombres de servicio"],
-            ["WMI persistence", "Get-WmiObject -Namespace root\\subscription -Class __EventFilter", "Event filters que ejecutan scripts ante eventos del sistema"],
-            ["AMSI bypass check", "Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-Windows Defender/Operational';ID=5001}", "AMSI deshabilitado (5001) o desactivación de real-time protection (5007)"],
-            ["Recent files (forense)", "Get-ChildItem 'C:\\Users' -Recurse -Include '*.lnk' | Where LastWriteTime -gt (Get-Date).AddDays(-7)", "Archivos .lnk recientes en AppData\\Roaming\\Microsoft\\Windows\\Recent"]
+            [
+              "Conexiones activas",
+              "Get-NetTCPConnection | Where State -eq Established",
+              "IPs externas, puertos no estándar, procesos no navegador conectando a internet"
+            ],
+            [
+              "Procesos con red",
+              "Get-Process | Where {$_.TCPConnections.Count -gt 0} | Select Name,Id,Path",
+              "Procesos sin nombre reconocible ejecutándose desde AppData/Temp"
+            ],
+            [
+              "Scheduled tasks no-MS",
+              "Get-ScheduledTask | Where TaskPath -notlike '\\Microsoft\\*'",
+              "Tareas con nombres genéricos ('UpdateTask', 'SystemHealth'), triggers sospechosos"
+            ],
+            [
+              "Servicios con paths raros",
+              "Get-CimInstance Win32_Service | Where PathName -match '(temp|users|appdata)'",
+              "Servicios cuyo ejecutable vive en directorios de usuario o temp"
+            ],
+            [
+              "Persistencia Run keys",
+              "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'",
+              "Ejecutables con paths a AppData, nombres ofuscados, binarios sin firma"
+            ],
+            [
+              "Startup folder",
+              "Get-ChildItem 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup'",
+              "Archivos .lnk, .vbs, .ps1 en startup que no pusiste vos"
+            ],
+            [
+              "RDP logins recientes",
+              "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624;LogonType=10}",
+              "Logins RDP desde IPs externas, en horario no laboral, o desde IPs no habituales"
+            ],
+            [
+              "Procesos padre-hijo (EventID 4688)",
+              "Get-WinEvent -FilterHashtable @{LogName='Security';ID=4688} | Select TimeCreated, Properties[5].Value",
+              "Office→cmd, PDF→powershell, browser→wscript - cualquier child process anómalo"
+            ],
+            [
+              "Usuarios locales/administradores",
+              "Get-LocalGroupMember Administradores",
+              "Usuarios agregados recientemente, cuentas con nombres de servicio"
+            ],
+            [
+              "WMI persistence",
+              "Get-WmiObject -Namespace root\\subscription -Class __EventFilter",
+              "Event filters que ejecutan scripts ante eventos del sistema"
+            ],
+            [
+              "AMSI bypass check",
+              "Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-Windows Defender/Operational';ID=5001}",
+              "AMSI deshabilitado (5001) o desactivación de real-time protection (5007)"
+            ],
+            [
+              "Recent files (forense)",
+              "Get-ChildItem 'C:\\Users' -Recurse -Include '*.lnk' | Where LastWriteTime -gt (Get-Date).AddDays(-7)",
+              "Archivos .lnk recientes en AppData\\Roaming\\Microsoft\\Windows\\Recent"
+            ]
           ]
         },
         {
@@ -373,20 +733,85 @@
         },
         {
           "type": "table",
-          "h": ["Binario", "Uso malicioso", "Parent esperado", "Detección"],
+          "h": [
+            "Binario",
+            "Uso malicioso",
+            "Parent esperado",
+            "Detección"
+          ],
           "r": [
-            ["powershell.exe", "Download cradle (IEX), ofuscación base64, in-memory execution (T1059.001)", "explorer.exe, admin legítimo", "4104 ScriptBlock, líneas con -enc / IEX / DownloadString. Correlacionar con EventID 4688 parent process"],
-            ["rundll32.exe", "Cargar DLL maliciosa, ejecutar JavaScript via URL (T1218.011)", "explorer.exe, svchost.exe", "Rundll32 con URL en argumento o desde temp. Ej: rundll32.exe javascript:\"\\..\\mshtml,RunHTMLApplication\""],
-            ["regsvr32.exe", "Ejecutar .sct remoto (Squiblydoo T1218.010)", "explorer.exe", "regsvr32 /s /n /u /i:http://... . No hay razón legítima para regsvr32 descargar algo de internet"],
-            ["mshta.exe", "Ejecutar HTA malicioso (T1218.005)", "explorer.exe", "Mshta.exe desde temp/downloads o http. Parent office/browser = CRÍTICO"],
-            ["certutil.exe", "Descargar payloads, decode base64 (T1105)", "cmd.exe, admin tasks", "certutil -urlcache -f (descarga). certutil -decode (decode base64 a binary)"],
-            ["wmic.exe", "Ejecución remota, recolectar info (T1047)", "svchost.exe", "wmic process call create (ejecución remota). wmic /node: (ejecución en host remoto)"],
-            ["bitsadmin.exe", "Descarga via BITS (T1197)", "cmd.exe, explorer.exe", "bitsadmin /transfer /download a dominio externo. BITS evade firewalls porque usa HTTP genérico"],
-            ["cscript.exe / wscript.exe", "Ejecutar .vbs, .js, .jse (T1059.005/007)", "explorer.exe, office", "Scripts desde temp/downloads/email attachments. Parent office = CRÍTICO"],
-            ["msbuild.exe", "Compilar y ejecutar C# inline (T1127.001)", "cmd.exe, devenv.exe", "Msbuild.exe ejecutando .csproj desde temp. Los atacantes compilan payloads en memoria"],
-            ["cmstp.exe", "Instalar perfil de conexión malicioso (T1218.003)", "explorer.exe", "cmstp.exe con .inf desde temp. Técnica de evasión poco monitoreada"],
-            ["msiexec.exe", "Instalar .msi malicioso remoto (T1218.007)", "explorer.exe, services.exe", "msiexec /i http://... . Instalación desde URL no esperada"],
-            ["forfiles.exe", "Ejecución condicional de binarios (T1218)", "cmd.exe, task scheduler", "Usado para ejecutar payloads con retardo o como LOLBin secundario en cadenas de ataque"]
+            [
+              "powershell.exe",
+              "Download cradle (IEX), ofuscación base64, in-memory execution (T1059.001)",
+              "explorer.exe, admin legítimo",
+              "4104 ScriptBlock, líneas con -enc / IEX / DownloadString. Correlacionar con EventID 4688 parent process"
+            ],
+            [
+              "rundll32.exe",
+              "Cargar DLL maliciosa, ejecutar JavaScript via URL (T1218.011)",
+              "explorer.exe, svchost.exe",
+              "Rundll32 con URL en argumento o desde temp. Ej: rundll32.exe javascript:\"\\..\\mshtml,RunHTMLApplication\""
+            ],
+            [
+              "regsvr32.exe",
+              "Ejecutar .sct remoto (Squiblydoo T1218.010)",
+              "explorer.exe",
+              "regsvr32 /s /n /u /i:http://... . No hay razón legítima para regsvr32 descargar algo de internet"
+            ],
+            [
+              "mshta.exe",
+              "Ejecutar HTA malicioso (T1218.005)",
+              "explorer.exe",
+              "Mshta.exe desde temp/downloads o http. Parent office/browser = CRÍTICO"
+            ],
+            [
+              "certutil.exe",
+              "Descargar payloads, decode base64 (T1105)",
+              "cmd.exe, admin tasks",
+              "certutil -urlcache -f (descarga). certutil -decode (decode base64 a binary)"
+            ],
+            [
+              "wmic.exe",
+              "Ejecución remota, recolectar info (T1047)",
+              "svchost.exe",
+              "wmic process call create (ejecución remota). wmic /node: (ejecución en host remoto)"
+            ],
+            [
+              "bitsadmin.exe",
+              "Descarga via BITS (T1197)",
+              "cmd.exe, explorer.exe",
+              "bitsadmin /transfer /download a dominio externo. BITS evade firewalls porque usa HTTP genérico"
+            ],
+            [
+              "cscript.exe / wscript.exe",
+              "Ejecutar .vbs, .js, .jse (T1059.005/007)",
+              "explorer.exe, office",
+              "Scripts desde temp/downloads/email attachments. Parent office = CRÍTICO"
+            ],
+            [
+              "msbuild.exe",
+              "Compilar y ejecutar C# inline (T1127.001)",
+              "cmd.exe, devenv.exe",
+              "Msbuild.exe ejecutando .csproj desde temp. Los atacantes compilan payloads en memoria"
+            ],
+            [
+              "cmstp.exe",
+              "Instalar perfil de conexión malicioso (T1218.003)",
+              "explorer.exe",
+              "cmstp.exe con .inf desde temp. Técnica de evasión poco monitoreada"
+            ],
+            [
+              "msiexec.exe",
+              "Instalar .msi malicioso remoto (T1218.007)",
+              "explorer.exe, services.exe",
+              "msiexec /i http://... . Instalación desde URL no esperada"
+            ],
+            [
+              "forfiles.exe",
+              "Ejecución condicional de binarios (T1218)",
+              "cmd.exe, task scheduler",
+              "Usado para ejecutar payloads con retardo o como LOLBin secundario en cadenas de ataque"
+            ]
           ]
         },
         {
@@ -416,20 +841,72 @@
         },
         {
           "type": "table",
-          "h": ["Objetivo", "Comando", "Qué buscar"],
+          "h": [
+            "Objetivo",
+            "Comando",
+            "Qué buscar"
+          ],
           "r": [
-            ["Procesos ocultos", "ps auxf", "Procesos con nombres similares a system (scvhost en vez de sshd), procesos corriendo como root sin razón"],
-            ["Binarios eliminados en ejecución", "ls -la /proc/*/exe 2>/dev/null | grep '(deleted)'", "Malware que se autoborra después de ejecutarse. El binary ya no existe en disco pero sigue en memoria"],
-            ["Archivos en /dev/shm (tmpfs)", "ls -la /dev/shm/", "/dev/shm es memoria RAM. Atacantes dejan payloads ahí para no escribir a disco. Si hay algo, es sospechoso"],
-            ["Módulos de kernel", "lsmod | sort", "Rootkits a nivel kernel se esconden como módulos. Comparar con baseline de módulos legítimos del servidor"],
-            ["Conexiones de red activas", "ss -tunap", "IPs en puertos no estándar, conexiones a países donde la empresa no opera, procesos con netstat -ss no visible"],
-            ["Persistencia cron", "ls -la /etc/cron* /var/spool/cron/crontabs/", "Crontabs de root o usuarios de servicio que no deberían tener. Entradas con wget, curl, bash -c"],
-            ["Archivos SUID (privesc)", "find / -perm -4000 -type f 2>/dev/null", "Binarios SUID no estándar. Atacantes dejan copias de /bin/bash con SUID para backdoor"],
-            ["Historial de comandos", "cat ~/.bash_history | grep -E '(wget|curl -o|nc |bash -i|python -c)'", "Comandos de descarga y reverse shell. Atacantes suelen limpiar el history — si está vacío siendo root, es sospechoso"],
-            ["Logins recientes", "last -5 && lastb -5", "Logins desde IPs externas fuera de horario. lastb muestra intentos fallidos"],
-            ["Procesos sin binary en disco", "for p in /proc/*/exe; do readlink $p 2>/dev/null; done | grep '(deleted)'", "Malware fileless o que se borró. Si un proceso no tiene binary, está siendo ejecutado desde memoria"],
-            ["Systemd services nuevos", "systemctl list-units --type=service --state=running | grep -v systemd", "Servicios con nombres genéricos o que no forman parte del baseline del servidor"],
-            ["Archivos con puertas traseras", "find /usr -name '*.so' -newer /etc/passwd -type f 2>/dev/null", "Librerías compartidas modificadas recientemente = posible LD_PRELOAD rootkit"]
+            [
+              "Procesos ocultos",
+              "ps auxf",
+              "Procesos con nombres similares a system (scvhost en vez de sshd), procesos corriendo como root sin razón"
+            ],
+            [
+              "Binarios eliminados en ejecución",
+              "ls -la /proc/*/exe 2>/dev/null | grep '(deleted)'",
+              "Malware que se autoborra después de ejecutarse. El binary ya no existe en disco pero sigue en memoria"
+            ],
+            [
+              "Archivos en /dev/shm (tmpfs)",
+              "ls -la /dev/shm/",
+              "/dev/shm es memoria RAM. Atacantes dejan payloads ahí para no escribir a disco. Si hay algo, es sospechoso"
+            ],
+            [
+              "Módulos de kernel",
+              "lsmod | sort",
+              "Rootkits a nivel kernel se esconden como módulos. Comparar con baseline de módulos legítimos del servidor"
+            ],
+            [
+              "Conexiones de red activas",
+              "ss -tunap",
+              "IPs en puertos no estándar, conexiones a países donde la empresa no opera, procesos con netstat -ss no visible"
+            ],
+            [
+              "Persistencia cron",
+              "ls -la /etc/cron* /var/spool/cron/crontabs/",
+              "Crontabs de root o usuarios de servicio que no deberían tener. Entradas con wget, curl, bash -c"
+            ],
+            [
+              "Archivos SUID (privesc)",
+              "find / -perm -4000 -type f 2>/dev/null",
+              "Binarios SUID no estándar. Atacantes dejan copias de /bin/bash con SUID para backdoor"
+            ],
+            [
+              "Historial de comandos",
+              "cat ~/.bash_history | grep -E '(wget|curl -o|nc |bash -i|python -c)'",
+              "Comandos de descarga y reverse shell. Atacantes suelen limpiar el history — si está vacío siendo root, es sospechoso"
+            ],
+            [
+              "Logins recientes",
+              "last -5 && lastb -5",
+              "Logins desde IPs externas fuera de horario. lastb muestra intentos fallidos"
+            ],
+            [
+              "Procesos sin binary en disco",
+              "for p in /proc/*/exe; do readlink $p 2>/dev/null; done | grep '(deleted)'",
+              "Malware fileless o que se borró. Si un proceso no tiene binary, está siendo ejecutado desde memoria"
+            ],
+            [
+              "Systemd services nuevos",
+              "systemctl list-units --type=service --state=running | grep -v systemd",
+              "Servicios con nombres genéricos o que no forman parte del baseline del servidor"
+            ],
+            [
+              "Archivos con puertas traseras",
+              "find /usr -name '*.so' -newer /etc/passwd -type f 2>/dev/null",
+              "Librerías compartidas modificadas recientemente = posible LD_PRELOAD rootkit"
+            ]
           ]
         },
         {
@@ -474,18 +951,73 @@
         },
         {
           "type": "table",
-          "h": ["Archivo/Comando", "Qué contiene", "Qué buscar", "Frecuencia"],
+          "h": [
+            "Archivo/Comando",
+            "Qué contiene",
+            "Qué buscar",
+            "Frecuencia"
+          ],
           "r": [
-            ["journalctl -u sshd", "Intentos de conexión SSH", "Failed password, Invalid user, conexiones desde IPs no autorizadas", "Crítico"],
-            ["/var/log/auth.log", "Autenticaciones: SSH, sudo, su, login", "sudo: session opened for root sin ser admin, Failed password para users válidos (spraying)", "Crítico"],
-            ["/var/log/syslog / messages", "Eventos del sistema", "Errores de servicios, OOM killer, mensajes de kernel inesperados", "Alta"],
-            ["/var/log/audit/audit.log", "Auditd: execve, syscalls (T1059, T1055)", "Ejecución de comandos sospechosos (wget, curl, nc, python -c), cambios a archivos binarios", "Crítica"],
-            ["/var/log/kern.log", "Mensajes del kernel", "Módulos de kernel cargados inesperadamente (posible rootkit), errores de memoria", "Alta"],
-            ["/var/log/btmp", "Intentos de login fallidos", "Brute force SSH. Usar 'lastb' para leerlo", "Media"],
-            ["/var/log/wtmp", "Historial de logins exitosos", "Logins desde IPs inusuales, fuera de horario. Usar 'last' para leerlo", "Alta"],
-            ["/var/log/dpkg.log", "Paquetes instalados/actualizados", "Paquetes instalados sin coordinación, versiones downgrade (posible supply chain)", "Media"],
-            ["journalctl -k", "Mensajes del kernel (arranque)", "Errores de drivers, módulos cargados, memoria reservada", "Baja"],
-            ["/var/log/faillog", "Fallos de autenticación acumulativos", "Usuarios con múltiples fallos, indicadores de password spraying", "Media"]
+            [
+              "journalctl -u sshd",
+              "Intentos de conexión SSH",
+              "Failed password, Invalid user, conexiones desde IPs no autorizadas",
+              "Crítico"
+            ],
+            [
+              "/var/log/auth.log",
+              "Autenticaciones: SSH, sudo, su, login",
+              "sudo: session opened for root sin ser admin, Failed password para users válidos (spraying)",
+              "Crítico"
+            ],
+            [
+              "/var/log/syslog / messages",
+              "Eventos del sistema",
+              "Errores de servicios, OOM killer, mensajes de kernel inesperados",
+              "Alta"
+            ],
+            [
+              "/var/log/audit/audit.log",
+              "Auditd: execve, syscalls (T1059, T1055)",
+              "Ejecución de comandos sospechosos (wget, curl, nc, python -c), cambios a archivos binarios",
+              "Crítica"
+            ],
+            [
+              "/var/log/kern.log",
+              "Mensajes del kernel",
+              "Módulos de kernel cargados inesperadamente (posible rootkit), errores de memoria",
+              "Alta"
+            ],
+            [
+              "/var/log/btmp",
+              "Intentos de login fallidos",
+              "Brute force SSH. Usar 'lastb' para leerlo",
+              "Media"
+            ],
+            [
+              "/var/log/wtmp",
+              "Historial de logins exitosos",
+              "Logins desde IPs inusuales, fuera de horario. Usar 'last' para leerlo",
+              "Alta"
+            ],
+            [
+              "/var/log/dpkg.log",
+              "Paquetes instalados/actualizados",
+              "Paquetes instalados sin coordinación, versiones downgrade (posible supply chain)",
+              "Media"
+            ],
+            [
+              "journalctl -k",
+              "Mensajes del kernel (arranque)",
+              "Errores de drivers, módulos cargados, memoria reservada",
+              "Baja"
+            ],
+            [
+              "/var/log/faillog",
+              "Fallos de autenticación acumulativos",
+              "Usuarios con múltiples fallos, indicadores de password spraying",
+              "Media"
+            ]
           ]
         },
         {
@@ -533,12 +1065,48 @@
         {
           "type": "grid",
           "items": [
-            {"i":"🔄","t":"Beaconing (C2)","d":"Tráfico periódico a IP externa con intervalos regulares. Mismo payload size, mismo intervalo +-jitter. No hay actividad humana porque no hay tráfico de fondo.","c":"r","g":"T1071"},
-            {"i":"🌐","t":"DGA Domains","d":"Dominios generados algorítmicamente: alta entropía, TLDs raros (.xyz, .top, .gq, .cf), subdominios largos. Consultas a dominios que no existen o que rotan cada hora.","c":"r","g":"T1568"},
-            {"i":"📤","t":"Exfiltración de datos","d":"Tráfico saliente anómalo en volumen (GB), horario no laboral (3 AM), puerto no estándar, protocolo no habitual (DNS con datos, HTTP con POST grandes, ICMP con payload).","c":"r","g":"T1041"},
-            {"i":"🔁","t":"DNS Tunneling","d":"Consultas DNS con subdominios extremadamente largos (60+ chars), alta frecuencia a un mismo dominio, respuestas DNS con tamaño > 200 bytes (más que una IP).","c":"o","g":"T1572"},
-            {"i":"🔍","t":"Port Scan / Recon","d":"Conexiones secuenciales a múltiples puertos desde una misma IP en poco tiempo. SYN scan, FIN scan. También: conexiones a puertos cerrados (ICMP unreachable).","c":"y","g":"T1595"},
-            {"i":"📦","t":"Protocol Anomaly","d":"HTTP en puerto 22, SSH en puerto 443, DNS sobre TCP sin consulta previa, tráfico en puerto no asignado. Casi siempre es C2 usando protocolo no estándar para evadir firewalls.","c":"o","g":"T1571"}
+            {
+              "i": "🔄",
+              "t": "Beaconing (C2)",
+              "d": "Tráfico periódico a IP externa con intervalos regulares. Mismo payload size, mismo intervalo +-jitter. No hay actividad humana porque no hay tráfico de fondo.",
+              "c": "r",
+              "g": "T1071"
+            },
+            {
+              "i": "🌐",
+              "t": "DGA Domains",
+              "d": "Dominios generados algorítmicamente: alta entropía, TLDs raros (.xyz, .top, .gq, .cf), subdominios largos. Consultas a dominios que no existen o que rotan cada hora.",
+              "c": "r",
+              "g": "T1568"
+            },
+            {
+              "i": "📤",
+              "t": "Exfiltración de datos",
+              "d": "Tráfico saliente anómalo en volumen (GB), horario no laboral (3 AM), puerto no estándar, protocolo no habitual (DNS con datos, HTTP con POST grandes, ICMP con payload).",
+              "c": "r",
+              "g": "T1041"
+            },
+            {
+              "i": "🔁",
+              "t": "DNS Tunneling",
+              "d": "Consultas DNS con subdominios extremadamente largos (60+ chars), alta frecuencia a un mismo dominio, respuestas DNS con tamaño > 200 bytes (más que una IP).",
+              "c": "o",
+              "g": "T1572"
+            },
+            {
+              "i": "🔍",
+              "t": "Port Scan / Recon",
+              "d": "Conexiones secuenciales a múltiples puertos desde una misma IP en poco tiempo. SYN scan, FIN scan. También: conexiones a puertos cerrados (ICMP unreachable).",
+              "c": "y",
+              "g": "T1595"
+            },
+            {
+              "i": "📦",
+              "t": "Protocol Anomaly",
+              "d": "HTTP en puerto 22, SSH en puerto 443, DNS sobre TCP sin consulta previa, tráfico en puerto no asignado. Casi siempre es C2 usando protocolo no estándar para evadir firewalls.",
+              "c": "o",
+              "g": "T1571"
+            }
           ]
         },
         {
@@ -547,15 +1115,55 @@
         },
         {
           "type": "table",
-          "h": ["#", "Pregunta", "Cómo responder", "Herramienta"],
+          "h": [
+            "#",
+            "Pregunta",
+            "Cómo responder",
+            "Herramienta"
+          ],
           "r": [
-            ["1", "¿Conexiones a IPs maliciosas conocidas?", "Correlacionar IPs destino con threat intel feeds (OTX, VirusTotal, GreyNoise). IPs con score alto + tráfico periódico = C2", "VT, OTX, GreyNoise"],
-            ["2", "¿Tráfico en puertos no estándar?", "Servicios conocidos (HTTP, SSH, DNS, RDP) en puertos >1024. O cualquier puerto no asignado por IANA. Capturar muestra del tráfico y analizar", "Tcpdump, Wireshark, Zeek"],
-            ["3", "¿Patrón humano o automatizado?", "Humano: horario laboral, tráfico variado (navegación, email, chat). Automático: mismo intervalo exacto (o con jitter), mismo payload size, sin tráfico de fondo entre beats", "Zeek conn.log, time series plot"],
-            ["4", "¿Certificados TLS sospechosos?", "Self-signed, expired, issuer no conocido, SAN con dominios genéricos (cloudfront, azure sin tenant), mismatch entre SNI y host real", "Zeek ssl.log, JA3/S scans"],
-            ["5", "¿DNS queries legítimos?", "Dominios de alta entropía (DGA), TTLs inusualmente cortos (<300), rate de NXDOMAIN alto (>20%), consultas a dominios no existentes", "Zeek dns.log, Passive DNS"],
-            ["6", "¿Tráfico en horarios no laborales?", "Conexiones salientes fuera del horario del usuario. Correlacionar con Office 365 login log para ver si el user estaba activo", "Zeek conn.log + timestamps"],
-            ["7", "¿User-Agent HTTP inusual?", "Vacío, Python-requests, Go-http-client, curl, wget, o navegador antiguo. Navegadores modernos mandan User-Agent completo con versión", "Zeek http.log, Suricata HTTP log"]
+            [
+              "1",
+              "¿Conexiones a IPs maliciosas conocidas?",
+              "Correlacionar IPs destino con threat intel feeds (OTX, VirusTotal, GreyNoise). IPs con score alto + tráfico periódico = C2",
+              "VT, OTX, GreyNoise"
+            ],
+            [
+              "2",
+              "¿Tráfico en puertos no estándar?",
+              "Servicios conocidos (HTTP, SSH, DNS, RDP) en puertos >1024. O cualquier puerto no asignado por IANA. Capturar muestra del tráfico y analizar",
+              "Tcpdump, Wireshark, Zeek"
+            ],
+            [
+              "3",
+              "¿Patrón humano o automatizado?",
+              "Humano: horario laboral, tráfico variado (navegación, email, chat). Automático: mismo intervalo exacto (o con jitter), mismo payload size, sin tráfico de fondo entre beats",
+              "Zeek conn.log, time series plot"
+            ],
+            [
+              "4",
+              "¿Certificados TLS sospechosos?",
+              "Self-signed, expired, issuer no conocido, SAN con dominios genéricos (cloudfront, azure sin tenant), mismatch entre SNI y host real",
+              "Zeek ssl.log, JA3/S scans"
+            ],
+            [
+              "5",
+              "¿DNS queries legítimos?",
+              "Dominios de alta entropía (DGA), TTLs inusualmente cortos (<300), rate de NXDOMAIN alto (>20%), consultas a dominios no existentes",
+              "Zeek dns.log, Passive DNS"
+            ],
+            [
+              "6",
+              "¿Tráfico en horarios no laborales?",
+              "Conexiones salientes fuera del horario del usuario. Correlacionar con Office 365 login log para ver si el user estaba activo",
+              "Zeek conn.log + timestamps"
+            ],
+            [
+              "7",
+              "¿User-Agent HTTP inusual?",
+              "Vacío, Python-requests, Go-http-client, curl, wget, o navegador antiguo. Navegadores modernos mandan User-Agent completo con versión",
+              "Zeek http.log, Suricata HTTP log"
+            ]
           ]
         },
         {
@@ -787,16 +1395,79 @@
         },
         {
           "type": "table",
-          "h": ["Escenario", "Acción inmediata", "Acción secundaria", "Impacto", "No hacer", "SLA"],
+          "h": [
+            "Escenario",
+            "Acción inmediata",
+            "Acción secundaria",
+            "Impacto",
+            "No hacer",
+            "SLA"
+          ],
           "r": [
-            ["Ransomware", "Aislar host de red (EDR isolate). Desconectar cable si no hay EDR", "Identificar drive afectado. Desmontar shares mapeadas", "Usuario pierde acceso", "NO apagar. NO pagar rescate. NO reiniciar", "< 5 min"],
-            ["Cuenta comprometida", "Deshabilitar cuenta AD. Resetear contraseña", "Revocar tokens de sesión. Revisar mailbox rules (forwarding)", "Usuario sin acceso", "NO borrar cuenta (pierde evidencia de lateral movement)", "< 2 min"],
-            ["C2 beaconing", "Bloquear IP destino en firewall/perímetro. Aislar host", "Agregar IP a blocklist. Revisar otros hosts con misma conexión", "Posible pérdida conectividad legítima", "NO aislar sin confirmar que no es CDN compartido", "< 3 min"],
-            ["Phishing masivo", "Bloquear remitente en gateway email. Eliminar correos de inboxes", "Buscar campaigns similares. Revisar si hubo clicks", "Pérdida de correos legítimos (recuperable)", "NO responder al remitente. NO hacer clic para 'verificar'", "< 10 min"],
-            ["Data exfiltration", "Bloquear tráfico saliente a IP destino. Aislar host origen", "Revisar qué datos se exfiltraron. Notificar a DPO/legal si datos personales", "Interrupción parcial de red", "NO borrar logs de red (necesitás timeline forense)", "< 5 min"],
-            ["Malware detectado", "Aislar host (EDR isolate). Bloquear hash en AV/EDR", "Capturar volátil antes de aislar (procesos, conexiones activas)", "Usuario sin acceso", "NO apagar — se pierde RAM con C2 activo, credenciales en memoria", "< 5 min"],
-            ["Lateral movement", "Aislar host origen y destino. Revocar credenciales involucradas", "Revisar EventID 4624 desde host origen a otros destinos. Escalar a IR", "Múltiples usuarios afectados", "NO cambiar todas las contraseñas sin identificar el alcance primero", "< 10 min"],
-            ["Insider threat", "Suspender cuenta de usuario. No alertar al usuario", "Preservar evidencia (logs de acceso, email, file access). Coordinar con RRHH", "Usuario sospecha", "NO confrontar al usuario sin RRHH/legal presentes", "< 15 min"]
+            [
+              "Ransomware",
+              "Aislar host de red (EDR isolate). Desconectar cable si no hay EDR",
+              "Identificar drive afectado. Desmontar shares mapeadas",
+              "Usuario pierde acceso",
+              "NO apagar. NO pagar rescate. NO reiniciar",
+              "< 5 min"
+            ],
+            [
+              "Cuenta comprometida",
+              "Deshabilitar cuenta AD. Resetear contraseña",
+              "Revocar tokens de sesión. Revisar mailbox rules (forwarding)",
+              "Usuario sin acceso",
+              "NO borrar cuenta (pierde evidencia de lateral movement)",
+              "< 2 min"
+            ],
+            [
+              "C2 beaconing",
+              "Bloquear IP destino en firewall/perímetro. Aislar host",
+              "Agregar IP a blocklist. Revisar otros hosts con misma conexión",
+              "Posible pérdida conectividad legítima",
+              "NO aislar sin confirmar que no es CDN compartido",
+              "< 3 min"
+            ],
+            [
+              "Phishing masivo",
+              "Bloquear remitente en gateway email. Eliminar correos de inboxes",
+              "Buscar campaigns similares. Revisar si hubo clicks",
+              "Pérdida de correos legítimos (recuperable)",
+              "NO responder al remitente. NO hacer clic para 'verificar'",
+              "< 10 min"
+            ],
+            [
+              "Data exfiltration",
+              "Bloquear tráfico saliente a IP destino. Aislar host origen",
+              "Revisar qué datos se exfiltraron. Notificar a DPO/legal si datos personales",
+              "Interrupción parcial de red",
+              "NO borrar logs de red (necesitás timeline forense)",
+              "< 5 min"
+            ],
+            [
+              "Malware detectado",
+              "Aislar host (EDR isolate). Bloquear hash en AV/EDR",
+              "Capturar volátil antes de aislar (procesos, conexiones activas)",
+              "Usuario sin acceso",
+              "NO apagar — se pierde RAM con C2 activo, credenciales en memoria",
+              "< 5 min"
+            ],
+            [
+              "Lateral movement",
+              "Aislar host origen y destino. Revocar credenciales involucradas",
+              "Revisar EventID 4624 desde host origen a otros destinos. Escalar a IR",
+              "Múltiples usuarios afectados",
+              "NO cambiar todas las contraseñas sin identificar el alcance primero",
+              "< 10 min"
+            ],
+            [
+              "Insider threat",
+              "Suspender cuenta de usuario. No alertar al usuario",
+              "Preservar evidencia (logs de acceso, email, file access). Coordinar con RRHH",
+              "Usuario sospecha",
+              "NO confrontar al usuario sin RRHH/legal presentes",
+              "< 15 min"
+            ]
           ]
         },
         {
@@ -806,10 +1477,30 @@
         {
           "type": "grid",
           "items": [
-            {"i":"🟢","t":"Host aislado","d":"¿El host ya no tiene conectividad de red? EDR isolate, firewall block, o desconexión física. Verificar que el aislamiento funcione (ping test, netstat desde el host).","c":"g"},
-            {"i":"🟡","t":"Cuenta deshabilitada","d":"¿La cuenta comprometida ya no puede autenticarse? Deshabilitar en AD, revocar sesiones activas (ForceLogoff), revocar tokens de refresh (Azure AD Revoke-AzureADUserAllRefreshToken).","c":"y"},
-            {"i":"🔴","t":"Entry point bloqueado","d":"¿El vector de entrada está bloqueado? IP en firewall, remitente en gateway, RDP bloqueado, hash en AV. Si no bloqueás el entry point, el atacante puede volver a atacar.","c":"r"},
-            {"i":"🔵","t":"Alcance determinado","d":"¿Sabés qué otros hosts/cuentas están afectados? Revisar conexiones entrantes y salientes del host aislado, correlacionar con logs de acceso, buscar mismos IoCs en otros endpoints.","c":"b"}
+            {
+              "i": "🟢",
+              "t": "Host aislado",
+              "d": "¿El host ya no tiene conectividad de red? EDR isolate, firewall block, o desconexión física. Verificar que el aislamiento funcione (ping test, netstat desde el host).",
+              "c": "g"
+            },
+            {
+              "i": "🟡",
+              "t": "Cuenta deshabilitada",
+              "d": "¿La cuenta comprometida ya no puede autenticarse? Deshabilitar en AD, revocar sesiones activas (ForceLogoff), revocar tokens de refresh (Azure AD Revoke-AzureADUserAllRefreshToken).",
+              "c": "y"
+            },
+            {
+              "i": "🔴",
+              "t": "Entry point bloqueado",
+              "d": "¿El vector de entrada está bloqueado? IP en firewall, remitente en gateway, RDP bloqueado, hash en AV. Si no bloqueás el entry point, el atacante puede volver a atacar.",
+              "c": "r"
+            },
+            {
+              "i": "🔵",
+              "t": "Alcance determinado",
+              "d": "¿Sabés qué otros hosts/cuentas están afectados? Revisar conexiones entrantes y salientes del host aislado, correlacionar con logs de acceso, buscar mismos IoCs en otros endpoints.",
+              "c": "b"
+            }
           ]
         },
         {
@@ -951,6 +1642,162 @@
       "badge": "1090 técnicas",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "🎯 MITRE ATT&CK en SOC",
+          "body": "La matriz no es solo una taxonomía — es un mapa de qué esperar en cada fase de un ataque. Usala para guiar el triage y las búsquedas."
+        },
+        {
+          "type": "sub",
+          "title": "Tácticas Rápidas para el Día a Día"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Táctica",
+            "Qué busca",
+            "EventIDs típicos",
+            "Ejemplo"
+          ],
+          "r": [
+            [
+              "TA0001 — Initial Access",
+              "Entrar al entorno",
+              "4624, 4688 (Office)",
+              "Phishing con macro, exploit en app pública"
+            ],
+            [
+              "TA0002 — Execution",
+              "Correr código malicioso",
+              "4688, 4104, Sysmon 1",
+              "PowerShell, WMI, scheduled task"
+            ],
+            [
+              "TA0003 — Persistence",
+              "Mantenerse adentro",
+              "4698, 7045, 4657",
+              "Registry Run keys, servicios, tasks"
+            ],
+            [
+              "TA0004 — Privilege Escalation",
+              "Obtener más permisos",
+              "4670, 4688 (como SYSTEM)",
+              "UAC bypass, token impersonation"
+            ],
+            [
+              "TA0005 — Defense Evasion",
+              "No ser detectado",
+              "1102, Sysmon 12-14",
+              "Log clear, process hollowing"
+            ],
+            [
+              "TA0006 — Credential Access",
+              "Robar credenciales",
+              "4768, 4769, 4662",
+              "Kerberoasting, DCSync, Mimikatz"
+            ],
+            [
+              "TA0007 — Discovery",
+              "Reconocer el entorno",
+              "4798, 4799, 4688 (whoami)",
+              "net user, BloodHound, AD explorer"
+            ],
+            [
+              "TA0008 — Lateral Movement",
+              "Moverse a otros hosts",
+              "4624 (T3/9), 4688",
+              "RDP, PsExec, WMI, SMB exec"
+            ],
+            [
+              "TA0009 — Collection",
+              "Recolectar datos",
+              "4688 (rar/zip/7z)",
+              "Comprimir archivos, clipboard"
+            ],
+            [
+              "TA0010 — Exfiltration",
+              "Sacar datos",
+              "Sysmon 3 (DNS/HTTP)",
+              "HTTP POST, DNS tunneling"
+            ],
+            [
+              "TA0011 — C2",
+              "Comunicarse con C2",
+              "Sysmon 3, 22",
+              "HTTP/S beacons, DoH, WebSocket"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Top 10 Técnicas más Detectadas en SOC"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "1",
+              "t": "T1059 — Command & Scripting",
+              "d": "PowerShell, cmd, script. La técnica #1. EventID 4104 (ScriptBlock Logging) es tu mejor aliado.",
+              "c": "r"
+            },
+            {
+              "i": "2",
+              "t": "T1566 — Phishing",
+              "d": "Spearphishing Attachment / Link. El vector de entrada más común.",
+              "c": "r"
+            },
+            {
+              "i": "3",
+              "t": "T1055 — Process Injection",
+              "d": "Inyectar código en proceso legítimo. Sysmon Events 8, 10.",
+              "c": "o"
+            },
+            {
+              "i": "4",
+              "t": "T1003 — Credential Dumping",
+              "d": "Dump de LSASS. Monitorear EventID 4663 con acceso a lsass.exe.",
+              "c": "r"
+            },
+            {
+              "i": "5",
+              "t": "T1047 — WMI",
+              "d": "WMI para ejecución remota. Sysmon Events 19-21.",
+              "c": "o"
+            },
+            {
+              "i": "6",
+              "t": "T1078 — Valid Accounts",
+              "d": "Uso de cuentas legítimas robadas. Logins desde ubicaciones anómalas.",
+              "c": "p"
+            },
+            {
+              "i": "7",
+              "t": "T1053 — Scheduled Task",
+              "d": "Tareas programadas para persistencia. EventID 4698.",
+              "c": "o"
+            },
+            {
+              "i": "8",
+              "t": "T1547 — Boot Autostart",
+              "d": "Registry Run keys, Startup folders. Sysmon Event 12-14.",
+              "c": "o"
+            },
+            {
+              "i": "9",
+              "t": "T1021 — Remote Services",
+              "d": "RDP, WinRM, PsExec. EventID 4624 LogonType 3/10.",
+              "c": "r"
+            },
+            {
+              "i": "10",
+              "t": "T1562 — Impair Defenses",
+              "d": "Deshabilitar AV, firewall, logging. EventID 1102 log clear.",
+              "c": "r"
+            }
+          ]
+        },
+        {
           "type": "mitre"
         },
         {
@@ -1015,6 +1862,138 @@
       "badge": "Volatility 3",
       "content": [
         {
+          "type": "callout",
+          "s": "i",
+          "title": "🧠 La memoria no miente — el disco puede ser manipulado",
+          "body": "El malware en memoria no deja rastro en disco. Volatility 3 es el estándar para extraer procesos, conexiones y artefactos de la RAM."
+        },
+        {
+          "type": "sub",
+          "title": "Volatility 3 — Plugins Esenciales"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Plugin",
+            "Qué hace",
+            "Cuándo usarlo"
+          ],
+          "r": [
+            [
+              "windows.psscan",
+              "Lista procesos (incluye ocultos)",
+              "Empezá acá para ver qué estaba corriendo"
+            ],
+            [
+              "windows.pstree",
+              "Árbol de procesos con PPID",
+              "Detectar parent-child mismatch"
+            ],
+            [
+              "windows.netscan",
+              "Conexiones de red activas",
+              "Detectar C2, beaconing, exfiltración"
+            ],
+            [
+              "windows.malfind",
+              "Detecta memoria inyectada",
+              "Encontrar process injection y shellcode"
+            ],
+            [
+              "windows.filescan",
+              "Archivos abiertos en el sistema",
+              "Ver qué archivos estaban en uso"
+            ],
+            [
+              "windows.dumpfiles",
+              "Extrae archivos de memoria",
+              "Recuperar binarios maliciosos"
+            ],
+            [
+              "windows.hashdump",
+              "Extrae hashes NTLM",
+              "Detectar credential dumping"
+            ],
+            [
+              "windows.cmdline",
+              "Línea de comandos de cada proceso",
+              "Saber cómo se ejecutó cada proceso"
+            ],
+            [
+              "windows.modscan",
+              "Lista drivers y módulos del kernel",
+              "Detectar rootkits"
+            ],
+            [
+              "windows.registry.hivescan",
+              "Ubica hives del registro",
+              "Acceder a SAM, SYSTEM, SOFTWARE"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Flujo de Análisis Forense"
+        },
+        {
+          "type": "code",
+          "lang": "shell",
+          "lines": [
+            "# 1. Identificar perfil del volcado",
+            "volatility -f memory.dmp windows.info",
+            "# 2. Listar procesos (psscan > pslist para ocultos)",
+            "volatility -f memory.dmp windows.psscan",
+            "volatility -f memory.dmp windows.pstree",
+            "# 3. Conexiones de red",
+            "volatility -f memory.dmp windows.netscan",
+            "# 4. Buscar inyeccion de codigo",
+            "volatility -f memory.dmp windows.malfind",
+            "# 5. Extraer hashes",
+            "volatility -f memory.dmp windows.hashdump",
+            "# 6. Dump de proceso por PID",
+            "volatility -f memory.dmp windows.dumpfiles --pid 1234"
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "w",
+          "title": "🔍 Compará pslist vs psscan para detectar rootkits",
+          "body": "psscan escanea toda la memoria buscando estructuras EPROCESS. Si un proceso aparece en psscan pero no en pslist, está oculto por un rootkit."
+        },
+        {
+          "type": "sub",
+          "title": "Indicadores en Memoria"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🔍",
+              "t": "Conexiones C2 activas",
+              "d": "netscan muestra ESTABLISHED a IPs externas. Correlacionar con psscan para identificar el proceso.",
+              "c": "r"
+            },
+            {
+              "i": "📡",
+              "t": "Conexiones sin proceso visible",
+              "d": "Si netscan muestra conexiones sin proceso asociado, posible kernel-mode rootkit o conexión WMI.",
+              "c": "o"
+            },
+            {
+              "i": "🤖",
+              "t": "Shellcode en memoria",
+              "d": "malfind detecta regiones RWX. Normalmente la memoria es RX o RW, nunca RWX.",
+              "c": "r"
+            },
+            {
+              "i": "🤮",
+              "t": "Mimikatz en memoria",
+              "d": "Hashes NTLM en memoria sin lsass accediéndolos = credential dump en curso.",
+              "c": "r"
+            }
+          ]
+        },
+        {
           "type": "code",
           "lang": "shell",
           "lines": [
@@ -1053,15 +2032,47 @@
         },
         {
           "type": "table",
-          "h": ["Paso", "Comando", "Qué buscar"],
+          "h": [
+            "Paso",
+            "Comando",
+            "Qué buscar"
+          ],
           "r": [
-            ["1. Hash", "sha256sum muestra.exe", "Cruzarlo con VirusTotal, Hybrid Analysis, Any.Run. Si ya lo vieron → leer análisis de otros"],
-            ["2. Tipo real", "file muestra.exe", "Si dice 'data' o 'MS-DOS executable' está raro. Los PE legítimos dicen 'PE32 executable'"],
-            ["3. Packer", "detect-it-easy --file muestra.exe", "Si detecta UPX/MPRESS/Themida → está empaquetado. UPX se puede desempaquetar, Themida no sin reversing"],
-            ["4. Entropía", "binwalk -E muestra.exe", "Entropía > 7.0 → packed/cifrado. Entropía baja (<5) con código sospechoso → posible ofuscación artesanal"],
-            ["5. URLs/IPs", "strings muestra.exe | grep -ioE 'https?://[^\"<> ]+'", "Buscar C2, dominios de staging, URLs de callback. Prestar atención a puertos no estándar"],
-            ["6. Imports PE", "pedump --imports muestra.exe | grep -E '(VirtualAlloc|CreateRemoteThread|WriteProcessMemory|URLDownloadToFile|WinExec|RegSetValue)'", "VirtualAlloc+WriteProcessMemory+CreateRemoteThread → classic injection. URLDownloadToFile → downloader"],
-            ["7. Timestamp PE", "exiftool muestra.exe | grep -i 'time\\|date'", "Si dice '0' o una fecha futura → falso. Si dice fecha antigua y el malware es nuevo → podría ser un compiler falso"]
+            [
+              "1. Hash",
+              "sha256sum muestra.exe",
+              "Cruzarlo con VirusTotal, Hybrid Analysis, Any.Run. Si ya lo vieron → leer análisis de otros"
+            ],
+            [
+              "2. Tipo real",
+              "file muestra.exe",
+              "Si dice 'data' o 'MS-DOS executable' está raro. Los PE legítimos dicen 'PE32 executable'"
+            ],
+            [
+              "3. Packer",
+              "detect-it-easy --file muestra.exe",
+              "Si detecta UPX/MPRESS/Themida → está empaquetado. UPX se puede desempaquetar, Themida no sin reversing"
+            ],
+            [
+              "4. Entropía",
+              "binwalk -E muestra.exe",
+              "Entropía > 7.0 → packed/cifrado. Entropía baja (<5) con código sospechoso → posible ofuscación artesanal"
+            ],
+            [
+              "5. URLs/IPs",
+              "strings muestra.exe | grep -ioE 'https?://[^\"<> ]+'",
+              "Buscar C2, dominios de staging, URLs de callback. Prestar atención a puertos no estándar"
+            ],
+            [
+              "6. Imports PE",
+              "pedump --imports muestra.exe | grep -E '(VirtualAlloc|CreateRemoteThread|WriteProcessMemory|URLDownloadToFile|WinExec|RegSetValue)'",
+              "VirtualAlloc+WriteProcessMemory+CreateRemoteThread → classic injection. URLDownloadToFile → downloader"
+            ],
+            [
+              "7. Timestamp PE",
+              "exiftool muestra.exe | grep -i 'time\\|date'",
+              "Si dice '0' o una fecha futura → falso. Si dice fecha antigua y el malware es nuevo → podría ser un compiler falso"
+            ]
           ]
         },
         {
@@ -1085,12 +2096,42 @@
         {
           "type": "grid",
           "items": [
-            {"i":"1️⃣","t":"Ejecutá en sandbox","d":"FLARE VM + Procmon + Wireshark + API Monitor. Capturá: procesos creados, archivos escritos, claves de registro creadas, conexiones DNS/HTTP.","c":"r"},
-            {"i":"2️⃣","t":"Monitoreá cambios","d":"Usar Procmon filter: Process Name is malware.exe. Grabá: CreateFile, RegSetValue, CreateProcess, TCP Send/Recv.","c":"y"},
-            {"i":"3️⃣","t":"Capturá tráfico","d":"Wireshark en el host de análisis. Filtrá por IP de destino. Buscar: DNS TXT exfil, HTTP POST regulares, beaconing cada N segundos.","c":"b"},
-            {"i":"4️⃣","t":"YARA sobre el dump","d":"Ejecutar YARA con reglas de Malpedia/yarasalooza sobre la muestra y los procesos hijos que spawnée.","c":"g"},
-            {"i":"5️⃣","t":"Analizá persistencia","d":"Ejecutar Autoruns desde sandbox. Buscar: Run Keys, Scheduled Tasks, Service, Start Menu, WMI Event Subscription.","c":"y"},
-            {"i":"6️⃣","t":"Chequeá mutex","d":"Herramienta: Handle (Sysinternals) para ver mutex creados. Los mutex son IOCs que sirven para detection.","c":"g"}
+            {
+              "i": "1️⃣",
+              "t": "Ejecutá en sandbox",
+              "d": "FLARE VM + Procmon + Wireshark + API Monitor. Capturá: procesos creados, archivos escritos, claves de registro creadas, conexiones DNS/HTTP.",
+              "c": "r"
+            },
+            {
+              "i": "2️⃣",
+              "t": "Monitoreá cambios",
+              "d": "Usar Procmon filter: Process Name is malware.exe. Grabá: CreateFile, RegSetValue, CreateProcess, TCP Send/Recv.",
+              "c": "y"
+            },
+            {
+              "i": "3️⃣",
+              "t": "Capturá tráfico",
+              "d": "Wireshark en el host de análisis. Filtrá por IP de destino. Buscar: DNS TXT exfil, HTTP POST regulares, beaconing cada N segundos.",
+              "c": "b"
+            },
+            {
+              "i": "4️⃣",
+              "t": "YARA sobre el dump",
+              "d": "Ejecutar YARA con reglas de Malpedia/yarasalooza sobre la muestra y los procesos hijos que spawnée.",
+              "c": "g"
+            },
+            {
+              "i": "5️⃣",
+              "t": "Analizá persistencia",
+              "d": "Ejecutar Autoruns desde sandbox. Buscar: Run Keys, Scheduled Tasks, Service, Start Menu, WMI Event Subscription.",
+              "c": "y"
+            },
+            {
+              "i": "6️⃣",
+              "t": "Chequeá mutex",
+              "d": "Herramienta: Handle (Sysinternals) para ver mutex creados. Los mutex son IOCs que sirven para detection.",
+              "c": "g"
+            }
           ]
         },
         {
@@ -1437,17 +2478,840 @@
         {
           "type": "grid",
           "items": [
-            {"i":"🧮","t":"Bytes a GB","d":"bytes / 1073741824 (bash/ps) o calculadora mental","c":"b"},
-            {"i":"⏰","t":"Epoch a fecha Unix","d":"date -d @1700000000 (Linux) / Get-Date 1700000000 -UFormat '%Y-%m-%d %H:%M' (PS)","c":"b"},
-            {"i":"🔢","t":"Hex a Decimal","d":"printf '%d\\n' 0x7F (bash) / [Convert]::ToInt32('0x7F',16) (PS)","c":"g"},
-            {"i":"🔄","t":"Base64 Decode","d":"echo dGVzdA== | base64 -d (bash) / [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('dGVzdA==')) (PS)","c":"g"},
-            {"i":"🔐","t":"Hash de archivo","d":"sha256sum archivo (bash) / Get-FileHash archivo -Algorithm SHA256 (PS)","c":"y"},
-            {"i":"🌐","t":"URL Decode","d":"python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'","c":"p"},
-            {"i":"🔀","t":"XOR bytes (CyberChef)","d":"https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')XOR({'option':'Hex','string':'key'},'Standard',false)To_Hex('Space')","c":"o"},
-            {"i":"📅","t":"17201 → datetime","d":"Convert 17201 (Windows FileTime / LDAP) con CyberChef o https://www.epochconverter.com/ldap","c":"p"},
-            {"i":"🔍","t":"GUID a registry","d":"Los GUIDs en registry se guardan en formato invertido. Usar PowerShell: [GUID]::new('{GUID}').ToByteArray()","c":"r"},
-            {"i":"📐","t":"Timeline CSV","d":"tshark, Hayabusa, y Volatility tienen -o csv. Pegar en Excel/Timeline Explorer y pivotear","c":"b"}
+            {
+              "i": "🧮",
+              "t": "Bytes a GB",
+              "d": "bytes / 1073741824 (bash/ps) o calculadora mental",
+              "c": "b"
+            },
+            {
+              "i": "⏰",
+              "t": "Epoch a fecha Unix",
+              "d": "date -d @1700000000 (Linux) / Get-Date 1700000000 -UFormat '%Y-%m-%d %H:%M' (PS)",
+              "c": "b"
+            },
+            {
+              "i": "🔢",
+              "t": "Hex a Decimal",
+              "d": "printf '%d\\n' 0x7F (bash) / [Convert]::ToInt32('0x7F',16) (PS)",
+              "c": "g"
+            },
+            {
+              "i": "🔄",
+              "t": "Base64 Decode",
+              "d": "echo dGVzdA== | base64 -d (bash) / [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('dGVzdA==')) (PS)",
+              "c": "g"
+            },
+            {
+              "i": "🔐",
+              "t": "Hash de archivo",
+              "d": "sha256sum archivo (bash) / Get-FileHash archivo -Algorithm SHA256 (PS)",
+              "c": "y"
+            },
+            {
+              "i": "🌐",
+              "t": "URL Decode",
+              "d": "python3 -c 'import urllib.parse; print(urllib.parse.unquote(\"%2F\"))'",
+              "c": "p"
+            },
+            {
+              "i": "🔀",
+              "t": "XOR bytes (CyberChef)",
+              "d": "https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')XOR({'option':'Hex','string':'key'},'Standard',false)To_Hex('Space')",
+              "c": "o"
+            },
+            {
+              "i": "📅",
+              "t": "17201 → datetime",
+              "d": "Convert 17201 (Windows FileTime / LDAP) con CyberChef o https://www.epochconverter.com/ldap",
+              "c": "p"
+            },
+            {
+              "i": "🔍",
+              "t": "GUID a registry",
+              "d": "Los GUIDs en registry se guardan en formato invertido. Usar PowerShell: [GUID]::new('{GUID}').ToByteArray()",
+              "c": "r"
+            },
+            {
+              "i": "📐",
+              "t": "Timeline CSV",
+              "d": "tshark, Hayabusa, y Volatility tienen -o csv. Pegar en Excel/Timeline Explorer y pivotear",
+              "c": "b"
+            }
           ]
+        }
+      ]
+    },
+    {
+      "id": "win-procs",
+      "icon": "⚙️",
+      "title": "Windows Processes — Guía Visual",
+      "badge": "Mindmap + Referencia",
+      "desc": "Mapa mental de SBousseaden para identificar procesos core de Windows y detectar anomalías. Cada proceso legítimo puede ser secuestrado o suplantado.",
+      "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🧠 Procesos: la línea entre lo normal y lo malicioso",
+          "body": "Los atacantes usan procesos legítimos de Windows para evadir detección. Conocer qué es normal en cada proceso es la base del threat hunting en endpoints."
+        },
+        {
+          "type": "sub",
+          "title": "Mapa Mental: Windows Core Processes (SBousseaden)"
+        },
+        {
+          "type": "image",
+          "src": "assets/windows-processes-th-mindmap.png",
+          "alt": "Windows Processes Threat Hunting Mindmap by SBousseaden",
+          "caption": "Fuente: @SBousseaden — Threat Hunting Mindmap"
+        },
+        {
+          "type": "callout",
+          "s": "g",
+          "title": "📍 Cómo usar este mapa",
+          "body": "Cada nodo representa un proceso core de Windows. Las ramas muestran: (1) qué hace el proceso normalmente, (2) qué anomalías buscar, (3) qué eventIDs monitorear, (4) técnicas MITRE asociadas."
+        },
+        {
+          "type": "sub",
+          "title": "Procesos Críticos y Señales de Alerta"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Proceso",
+            "Función legítima",
+            "Señal de alerta",
+            "EventID clave"
+          ],
+          "r": [
+            [
+              "smss.exe",
+              "Session Manager — arranca sesiones",
+              "Ejecutándose fuera de %SystemRoot%\\System32",
+              "4688 (created)"
+            ],
+            [
+              "csrss.exe",
+              "Client/Server Runtime — subsistema Win32",
+              "Parent distinto de smss.exe",
+              "4688"
+            ],
+            [
+              "winlogon.exe",
+              "Logon interactivo",
+              "Carga de DLL no firmadas o sospechosas",
+              "4624, 4648"
+            ],
+            [
+              "lsass.exe",
+              "Local Security Authority — auth",
+              "Proceso hijo inesperado (cmd, powershell)",
+              "4688, 4625"
+            ],
+            [
+              "svchost.exe",
+              "Service Host — servicios genéricos",
+              "Fuera de C:\\Windows\\System32 o nombre de servicio anómalo",
+              "4688, 4698"
+            ],
+            [
+              "services.exe",
+              "Service Control Manager",
+              "Inicio de servicio con nombre aleatorio",
+              "4698, 7045"
+            ],
+            [
+              "wininit.exe",
+              "Windows Initialization",
+              "Carga de drivers sin firma",
+              "4688"
+            ],
+            [
+              "taskhost.exe",
+              "Host para tareas en segundo plano",
+              "Ejecución desde Temp o AppData",
+              "4688"
+            ],
+            [
+              "spoolsv.exe",
+              "Print Spooler",
+              "Carga de DLL con PrintNightmare o similar",
+              "4688, 7045"
+            ],
+            [
+              "wmiprvse.exe",
+              "WMI Provider Host",
+              "Ejecución remota inesperada (lateral movement)",
+              "4688, 19/20 (Sysmon WMI)"
+            ],
+            [
+              "explorer.exe",
+              "Shell de Windows",
+              "Parent distinto de userinit.exe o ejecución sospechosa",
+              "4688"
+            ],
+            [
+              "dllhost.exe",
+              "COM+ surrogate host",
+              "Habitual en ataques que usan COM para evasión",
+              "4688"
+            ],
+            [
+              "regsvr32.exe",
+              "Registro de COM/DLL",
+              "Conexiones salientes a internet",
+              "4688, Sysmon 3"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Patrones de Procesos Anómalos"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🔄",
+              "t": "Process Hollowing / Inyección",
+              "d": "Un proceso legítimo (ej: svchost.exe) se crea en estado suspendido, se le reemplaza el código en memoria y se reanuda. Detectar con Sysmon Event 8 (CreateRemoteThread).",
+              "c": "r"
+            },
+            {
+              "i": "🎯",
+              "t": "Parent-Child Mismatch",
+              "d": "winword.exe lanzando powershell.exe? Eso es ejecución de macro maliciosa. El árbol de procesos es la forma más rápida de detectar ataques basados en phishing.",
+              "c": "o"
+            },
+            {
+              "i": "🕵️",
+              "t": "Proceso desde ubicación incorrecta",
+              "d": "lsass.exe debe estar en System32. Si lo ves en Temp, Windows, o un path de usuario — es malware suplantándolo.",
+              "c": "r"
+            },
+            {
+              "i": "⚡",
+              "t": "Conexiones de red inesperadas",
+              "d": "regsvr32.exe, rundll32.exe, mshta.exe conectándose a internet no es normal. wmiprvse.exe haciendo peticiones HTTP tampoco.",
+              "c": "p"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ad-attacks",
+      "icon": "🏛️",
+      "title": "Active Directory — EventLogs & Attack Paths",
+      "badge": "AD Security",
+      "desc": "Active Directory es el core de la identidad corporativa y el principal objetivo de atacantes. Eventos clave para detectar kerberoasting, DCSync, ACL abuse y más.",
+      "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🏛️ AD es el nuevo perímetro",
+          "body": "El 80% de los ataques enterprise involucran AD. Cada EventID te cuenta una parte de la historia: autenticación, autorización, cambios en objetos y delegación."
+        },
+        {
+          "type": "sub",
+          "title": "EventIDs Críticos de AD"
+        },
+        {
+          "type": "table",
+          "h": [
+            "EventID",
+            "Nombre",
+            "Qué detecta",
+            "Ejemplo de ataque"
+          ],
+          "r": [
+            [
+              "4768",
+              "Kerberos TGT solicitado",
+              "Solicitud de ticket de usuario a DC",
+              "Anómalo si es desde IP fuera de horario"
+            ],
+            [
+              "4769",
+              "Kerberos TGS solicitado",
+              "Solicitud de ticket de servicio",
+              "Múltiples solicitudes = Kerberoasting"
+            ],
+            [
+              "4776",
+              "Validación NTLM",
+              "Autenticación NTLM contra DC",
+              "Brute force NTLM, pass-the-hash"
+            ],
+            [
+              "4624",
+              "Logon exitoso",
+              "Inicio de sesión",
+              "Logon type 3 desde IP no corporativa"
+            ],
+            [
+              "4625",
+              "Logon fallido",
+              "Fallo de autenticación",
+              "Password spray (muchos usuarios, pocos intentos c/u)"
+            ],
+            [
+              "4670",
+              "ACL modificada",
+              "Cambio en permisos de objeto",
+              "Backdoor en ACL de AdminSDHolder"
+            ],
+            [
+              "4738",
+              "Usuario modificado",
+              "Cambio en atributos de user",
+              "Deshabilitar Kerberos pre-auth para AS-REP roast"
+            ],
+            [
+              "4742",
+              "Computer modificada",
+              "Cambio en atributos de equipo",
+              "Delegación no restringida agregada"
+            ],
+            [
+              "5136",
+              "Modificación LDAP",
+              "Cambio en objeto LDAP del DC",
+              "Modificar ACL de grupo privilegiado"
+            ],
+            [
+              "4728",
+              "Miembro agregado a grupo",
+              "Usuario agregado a grupo de seguridad",
+              "Agregar user a Domain Admins no autorizado"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Ataques Comunes a AD"
+        },
+        {
+          "type": "accordion",
+          "items": [
+            {
+              "title": "🤮 Kerberoasting",
+              "lines": [
+                "QUE ES: Solicitar tickets TGS para cuentas de servicio y crackear offline su contraseña.",
+                "DETECCION: Multiples EventID 4769 con RC4 encriptación (0x17) desde misma IP en corto tiempo, hacia diferentes SPNs.",
+                "MITRE: T1558.003 — Steal or Forge Kerberos Tickets: Kerberoasting",
+                "PREVENCION: Cuentas de servicio con contraseñas de >25 caracteres, Group Managed Service Accounts (gMSA)."
+              ]
+            },
+            {
+              "title": "🔑 AS-REP Roasting",
+              "lines": [
+                "QUE ES: Cuentas sin Kerberos pre-authentication habilitada exponen hashes crackeables.",
+                "DETECCION: EventID 4768 sin pre-auth. Monitorear cambios con EventID 4738 (atributo 'Do not require Kerberos preauthentication').",
+                "MITRE: T1558.004 — AS-REP Roasting",
+                "PREVENCION: Deshabilitar cuentas sin pre-auth, auditar periódicamente."
+              ]
+            },
+            {
+              "title": "📡 DCSync",
+              "lines": [
+                "QUE ES: Usar DRSUAPI para replicar credenciales desde el DC — cualquier cuenta con DS-Replication-Get-Changes puede hacer esto.",
+                "DETECCION: EventID 4662 (acceso a DS) con GUID de DS-Replication-Get-Changes.",
+                "MITRE: T1003.006 — DCSync",
+                "PREVENCION: Monitorear el grupo 'Replicator', limitar miembros con privilegios de replicación."
+              ]
+            },
+            {
+              "title": "🏴 Golden / Silver Ticket",
+              "lines": [
+                "QUE ES: Un atacante con el hash KRBTGT forja tickets Kerberos que no expiran.",
+                "DETECCION: EventID 4670 con SID 502 (KRBTGT) modificado. Tickets con lifetime mayor al máximo configurado.",
+                "MITRE: T1558.001 — Golden Ticket, T1558.002 — Silver Ticket",
+                "PREVENCION: Rotar password de KRBTGT cada 6-12 meses."
+              ]
+            },
+            {
+              "title": "🛡️ ACL Abuse / AdminSDHolder",
+              "lines": [
+                "QUE ES: Modificar ACLs en objetos AD para persistir incluso después de limpiar membresías de grupo.",
+                "DETECCION: EventID 5136 + 4670 en AdminSDHolder o grupos protegidos (Domain Admins, Enterprise Admins).",
+                "MITRE: T1098 — Account Manipulation (ACL abuse)",
+                "PREVENCION: Monitorear cambios en AdminSDHolder con alertas en tiempo real."
+              ]
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Comandos de Auditoria Rapida"
+        },
+        {
+          "type": "tabs",
+          "tabs": [
+            {
+              "label": "PowerShell",
+              "lang": "powershell",
+              "lines": [
+                "# Cuentas sin Kerberos pre-auth",
+                "Get-ADUser -Filter {DoesNotRequirePreAuth -eq $True}",
+                "",
+                "# Cuentas de servicio con SPN (posible kerberoasting)",
+                "Get-ADUser -Filter * -Properties ServicePrincipalName | Where-Object ServicePrincipalName",
+                "",
+                "# Ultimo cambio de KRBTGT",
+                "Get-ADUser krbtgt -Properties passwordLastSet"
+              ]
+            },
+            {
+              "label": "KQL",
+              "lang": "kql",
+              "lines": [
+                "// Kerberoasting: multiples TGS con RC4 desde misma IP",
+                "SecurityEvent",
+                "| where EventID == 4769",
+                "| where TicketEncryptionType == \"0x17\"",
+                "| summarize TGS_count=count() by Account, IpAddress",
+                "| where TGS_count > 5"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "⚠️ Regla de oro: monitoreá quién pide tickets, no solo quién se loguea",
+          "body": "Muchos ataques a AD no generan un logon tradicional — ocurren a nivel de protocolo Kerberos (4768/4769). Si solo monitoreás 4624, te estás perdiendo el 70% de los ataques AD."
+        }
+      ]
+    },
+    {
+      "id": "cloud",
+      "icon": "☁️",
+      "title": "Cloud & Entra ID — Security Monitoring",
+      "badge": "Cloud",
+      "desc": "El perímetro se mudó a la nube. Autenticación moderna, consent grants, MFA bombing, device code phishing y más vectores en Entra ID (Azure AD).",
+      "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "☁️ Cloud no es segura por defecto",
+          "body": "Entra ID registra todo en los Audit Logs y Sign-In Logs. El problema no es falta de datos — es saber qué mirar."
+        },
+        {
+          "type": "sub",
+          "title": "Logs Críticos de Entra ID"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Log",
+            "Qué registra",
+            "Caso de uso"
+          ],
+          "r": [
+            [
+              "SignInLogs",
+              "Cada inicio de sesión",
+              "Detectar auth desde IP anómala, MFA failures, device code phishing"
+            ],
+            [
+              "AuditLogs",
+              "Cambios en configuración de tenant",
+              "Detectar consent grants maliciosos, cambios en Conditional Access"
+            ],
+            [
+              "ProvisioningLogs",
+              "Sincronización de identidades",
+              "Detectar modificación de cuentas en hybrid setup"
+            ],
+            [
+              "AADServicePrincipalSignInLogs",
+              "SPN / service principal auth",
+              "Detectar abuso de service credentials u OAuth apps"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Vectores de Ataque Cloud"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "📱",
+              "t": "MFA Bombing / Fatigue",
+              "d": "Múltiples push notifications MFA denegadas hasta que el usuario acepta por cansancio. Detectar con múltiples 500121 antes de un 0.",
+              "c": "r"
+            },
+            {
+              "i": "🎯",
+              "t": "Device Code Phishing",
+              "d": "Atacante convence al user de ingresar un código de device auth. Detectar con IP anómala + ClientAppUsed = 'Device Code'.",
+              "c": "o"
+            },
+            {
+              "i": "✅",
+              "t": "Consent Grant Malicioso",
+              "d": "App OAuth pide permisos elevados (Mail.Read, Files.ReadWrite.All). El user acepta y el atacante accede sin re-autenticarse.",
+              "c": "r"
+            },
+            {
+              "i": "🔒",
+              "t": "Token Theft / Replay",
+              "d": "Token robado vía phishing o malware es reutilizado desde IP diferente. Detectar con sign-in correlation ID + location mismatch.",
+              "c": "p"
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "KQL Queries para Entra ID"
+        },
+        {
+          "type": "code",
+          "lang": "kql",
+          "lines": [
+            "// MFA bombing: multiples denegadas + una aceptada en <2 min",
+            "SigninLogs",
+            "| where ResultType == \"500121\"  // MFA denied",
+            "| summarize Denegadas = count(), Ultima = max(TimeGenerated) by UserPrincipalName, IPAddress",
+            "| join kind=inner (",
+            "    SigninLogs",
+            "    | where ResultType == \"0\" and AuthenticationRequirement == \"multiFactorAuthentication\"",
+            "    ) on UserPrincipalName, IPAddress",
+            "| where datetime_diff('second', TimeGenerated, Ultima) < 120",
+            "",
+            "// Device code auth desde IP anomala",
+            "SigninLogs",
+            "| where ClientAppUsed == \"Device Code\"",
+            "| where RiskLevelDuringSignIn in (\"medium\", \"high\")",
+            "",
+            "// Nuevo consent grant sospechoso",
+            "AuditLogs",
+            "| where OperationName == \"Consent to application\"",
+            "| where TargetResources[0].modifiedProperties[0].newValue contains \".Read\""
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "⚠️ Conditional Access no es suficiente",
+          "body": "CA reduce riesgo pero no lo elimina. MFA bombing y token theft evaden CA porque el token ya fue emitido. Necesitás monitorear los Sign-In Logs, no solo confiar en CA."
+        }
+      ]
+    },
+    {
+      "id": "email-sec",
+      "icon": "📧",
+      "title": "Email Security — Headers & Autenticación",
+      "badge": "Email Forensics",
+      "desc": "El phishing empieza y termina en el email. Saber leer cabeceras, validar SPF/DKIM/DMARC y rastrear el origen real de un mensaje.",
+      "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "📧 El email es el vector #1",
+          "body": "El 91% de los ataques empiezan por email. Las cabeceras no mienten — el remitente visible sí."
+        },
+        {
+          "type": "sub",
+          "title": "Anatomy de una Cabecera de Email"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Campo",
+            "Qué muestra",
+            "Para qué sirve"
+          ],
+          "r": [
+            [
+              "Received",
+              "Servidores por los que pasó",
+              "Rastrear origen real (última entrada = más cercana al origen)"
+            ],
+            [
+              "Return-Path",
+              "Dirección de rebote",
+              "Quién realmente envió el mail (vs From visible)"
+            ],
+            [
+              "Reply-To",
+              "Respuesta configurada",
+              "Si difiere de From, es phishing casi seguro"
+            ],
+            [
+              "Authentication-Results",
+              "Resultados SPF/DKIM/DMARC",
+              "PASS = legítimo, FAIL = spoofing"
+            ],
+            [
+              "DKIM-Signature",
+              "Firma DKIM",
+              "El dominio firmó criptográficamente el mensaje"
+            ],
+            [
+              "Message-ID",
+              "ID único del mensaje",
+              "Correlacionar con logs del servidor de correo"
+            ],
+            [
+              "X-Originating-IP",
+              "IP de origen (si se registra)",
+              "Geolocalización del remitente real"
+            ]
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "SPF, DKIM y DMARC — La Trinidad"
+        },
+        {
+          "type": "grid",
+          "items": [
+            {
+              "i": "🛡️",
+              "t": "SPF (Sender Policy Framework)",
+              "d": "El dominio publica qué IPs pueden enviar mail en su nombre. SPF fail = IP no autorizada. Check con: nslookup -type=TXT dominio.com",
+              "c": "b"
+            },
+            {
+              "i": "🔐",
+              "t": "DKIM (DomainKeys Identified Mail)",
+              "d": "Firma criptográfica del dominio. Si no coincide, el mensaje fue alterado o falsificado.",
+              "c": "b"
+            },
+            {
+              "i": "📋",
+              "t": "DMARC (Domain-based Auth)",
+              "d": "Política que define qué hacer si SPF y/o DKIM fallan: none | quarantine | reject.",
+              "c": "b"
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Análisis Rápido de Phishing"
+        },
+        {
+          "type": "accordion",
+          "items": [
+            {
+              "title": "🔍 Paso a paso: analizar email sospechoso",
+              "lines": [
+                "1. Descargar .EML/.MSG original (NO reenviar — pierde cabeceras).",
+                "2. Abrir con bloc de notas o visor de cabeceras.",
+                "3. Identificar el último (más antiguo) Received: esa es la IP de origen real.",
+                "4. Verificar Return-Path vs From — si difieren, probablemente spoofing.",
+                "5. Buscar Authentication-Results: SPF, DKIM, DMARC. FAIL = no legítimo.",
+                "6. Verificar enlaces sin hacer clic: VirusTotal o URLScan.io."
+              ]
+            },
+            {
+              "title": "🚨 Indicadores de Phishing en Headers",
+              "lines": [
+                "- SPF fail + DKIM fail + DMARC fail = spoofing confirmado.",
+                "- Reply-To diferente de From = phishing casi siempre.",
+                "- Return-Path de dominio .ga, .ml, .cf, .tk = dominios gratuitos.",
+                "- Received de IP en país no relacionado con la empresa.",
+                "- Enlaces con URL encoding excesivo o dominios que imitan marcas."
+              ]
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Comandos Útiles"
+        },
+        {
+          "type": "tabs",
+          "tabs": [
+            {
+              "label": "PowerShell",
+              "lang": "powershell",
+              "lines": [
+                "# Analizar cabeceras de un .EML",
+                "$eml = [MimeKit.MimeMessage]::Load(\"phishing.eml\")",
+                "$eml.Headers",
+                "",
+                "# Validar SPF de un dominio",
+                "Resolve-DnsName -Type TXT dominio.com | Where-Object Strings -like '*spf*'"
+              ]
+            },
+            {
+              "label": "Linux",
+              "lang": "bash",
+              "lines": [
+                "# Ver cabeceras completas",
+                "cat email.eml | grep -E '^(Received|Return-Path|From|Reply-To|Authentication-Results):'",
+                "",
+                "# Validar SPF",
+                "dig txt dominio.com | grep -i spf",
+                "",
+                "# Extraer URL de un email",
+                "grep -oP 'https?://[^\\s<>\"\\']+' email.eml | sort -u"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "d",
+          "title": "⚠️ No reenviéis el email",
+          "body": "Reenviar destruye las cabeceras originales. Pedí el .EML /.MSG adjunto. En Outlook: 'Guardar como > Mensaje de correo (.eml)'."
+        }
+      ]
+    },
+    {
+      "id": "sigma",
+      "icon": "📫",
+      "title": "Sigma Rules — Escribí Detecciones Portables",
+      "badge": "Sigma",
+      "desc": "Sigma es a los logs lo que YARA es a los archivos: un formato estandarizado para describir detecciones que se traduce a cualquier SIEM (KQL, SPL, ESQL, Lucene, etc.).",
+      "content": [
+        {
+          "type": "callout",
+          "s": "i",
+          "title": "🧠 Sigma = detecciones que viajan",
+          "body": "Escribís una regla Sigma una vez y la convertís a Sentinel, Splunk, Elastic, QRadar, y más de 20 backends."
+        },
+        {
+          "type": "sub",
+          "title": "Estructura de una Regla Sigma"
+        },
+        {
+          "type": "code",
+          "lang": "yaml",
+          "lines": [
+            "title: PowerShell Execution from Office",
+            "id: 7f7f8a0a-4c5e-4c1e-b7c8-8e0f2a5b3c9a",
+            "status: experimental",
+            "description: Detects Office products spawning PowerShell",
+            "author: SOC Guide",
+            "date: 2024/01/01",
+            "tags:",
+            "  - attack.execution",
+            "  - attack.t1059.001",
+            "logsource:",
+            "  product: windows",
+            "  category: process_creation",
+            "detection:",
+            "  selection_parent:",
+            "    ParentImage|endswith:",
+            "      - '\\\\WINWORD.EXE'",
+            "      - '\\\\EXCEL.EXE'",
+            "      - '\\\\POWERPNT.EXE'",
+            "  selection_img:",
+            "    Image|endswith: '\\\\powershell.exe'",
+            "  condition: all of selection_*",
+            "falsepositives:",
+            "  - Administrative scripts",
+            "level: high"
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "Traducción a SIEMs"
+        },
+        {
+          "type": "tabs",
+          "tabs": [
+            {
+              "label": "Sigma → KQL",
+              "lang": "kql",
+              "lines": [
+                "// Office spawning PowerShell",
+                "DeviceProcessEvents",
+                "| where FolderPath endswith \"\\\\powershell.exe\"",
+                "| where InitiatingProcessFolderPath endswith @\"\\WINWORD.EXE\"",
+                "   or InitiatingProcessFolderPath endswith @\"\\EXCEL.EXE\"",
+                "   or InitiatingProcessFolderPath endswith @\"\\POWERPNT.EXE\""
+              ]
+            },
+            {
+              "label": "Sigma → SPL",
+              "lang": "spl",
+              "lines": [
+                "index=windows source=\"WinEventLog:Microsoft-Windows-Sysmon/Operational\" EventCode=1",
+                "| search Image=*\\\\powershell.exe",
+                "  AND (ParentImage=*\\\\WINWORD.EXE OR ParentImage=*\\\\EXCEL.EXE OR ParentImage=*\\\\POWERPNT.EXE)"
+              ]
+            },
+            {
+              "label": "Sigma → ESQL",
+              "lang": "esql",
+              "lines": [
+                "process where process.name == \"powershell.exe\"",
+                "and parent.name in (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\")"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "sub",
+          "title": "LogSources más comunes"
+        },
+        {
+          "type": "table",
+          "h": [
+            "Categoría",
+            "Producto",
+            "Descripción"
+          ],
+          "r": [
+            [
+              "process_creation",
+              "windows",
+              "Sysmon Event 1 / EID 4688"
+            ],
+            [
+              "file_event",
+              "windows",
+              "Sysmon Event 11"
+            ],
+            [
+              "network_connection",
+              "windows",
+              "Sysmon Event 3"
+            ],
+            [
+              "registry_event",
+              "windows",
+              "Sysmon Events 12-14"
+            ],
+            [
+              "image_load",
+              "windows",
+              "Sysmon Event 7"
+            ],
+            [
+              "dns_query",
+              "windows",
+              "Sysmon Event 22"
+            ],
+            [
+              "security",
+              "windows",
+              "Windows Security Log"
+            ],
+            [
+              "webserver",
+              "linux",
+              "Apache, Nginx, IIS logs"
+            ],
+            [
+              "firewall",
+              "network",
+              "Firewall traffic logs"
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "s": "g",
+          "title": "🔗 Herramientas clave",
+          "body": "Sigma CLI (pip install sigma-cli). sigconverter.io para pruebas online. Repo oficial: github.com/SigmaHQ/sigma"
         }
       ]
     }
@@ -1551,95 +3415,160 @@
           "i": "🎯",
           "l": "MITRE"
         },
-    {
-      "id": "forensics",
-      "icon": "🔬",
-      "title": "Forensia de Memoria RAM",
-      "badge": "Volatility 3 + comandos",
-      "desc": "Análisis forense de memoria volátil. El orden importa: no hagas dump de RAM y después apagues sin preservar volátil.",
-      "content": [
         {
-          "type": "callout",
-          "s": "i",
-          "title": "🎯 ¿Cuándo hacer RAM forensics?",
-          "body": "Cuando necesitás: (1) encontrar malware in-memory/fileless, (2) recuperar procesos ocultos/inyectados, (3) extraer credenciales de LSASS, (4) reconstruir conexiones de red activas al momento del dump, (5) detectar rootkits. NO sirve para recuperar archivos borrados (para eso está disk forensics)."
-        },
-        {
-          "type": "sub",
-          "title": "Adquisición de RAM (en caliente)"
-        },
-        {
-          "type": "table",
-          "h": ["Herramienta", "Comando", "Output", "Notas"],
-          "r": [
-            ["WinPMEM (recomendado)", "winpmem_mini_x64_rc2.exe mem.raw", "mem.raw (raw format)", "Open source. Funciona en Win 7-11. No deja el sistema inestable"],
-            ["FTK Imager", "FTK Imager → File → Capture Memory", "mem.raw + pagefile.sys", "Gratuito. Lento en equipos con mucha RAM (>16GB)"],
-            ["Magnet RAM Capture", "MagnetRAMCapture.exe", "mem.raw (aff4)", "Gratuito. Fácil de usar. Output en AFF4"],
-            ["DumpIt (Comae)", "DumpIt.exe", "mem.dmp (crash dump)", "Rápido. Paga para uso comercial. Output crash dump"],
-            ["LiME (Linux)", "insmod lime.ko path=mem.lkz format=lime", "mem.lkz (lime format)", "Para Linux. Cargar como módulo de kernel. Dump en formato lime"],
-            ["Avml (Linux)", "avml mem.lime", "mem.lime", "Open source. No requiere módulo de kernel. Escribe a stdout para pipe"]
+          "id": "forensics",
+          "icon": "🔬",
+          "title": "Forensia de Memoria RAM",
+          "badge": "Volatility 3 + comandos",
+          "desc": "Análisis forense de memoria volátil. El orden importa: no hagas dump de RAM y después apagues sin preservar volátil.",
+          "content": [
+            {
+              "type": "callout",
+              "s": "i",
+              "title": "🎯 ¿Cuándo hacer RAM forensics?",
+              "body": "Cuando necesitás: (1) encontrar malware in-memory/fileless, (2) recuperar procesos ocultos/inyectados, (3) extraer credenciales de LSASS, (4) reconstruir conexiones de red activas al momento del dump, (5) detectar rootkits. NO sirve para recuperar archivos borrados (para eso está disk forensics)."
+            },
+            {
+              "type": "sub",
+              "title": "Adquisición de RAM (en caliente)"
+            },
+            {
+              "type": "table",
+              "h": [
+                "Herramienta",
+                "Comando",
+                "Output",
+                "Notas"
+              ],
+              "r": [
+                [
+                  "WinPMEM (recomendado)",
+                  "winpmem_mini_x64_rc2.exe mem.raw",
+                  "mem.raw (raw format)",
+                  "Open source. Funciona en Win 7-11. No deja el sistema inestable"
+                ],
+                [
+                  "FTK Imager",
+                  "FTK Imager → File → Capture Memory",
+                  "mem.raw + pagefile.sys",
+                  "Gratuito. Lento en equipos con mucha RAM (>16GB)"
+                ],
+                [
+                  "Magnet RAM Capture",
+                  "MagnetRAMCapture.exe",
+                  "mem.raw (aff4)",
+                  "Gratuito. Fácil de usar. Output en AFF4"
+                ],
+                [
+                  "DumpIt (Comae)",
+                  "DumpIt.exe",
+                  "mem.dmp (crash dump)",
+                  "Rápido. Paga para uso comercial. Output crash dump"
+                ],
+                [
+                  "LiME (Linux)",
+                  "insmod lime.ko path=mem.lkz format=lime",
+                  "mem.lkz (lime format)",
+                  "Para Linux. Cargar como módulo de kernel. Dump en formato lime"
+                ],
+                [
+                  "Avml (Linux)",
+                  "avml mem.lime",
+                  "mem.lime",
+                  "Open source. No requiere módulo de kernel. Escribe a stdout para pipe"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "s": "d",
+              "title": "⚠️ Reglas de oro del dump de RAM",
+              "body": "(1) Volcar a unidad DIFERENTE al sistema (USB externo, red). (2) NO apagar el sistema antes de volcar. (3) Documentar: hora exacta del dump, estado del sistema (procesos visibles, conexiones), herramientas usadas. (4) Hacer hash SHA256 del dump inmediatamente después de volcar."
+            },
+            {
+              "type": "sub",
+              "title": "Análisis con Volatility 3"
+            },
+            {
+              "type": "code",
+              "lang": "bash",
+              "lines": [
+                "# Plugins esenciales de Volatility 3",
+                "vol -f mem.raw windows.psscan          # Procesos (incluye ocultos)",
+                "vol -f mem.raw windows.netscan         # Conexiones de red en el momento del dump",
+                "vol -f mem.raw windows.malfind          # Código inyectado en procesos",
+                "vol -f mem.raw windows.cmdline         # Línea de comandos de cada proceso",
+                "vol -f mem.raw windows.dlllist         # DLLs cargadas por proceso",
+                "vol -f mem.raw windows.modscan          # Módulos de kernel (rootkits)",
+                "vol -f mem.raw windows.cmdscan          # Comandos en consola",
+                "vol -f mem.raw windows.pstree           # Árbol de procesos",
+                "vol -f mem.raw windows.filescan         # Archivos abiertos",
+                "vol -f mem.raw windows.registry.hives   # Hives del registro cargados",
+                "vol -f mem.raw windows.hashdump         # Hashes de usuarios (SAM)",
+                "vol -f mem.raw windows.lsadump          # Secrets de LSA",
+                "",
+                "# Timeline y evidencia",
+                "vol -f mem.raw windows.timeliner        # Timeline completo de eventos",
+                "vol -f mem.raw windows.mftinfo          # Información de MFT",
+                "vol -f mem.raw windows.callbacks        # Callbacks del kernel (antivirus, rootkits)",
+                "",
+                "# Dump de procesos individuales",
+                "vol -f mem.raw windows.dumpfiles --virtaddr 0x...  # Dump de archivo específico por dirección virtual"
+              ]
+            },
+            {
+              "type": "sub",
+              "title": "Análisis rápido de un dump"
+            },
+            {
+              "type": "grid",
+              "items": [
+                {
+                  "i": "1️⃣",
+                  "t": "¿Hay procesos ocultos?",
+                  "d": "Ejecutar psscan y comparar con pstree. Si un proceso aparece en psscan pero no en pstree → está oculto (posible rootkit/malware).",
+                  "c": "r"
+                },
+                {
+                  "i": "2️⃣",
+                  "t": "¿Hay código inyectado?",
+                  "d": "Ejecutar malfind. Buscar regiones de memoria con PAGE_EXECUTE_READWRITE que no deberían tener código ejecutable.",
+                  "c": "r"
+                },
+                {
+                  "i": "3️⃣",
+                  "t": "¿Credenciales en memoria?",
+                  "d": "Ejecutar hashdump y lsadump. Si hay hashes NTLM en memoria, el atacante pudo haberlos extraído.",
+                  "c": "y"
+                },
+                {
+                  "i": "4️⃣",
+                  "t": "¿Conexiones activas al dump?",
+                  "d": "Ejecutar netscan. Buscar conexiones a IPs externas en puertos no estándar, o conexiones establecidas desde procesos inyectados.",
+                  "c": "b"
+                },
+                {
+                  "i": "5️⃣",
+                  "t": "¿Líneas de comando sospechosas?",
+                  "d": "Ejecutar cmdline. Buscar: -enc, IEX, DownloadString, wget, curl, powershell oculto (-w hidden).",
+                  "c": "y"
+                },
+                {
+                  "i": "6️⃣",
+                  "t": "¿Rootkit a nivel kernel?",
+                  "d": "Ejecutar modscan y verificar módulos contra baseline. Módulos con nombres aleatorios o sin firma digital.",
+                  "c": "r"
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "s": "w",
+              "title": "⏱️ Triage de un dump: 5 minutos",
+              "body": "Si tenés poco tiempo: psscan (procesos ocultos) → netscan (conexiones activas) → malfind (inyección) → cmdline (comandos). Esto te da el 90% de la historia. Lo demás (registry, files, timeline) es para profundizar."
+            }
           ]
         },
-        {
-          "type": "callout",
-          "s": "d",
-          "title": "⚠️ Reglas de oro del dump de RAM",
-          "body": "(1) Volcar a unidad DIFERENTE al sistema (USB externo, red). (2) NO apagar el sistema antes de volcar. (3) Documentar: hora exacta del dump, estado del sistema (procesos visibles, conexiones), herramientas usadas. (4) Hacer hash SHA256 del dump inmediatamente después de volcar."
-        },
-        {
-          "type": "sub",
-          "title": "Análisis con Volatility 3"
-        },
-        {
-          "type": "code",
-          "lang": "bash",
-          "lines": [
-            "# Plugins esenciales de Volatility 3",
-            "vol -f mem.raw windows.psscan          # Procesos (incluye ocultos)",
-            "vol -f mem.raw windows.netscan         # Conexiones de red en el momento del dump",
-            "vol -f mem.raw windows.malfind          # Código inyectado en procesos",
-            "vol -f mem.raw windows.cmdline         # Línea de comandos de cada proceso",
-            "vol -f mem.raw windows.dlllist         # DLLs cargadas por proceso",
-            "vol -f mem.raw windows.modscan          # Módulos de kernel (rootkits)",
-            "vol -f mem.raw windows.cmdscan          # Comandos en consola",
-            "vol -f mem.raw windows.pstree           # Árbol de procesos",
-            "vol -f mem.raw windows.filescan         # Archivos abiertos",
-            "vol -f mem.raw windows.registry.hives   # Hives del registro cargados",
-            "vol -f mem.raw windows.hashdump         # Hashes de usuarios (SAM)",
-            "vol -f mem.raw windows.lsadump          # Secrets de LSA",
-            "",
-            "# Timeline y evidencia",
-            "vol -f mem.raw windows.timeliner        # Timeline completo de eventos",
-            "vol -f mem.raw windows.mftinfo          # Información de MFT",
-            "vol -f mem.raw windows.callbacks        # Callbacks del kernel (antivirus, rootkits)",
-            "",
-            "# Dump de procesos individuales",
-            "vol -f mem.raw windows.dumpfiles --virtaddr 0x...  # Dump de archivo específico por dirección virtual"
-          ]
-        },
-        {
-          "type": "sub",
-          "title": "Análisis rápido de un dump"
-        },
-        {
-          "type": "grid",
-          "items": [
-            {"i":"1️⃣","t":"¿Hay procesos ocultos?","d":"Ejecutar psscan y comparar con pstree. Si un proceso aparece en psscan pero no en pstree → está oculto (posible rootkit/malware).","c":"r"},
-            {"i":"2️⃣","t":"¿Hay código inyectado?","d":"Ejecutar malfind. Buscar regiones de memoria con PAGE_EXECUTE_READWRITE que no deberían tener código ejecutable.","c":"r"},
-            {"i":"3️⃣","t":"¿Credenciales en memoria?","d":"Ejecutar hashdump y lsadump. Si hay hashes NTLM en memoria, el atacante pudo haberlos extraído.","c":"y"},
-            {"i":"4️⃣","t":"¿Conexiones activas al dump?","d":"Ejecutar netscan. Buscar conexiones a IPs externas en puertos no estándar, o conexiones establecidas desde procesos inyectados.","c":"b"},
-            {"i":"5️⃣","t":"¿Líneas de comando sospechosas?","d":"Ejecutar cmdline. Buscar: -enc, IEX, DownloadString, wget, curl, powershell oculto (-w hidden).","c":"y"},
-            {"i":"6️⃣","t":"¿Rootkit a nivel kernel?","d":"Ejecutar modscan y verificar módulos contra baseline. Módulos con nombres aleatorios o sin firma digital.","c":"r"}
-          ]
-        },
-        {
-          "type": "callout",
-          "s": "w",
-          "title": "⏱️ Triage de un dump: 5 minutos",
-          "body": "Si tenés poco tiempo: psscan (procesos ocultos) → netscan (conexiones activas) → malfind (inyección) → cmdline (comandos). Esto te da el 90% de la historia. Lo demás (registry, files, timeline) es para profundizar."
-        }
-      ]
-    },
         {
           "id": "malware",
           "i": "🦠",
