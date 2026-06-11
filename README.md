@@ -36,14 +36,19 @@
 |---|---|
 | 🧮 **Calculadora CVSS v3.1** | Seleccioná métricas, pegá un vector o buscá un CVE-ID real (NVD API). Score + barra de severidad en vivo |
 | 🔐 **Verificador de Hashes** | Calculá MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 de texto o archivos. Compará contra un hash conocido |
-| 🎨 **Diseño terminal oscuro** | Paleta #0a0e14, acentos cyan/orange, JetBrains Mono |
+| 🗺️ **Mapas mentales de Threat Hunting** | 4 mapas visuales de SBousseaden: procesos Windows, servicios, telemetría Sysmon kernel-mode, hunting en Security Log |
+| 🏛️ **Active Directory Security** | Kerberoasting, DCSync, AS-REP Roast, ACL abuse con EventIDs y detección |
+| ☁️ **Cloud & Entra ID Monitoring** | MFA bombing, consent grants, device code phishing con queries KQL |
+| 📧 **Email Forensics** | Análisis de cabeceras, SPF/DKIM/DMARC, detección de phishing paso a paso |
+| 📝 **Sigma Rules** | Escribí detecciones portables y traducilas a KQL / SPL / ESQL |
+| 🎨 **Diseño terminal oscuro mejorado** | Paleta #0a0e14, acentos cyan/orange, glassmorphism, tipografía ampliada |
 | 🔍 **Búsqueda en tiempo real** | Filtra secciones por contenido (títulos, tablas, comandos, todo) |
-| 🏷️ **Filtros por categoría** | ALL · TRIAGE · WINDOWS · LINUX · NETWORK · PLAYBOOKS · MITRE · TOOLS |
+| 🏷️ **Filtros por categoría** | ALL · TRIAGE · WINDOWS · LINUX · NETWORK · PLAYBOOKS · MITRE · TOOLS · CLOUD · EMAIL |
 | 🖼️ **Hero con imagen de fondo** | Foto SOC con overlay oscuro + escudo SVG animado |
-| 📎 **Referencias externas** | Links directos a documentación oficial (Microsoft, MITRE, CISA, Volatility, etc.) al buscar |
+| 📎 **Referencias externas** | Links directos a documentación oficial (Microsoft, MITRE, CISA, Volatility, SigmaHQ, etc.) al buscar |
 | 🌐 **Google Search integrado** | Botón "G" en el buscador para ampliar la consulta en Google |
 | 📋 **Copy con un clic** | Botón ⎘ copiar en todos los bloques de código |
-| 📊 **Matriz MITRE ATT&CK** | Técnicas navegables con links directos a attack.mitre.org |
+| 📊 **Matriz MITRE ATT&CK** | Técnicas navegables + tabla de tácticas rápidas con EventIDs |
 | 🔲 **Toolbox expandible** | Tarjetas de herramientas clickeables con expand/contraer para ver info completa |
 | ⚡ **Sin build ni dependencias** | React 18 vía CDN, todo en un HTML |
 | 📱 **Responsive** | Diseño adaptado a desktop y mobile |
@@ -52,7 +57,7 @@
 
 ## 📋 Secciones
 
-Las **19 secciones** cubren el espectro completo de SOC Analytics:
+Las **24 secciones** cubren el espectro completo de SOC Analytics:
 
 |  | Sección | Contenido |
 |---|---|---|
@@ -68,13 +73,18 @@ Las **19 secciones** cubren el espectro completo de SOC Analytics:
 | ⚡ | **Queries SIEM** | KQL (Sentinel), SPL (Splunk), ESQL (Elastic) |
 | ⛔ | **Contención Rápida** | Ransomware, C2, cuenta comprometida, phishing |
 | 📋 | **Playbooks** | Phishing y ransomware paso a paso |
-| 🎯 | **MITRE ATT&CK** | Técnicas con enlaces y detección rápida |
-| 🔬 | **Forensia RAM** | Volatility 3: psscan, netscan, malfind, filescan |
+| 🎯 | **MITRE ATT&CK** | Tácticas rápidas, top 10 técnicas + matriz navegable |
+| 🔬 | **Forensia RAM** | Volatility 3: 10 plugins, detección de rootkits |
 | 🦠 | **Malware** | Triage, hashes, entropía, sandboxes, packers |
 | 🛠️ | **Toolbox** | SIEM, EDR, CTI, OSINT, Forensia |
 | 🧮 | **Calculadora CVSS** | Métricas CVSS v3.1, búsqueda por CVE-ID en NVD |
 | 🔐 | **Verificador de Hashes** | MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 |
 | 📄 | **Cheat Sheet** | Bytes, hashes, epoch, hex, base64, URLs |
+| ⚙️ | **Windows Processes** | Mapa mental de SBousseaden + tabla de 13 procesos críticos |
+| 🏛️ | **Active Directory** | Kerberoasting, DCSync, AS-REP, Golden Ticket, ACL abuse |
+| ☁️ | **Cloud & Entra ID** | MFA bombing, device code phishing, consent grants |
+| 📧 | **Email Security** | Headers, SPF/DKIM/DMARC, análisis de phishing |
+| 📝 | **Sigma Rules** | Estructura de reglas, traducción a KQL/SPL/ESQL |
 
 <br>
 
@@ -123,8 +133,9 @@ El `render.yaml` ya está configurado — fork, conectás a Render como static s
 ```
 soc-guide/
 ├── index.html              # App React 18 completa (sin bundler + herramientas interactivas)
+├── assets/                 # Mapas mentales de threat hunting (SBousseaden)
 ├── data/
-│   └── sections.json       # Contenido estructurado de 19 secciones
+│   └── sections.json       # Contenido estructurado de 24 secciones
 ├── scripts/
 │   ├── auto-commit.sh      # Auto-commit con timestamp
 │   ├── sync-mitre.js       # Sincronización MITRE ATT&CK
@@ -144,6 +155,17 @@ Dos herramientas integradas como secciones dinámicas con React:
 | **Calculadora CVSS v3.1** | Seleccioná métricas (AV, AC, PR, UI, S, C, I, A) con pills interactivos, o pegá un vector string completo. También podés **buscar un CVE-ID real** (ej: `CVE-2024-21626`) que consulta la API pública de NVD y auto-completa las métricas. Score, severidad, vector, impacto y explotabilidad se actualizan en vivo con barra visual. |
 | **Verificador de Hashes** | Calculá el hash de un texto o archivo usando MD5 (nativo, sin librerías) o SHA-1 / SHA-256 / SHA-384 / SHA-512 (Web Crypto API). Seleccioná múltiples algoritmos a la vez. Podés pegar un hash conocido y ver si coincide. |
 
+## 🗺️ Mapas mentales visuales
+
+Cuatro mapas de **Samir Bousseaden (@SBousseaden)** incluidos como referencia visual directa:
+
+| Mapa | Sección | Para qué sirve |
+|---|---|---|
+| **Windows Core Processes** | Windows Processes | Identificar procesos legítimos vs anómalos |
+| **Sysmon Kernel-Mode Telemetry** | Sysmon Events | Telemetría del kernel: eventos 7, 10, 12-14 |
+| **Windows Services** | Windows Processes | Servicios críticos y sus señales de alerta |
+| **Hunting Security Log** | Windows EventLogs | Rutas de hunting en el Security Log |
+
 <br>
 
 ## 🔎 Búsqueda y referencias
@@ -162,6 +184,9 @@ Cuando encontrás un tema, el panel **📎 Referencias externas** te da acceso d
 | `sysmon`, `autoruns` | Sysinternals |
 | `lolbas` | LOLBAS Project |
 | `yara`, `sigma` | YARA / Sigma |
+| `kerberoasting`, `dcsync`, `as-rep` | Microsoft / MITRE ATT&CK |
+| `entra id`, `mfa`, `conditional access` | Microsoft Entra ID |
+| `spf`, `dkim`, `dmarc` | RFC / M3AAWG |
 
 Además, el botón **G** al lado del buscador abre una consulta en Google con `SOC + {término}`.
 
