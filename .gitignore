@@ -7,5 +7,13 @@ Thumbs.db
 *.swo
 *~
 
-# No need to ignore anything else, it's a static site
+# Cache
 .cache/
+
+# Secrets (prevent accidental commits)
+.env
+.env.*
+*.pem
+*.key
+*.cert
+credentials*
