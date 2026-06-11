@@ -684,12 +684,14 @@ function HashVerifier(){
 var FILTERS = [
   {id:'all',label:'ALL',sections:[]},
   {id:'triage',label:'TRIAGE',sections:['triage','severidad']},
-  {id:'windows',label:'WINDOWS',sections:['evtx','sysmon','win-cmd','lolbins']},
+  {id:'windows',label:'WINDOWS',sections:['evtx','sysmon','win-cmd','lolbins','win-procs','ad-attacks']},
   {id:'linux',label:'LINUX',sections:['linux-cmd','linux-logs']},
   {id:'network',label:'NETWORK',sections:['network','queries']},
   {id:'playbooks',label:'PLAYBOOKS',sections:['containment','playbooks']},
   {id:'mitre',label:'MITRE',sections:['mitre']},
-  {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat','cve-calc','hash-verify']}
+  {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat','cve-calc','hash-verify','sigma']},
+  {id:'cloud',label:'CLOUD',sections:['cloud']},
+  {id:'email',label:'EMAIL',sections:['email-sec']}
 ];
 
 // ===== EXTERNAL REFERENCES =====
@@ -770,6 +772,12 @@ function renderBlock(block,mitreMatrix){
     case 'mitre': return e(MitreMatrix,{tactics:mitreMatrix});
     case 'cve-calculator': return e(CVECalculator,null);
     case 'hash-verifier': return e(HashVerifier,null);
+    case 'image': return e('div',{className:'img-wrap',style:{margin:'16px 0'}},
+      e('a',{href:block.src,target:'_blank',rel:'noopener'},
+        e('img',{src:block.src,alt:block.alt||'',style:{maxWidth:'100%',borderRadius:'var(--r)',border:'1px solid var(--bd)',cursor:'zoom-in'}})
+      ),
+      block.caption?e('div',{style:{fontSize:'.7rem',color:'var(--text2)',marginTop:6,fontFamily:'var(--mono)'}},block.caption):null
+    );
     case 'sub': return e('div',{className:'sub-title'},block.title);
     default: return null;
   }
@@ -802,6 +810,7 @@ function blCount(content){
     else if(b.type==='code')n++;
     else if(b.type==='callout')n++;
     else if(b.type==='sub')n++;
+    else if(b.type==='image')n++;
     else n++;
   });
   return n;
@@ -839,6 +848,7 @@ function App(){
       case 'grid': return b.items.some(function(it){return textMatches(it.t,q)||textMatches(it.d,q)||textMatches(it.g,q)});
       case 'accordion': return b.items.some(function(it){return textMatches(it.title,q)||it.lines.some(function(l){return textMatches(l,q)})});
       case 'tabs': return b.tabs.some(function(t){return textMatches(t.label,q)||t.lines.some(function(l){return textMatches(l,q)})});
+      case 'image': return textMatches(b.alt,q)||textMatches(b.caption,q);
       case 'sub': return textMatches(b.title,q);
       default: return false;
     }
