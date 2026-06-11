@@ -1,10 +1,11 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/SOC%20Guide-v2.0-26c6da?style=flat-square" alt="version"/>
+  <img src="https://img.shields.io/badge/SOC%20Guide-v2.1-26c6da?style=flat-square" alt="version"/>
   <img src="https://img.shields.io/badge/estado-en%20desarrollo-yellow?style=flat-square" alt="estado"/>
   <img src="https://img.shields.io/badge/licencia-MIT-blue?style=flat-square" alt="license"/>
   <img src="https://img.shields.io/badge/dise%C3%B1o-terminal-0a0e14?style=flat-square" alt="terminal"/>
-  <img src="https://img.shields.io/badge/buscar-sí-66bb6a?style=flat-square" alt="search"/>
+  <img src="https://img.shields.io/badge/buscar-s%C3%AD-66bb6a?style=flat-square" alt="search"/>
   <img src="https://img.shields.io/badge/stack-React%2018-42a5f5?style=flat-square" alt="react"/>
+  <img src="https://img.shields.io/badge/herramientas-2-ffa726?style=flat-square" alt="tools"/>
 </p>
 
 <br>
@@ -31,6 +32,8 @@
 
 |  |  |
 |---|---|
+| 🧮 **Calculadora CVSS v3.1** | Seleccioná métricas, pegá un vector o buscá un CVE-ID real (NVD API). Score + barra de severidad en vivo |
+| 🔐 **Verificador de Hashes** | Calculá MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 de texto o archivos. Compará contra un hash conocido |
 | 🎨 **Diseño terminal oscuro** | Paleta #0a0e14, acentos cyan/orange, JetBrains Mono |
 | 🔍 **Búsqueda en tiempo real** | Filtra secciones por contenido (títulos, tablas, comandos, todo) |
 | 🏷️ **Filtros por categoría** | ALL · TRIAGE · WINDOWS · LINUX · NETWORK · PLAYBOOKS · MITRE · TOOLS |
@@ -39,6 +42,7 @@
 | 🌐 **Google Search integrado** | Botón "G" en el buscador para ampliar la consulta en Google |
 | 📋 **Copy con un clic** | Botón ⎘ copiar en todos los bloques de código |
 | 📊 **Matriz MITRE ATT&CK** | Técnicas navegables con links directos a attack.mitre.org |
+| 🔲 **Toolbox expandible** | Tarjetas de herramientas clickeables con expand/contraer para ver info completa |
 | ⚡ **Sin build ni dependencias** | React 18 vía CDN, todo en un HTML |
 | 📱 **Responsive** | Diseño adaptado a desktop y mobile |
 
@@ -46,7 +50,7 @@
 
 ## 📋 Secciones
 
-Las **17 secciones** cubren el espectro completo de SOC Analytics:
+Las **19 secciones** cubren el espectro completo de SOC Analytics:
 
 |  | Sección | Contenido |
 |---|---|---|
@@ -66,6 +70,8 @@ Las **17 secciones** cubren el espectro completo de SOC Analytics:
 | 🔬 | **Forensia RAM** | Volatility 3: psscan, netscan, malfind, filescan |
 | 🦠 | **Malware** | Triage, hashes, entropía, sandboxes, packers |
 | 🛠️ | **Toolbox** | SIEM, EDR, CTI, OSINT, Forensia |
+| 🧮 | **Calculadora CVSS** | Métricas CVSS v3.1, búsqueda por CVE-ID en NVD |
+| 🔐 | **Verificador de Hashes** | MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 |
 | 📄 | **Cheat Sheet** | Bytes, hashes, epoch, hex, base64, URLs |
 
 <br>
@@ -73,14 +79,16 @@ Las **17 secciones** cubren el espectro completo de SOC Analytics:
 ## 🧱 Stack
 
 ```
-┌─────────────────────────────────────┐
-│  UI    │  React 18 (sin bundler)    │
-│  Datos │  JSON → data/sections.json │
-│  Busc. │  Tiempo real (JS puro)     │
-│  Ext.  │  Links curados + Google     │
-│  Deploy│  Render (auto-deploy)       │
-│  Fonts │  Inter + JetBrains Mono     │
-└─────────────────────────────────────┘
+┌───────────────────────────────────────┐
+│  UI    │  React 18 (sin bundler)      │
+│  Datos │  JSON → data/sections.json   │
+│  Busc. │  Tiempo real (JS puro)       │
+│  Calc. │  CVSS v3.1 + NVD API (REST)  │
+│  Hash  │  Web Crypto API (SHA) + MD5  │
+│  Ext.  │  Links curados + Google       │
+│  Deploy│  Render (auto-deploy)         │
+│  Fonts │  Inter + JetBrains Mono       │
+└───────────────────────────────────────┘
 ```
 
 **Sin framework CSS, sin build step, sin backend.**
@@ -112,9 +120,9 @@ El `render.yaml` ya está configurado — fork, conectás a Render como static s
 
 ```
 soc-guide/
-├── index.html              # App React 18 completa (sin bundler)
+├── index.html              # App React 18 completa (sin bundler + herramientas interactivas)
 ├── data/
-│   └── sections.json       # Contenido estructurado de 17 secciones
+│   └── sections.json       # Contenido estructurado de 19 secciones
 ├── scripts/
 │   ├── auto-commit.sh      # Auto-commit con timestamp
 │   ├── sync-mitre.js       # Sincronización MITRE ATT&CK
@@ -122,6 +130,17 @@ soc-guide/
 ├── render.yaml             # Config Render static site
 └── README.md
 ```
+
+<br>
+
+## 🧮 Herramientas interactivas
+
+Dos herramientas integradas como secciones dinámicas con React:
+
+| Herramienta | Cómo funciona |
+|---|---|
+| **Calculadora CVSS v3.1** | Seleccioná métricas (AV, AC, PR, UI, S, C, I, A) con pills interactivos, o pegá un vector string completo. También podés **buscar un CVE-ID real** (ej: `CVE-2024-21626`) que consulta la API pública de NVD y auto-completa las métricas. Score, severidad, vector, impacto y explotabilidad se actualizan en vivo con barra visual. |
+| **Verificador de Hashes** | Calculá el hash de un texto o archivo usando MD5 (nativo, sin librerías) o SHA-1 / SHA-256 / SHA-384 / SHA-512 (Web Crypto API). Seleccioná múltiples algoritmos a la vez. Podés pegar un hash conocido y ver si coincide. |
 
 <br>
 
