@@ -1268,6 +1268,30 @@
       ]
     },
     {
+      "id": "cve-calc",
+      "icon": "🧮",
+      "title": "Calculadora CVSS v3.1",
+      "badge": "CVE Score",
+      "desc": "Calculá la severidad de vulnerabilidades usando CVSS v3.1. Seleccioná métricas o pegá un vector string.",
+      "content": [
+        {
+          "type": "cve-calculator"
+        }
+      ]
+    },
+    {
+      "id": "hash-verify",
+      "icon": "🔐",
+      "title": "Verificador de Hashes",
+      "badge": "MD5 / SHA",
+      "desc": "Calculá hashes de texto o archivos. Soporta MD5, SHA-1, SHA-256, SHA-384 y SHA-512 con verificación contra un valor conocido.",
+      "content": [
+        {
+          "type": "hash-verifier"
+        }
+      ]
+    },
+    {
       "id": "cheat",
       "icon": "📄",
       "title": "Cheat Sheet",
@@ -1630,6 +1654,16 @@
           "id": "tools",
           "i": "🛠️",
           "l": "Toolbox"
+        },
+        {
+          "id": "cve-calc",
+          "i": "🧮",
+          "l": "CVSS Calc"
+        },
+        {
+          "id": "hash-verify",
+          "i": "🔐",
+          "l": "Hashes"
         },
         {
           "id": "cheat",

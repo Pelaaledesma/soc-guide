@@ -208,6 +208,56 @@
     td,th{padding:5px 8px;font-size:.68rem}
     .code-body{padding:10px 12px;font-size:.65rem}
   }
+
+  /* ===== TOOLS ===== */
+  .t-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 10px;align-items:center}
+  .t-row-lbl{font-size:.62rem;font-family:var(--mono);color:var(--text2);width:40px;flex-shrink:0;padding:6px 0;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .t-pill{padding:4px 12px;font-size:.65rem;font-family:var(--mono);background:var(--bg3);border:1px solid var(--bd);border-radius:4px;color:var(--text2);cursor:pointer;transition:all .1s}
+  .t-pill:hover{border-color:rgba(255,255,255,.1);color:var(--text)}
+  .t-pill.on{background:rgba(38,198,218,.1);border-color:rgba(38,198,218,.25);color:var(--cyan)}
+  .t-result{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .t-score{font-size:2.2rem;font-weight:700;font-family:var(--mono);line-height:1}
+  .t-sev{font-size:.7rem;font-family:var(--mono);padding:2px 10px;border-radius:4px;font-weight:600;letter-spacing:.04em;display:inline-block;margin-top:4px}
+  .t-sev-critical{background:rgba(239,83,80,.15);color:var(--red)}
+  .t-sev-high{background:rgba(255,167,38,.15);color:var(--orange)}
+  .t-sev-medium{background:rgba(255,216,53,.12);color:var(--yellow)}
+  .t-sev-low{background:rgba(92,110,138,.2);color:var(--text2)}
+  .t-sev-none{background:rgba(255,255,255,.04);color:var(--text2)}
+  .t-vector{font-size:.62rem;font-family:var(--mono);color:var(--text2);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:5px 10px;word-break:break-all;line-height:1.4}
+  .t-copy-btn{background:transparent;border:1px solid var(--bd);color:var(--text2);cursor:pointer;padding:2px 10px;border-radius:4px;font-size:.55rem;font-family:var(--mono);transition:all .12s;flex-shrink:0}
+  .t-copy-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
+  .t-input{background:var(--bg);border:1px solid var(--bd);color:var(--text);padding:7px 10px;border-radius:4px;font-family:var(--mono);font-size:.68rem;width:100%;outline:none;transition:border-color .12s;box-sizing:border-box}
+  .t-input:focus{border-color:rgba(38,198,218,.3)}
+  .t-input::placeholder{color:var(--text2);opacity:.4}
+  .t-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+  .t-tab{padding:5px 14px;font-size:.68rem;font-family:var(--mono);font-weight:500;background:var(--bg3);border:1px solid var(--bd);color:var(--text2);cursor:pointer;border-radius:4px;transition:all .12s}
+  .t-tab:hover{color:var(--text);background:rgba(255,255,255,.03)}
+  .t-tab.on{color:var(--cyan);background:rgba(38,198,218,.08);border-color:rgba(38,198,218,.2)}
+  .t-hash-grid{display:grid;grid-template-columns:1fr;gap:3px;margin:10px 0}
+  .t-hash-row{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:4px;font-family:var(--mono);font-size:.62rem}
+  .t-hash-row .al{color:var(--cyan);font-weight:600;width:70px;flex-shrink:0;font-size:.6rem;text-transform:uppercase}
+  .t-hash-row .hv{color:var(--text);word-break:break-all;font-size:.6rem;line-height:1.4}
+  .t-hash-row .match{color:var(--green);margin-left:auto;flex-shrink:0;font-size:.52rem;font-weight:600}
+  .t-hash-row .nmatch{color:var(--red);margin-left:auto;flex-shrink:0;font-size:.52rem;font-weight:600}
+  .t-algs{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+  .t-algs label{display:flex;align-items:center;gap:5px;font-size:.68rem;font-family:var(--mono);color:var(--text2);cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:4px;transition:all .1s}
+  .t-algs label:hover{border-color:rgba(255,255,255,.1)}
+  .t-algs input[type=checkbox]{accent-color:var(--cyan)}
+  .t-dropzone{border:1px dashed var(--bd);border-radius:var(--r);padding:24px 16px;text-align:center;cursor:pointer;transition:all .12s;margin:8px 0}
+  .t-dropzone:hover,.t-dropzone.dragover{border-color:rgba(38,198,218,.3);background:rgba(38,198,218,.02)}
+  .t-dropzone p{font-size:.72rem;color:var(--text2);margin:4px 0}
+  .t-dropzone .fn{font-size:.65rem;font-family:var(--mono);color:var(--cyan);margin-top:4px}
+  .t-btn{padding:6px 16px;font-size:.68rem;font-family:var(--mono);font-weight:500;background:rgba(38,198,218,.08);border:1px solid rgba(38,198,218,.2);color:var(--cyan);cursor:pointer;border-radius:4px;transition:all .12s}
+  .t-btn:hover{background:rgba(38,198,218,.14);border-color:rgba(38,198,218,.3)}
+  .t-btn:disabled{opacity:.4;cursor:not-allowed}
+  .t-compare{margin-top:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .t-compare .mr{color:var(--green);font-size:.65rem;font-family:var(--mono)}
+  .t-compare .nr{color:var(--text2);font-size:.65rem;font-family:var(--mono)}
+  .t-textarea{background:var(--bg);border:1px solid var(--bd);color:var(--text);padding:8px 10px;border-radius:4px;font-family:var(--mono);font-size:.68rem;width:100%;min-height:70px;outline:none;resize:vertical;transition:border-color .12s;box-sizing:border-box}
+  .t-textarea:focus{border-color:rgba(38,198,218,.3)}
+  .t-textarea::placeholder{color:var(--text2);opacity:.4}
+  .t-desc{font-size:.7rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+  .t-sub{font-size:.6rem;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 6px}
 </style>
 </head>
 <body>
@@ -351,6 +401,216 @@ function MitreMatrix(p){
   );
 }
 
+// ===== MD5 =====
+function md5core(d){
+  function c(q,a,b,x,s,t){a=R(R(a,q),R(x,t));return R((a<<s)|(a>>>(32-s)),b)}
+  function f(a,b,c,d,x,s,t){return c((b&c)|((~b)&d),a,b,x,s,t)}
+  function g(a,b,c,d,x,s,t){return c((b&d)|(c&(~d)),a,b,x,s,t)}
+  function h(a,b,c,d,x,s,t){return c(b^c^d,a,b,x,s,t)}
+  function i(a,b,c,d,x,s,t){return c(c^(b|(~d)),a,b,x,s,t)}
+  function R(a,b){return(a+b)&0xFFFFFFFF}
+  function cycle(x,k){
+    var a=x[0],b=x[1],c=x[2],d=x[3];
+    a=f(a,b,c,d,k[0],7,-680876936);d=f(d,a,b,c,k[1],12,-389564586);c=f(c,d,a,b,k[2],17,606105819);b=f(b,c,d,a,k[3],22,-1044525330);
+    a=f(a,b,c,d,k[4],7,-176418897);d=f(d,a,b,c,k[5],12,1200080426);c=f(c,d,a,b,k[6],17,-1473231341);b=f(b,c,d,a,k[7],22,-45705983);
+    a=f(a,b,c,d,k[8],7,1770035416);d=f(d,a,b,c,k[9],12,-1958414417);c=f(c,d,a,b,k[10],17,-42063);b=f(b,c,d,a,k[11],22,-1990404162);
+    a=f(a,b,c,d,k[12],7,1804603682);d=f(d,a,b,c,k[13],12,-40341101);c=f(c,d,a,b,k[14],17,-1502002290);b=f(b,c,d,a,k[15],22,1236535329);
+    a=g(a,b,c,d,k[1],5,-165796510);d=g(d,a,b,c,k[6],9,-1069501632);c=g(c,d,a,b,k[11],14,643717713);b=g(b,c,d,a,k[0],20,-373897302);
+    a=g(a,b,c,d,k[5],5,-701558691);d=g(d,a,b,c,k[10],9,38016083);c=g(c,d,a,b,k[15],14,-660478335);b=g(b,c,d,a,k[4],20,-405537848);
+    a=g(a,b,c,d,k[9],5,568446438);d=g(d,a,b,c,k[14],9,-1019803690);c=g(c,d,a,b,k[3],14,-187363961);b=g(b,c,d,a,k[8],20,1163531501);
+    a=g(a,b,c,d,k[13],5,-1444681467);d=g(d,a,b,c,k[2],9,-51403784);c=g(c,d,a,b,k[7],14,1735328473);b=g(b,c,d,a,k[12],20,-1926607734);
+    a=h(a,b,c,d,k[5],4,-378558);d=h(d,a,b,c,k[8],11,-2022574463);c=h(c,d,a,b,k[11],16,1839030562);b=h(b,c,d,a,k[14],23,-35309556);
+    a=h(a,b,c,d,k[1],4,-1530992060);d=h(d,a,b,c,k[4],11,1272893353);c=h(c,d,a,b,k[7],16,-155497632);b=h(b,c,d,a,k[10],23,-1094730640);
+    a=h(a,b,c,d,k[13],4,681279174);d=h(d,a,b,c,k[0],11,-358537222);c=h(c,d,a,b,k[3],16,-722521979);b=h(b,c,d,a,k[6],23,76029189);
+    a=h(a,b,c,d,k[9],4,-640364487);d=h(d,a,b,c,k[12],11,-421815835);c=h(c,d,a,b,k[15],16,530742520);b=h(b,c,d,a,k[2],23,-995338651);
+    a=i(a,b,c,d,k[0],6,-198630844);d=i(d,a,b,c,k[7],10,1126891415);c=i(c,d,a,b,k[14],15,-1416354905);b=i(b,c,d,a,k[5],21,-57434055);
+    a=i(a,b,c,d,k[12],6,1700485571);d=i(d,a,b,c,k[3],10,-1894986606);c=i(c,d,a,b,k[10],15,-1051523);b=i(b,c,d,a,k[1],21,-2054922799);
+    a=i(a,b,c,d,k[8],6,1873313359);d=i(d,a,b,c,k[15],10,-30611744);c=i(c,d,a,b,k[6],15,-1560198380);b=i(b,c,d,a,k[13],21,1309151649);
+    a=i(a,b,c,d,k[4],6,-145523070);d=i(d,a,b,c,k[11],10,-1120210379);c=i(c,d,a,b,k[2],15,718787259);b=i(b,c,d,a,k[9],21,-343485551);
+    x[0]=R(a,x[0]);x[1]=R(b,x[1]);x[2]=R(c,x[2]);x[3]=R(d,x[3]);
+  }
+  var len=d.length,state=[1732584193,-271733879,-1732584194,271733878];
+  var bits=len*8;
+  d+=String.fromCharCode(0x80);
+  while((d.length*8)%512!=448)d+=String.fromCharCode(0);
+  d+=String.fromCharCode(bits&0xFF)+String.fromCharCode((bits>>>8)&0xFF)+String.fromCharCode((bits>>>16)&0xFF)+String.fromCharCode((bits>>>24)&0xFF);
+  d+=String.fromCharCode(0)+String.fromCharCode(0)+String.fromCharCode(0)+String.fromCharCode(0);
+  for(var i=0;i<d.length;i+=64){
+    var w=[];
+    for(var j=0;j<64;j+=4)w[j>>2]=(d.charCodeAt(i+j))|(d.charCodeAt(i+j+1)<<8)|(d.charCodeAt(i+j+2)<<16)|(d.charCodeAt(i+j+3)<<24);
+    cycle(state,w);
+  }
+  var hex='0123456789abcdef',out='';
+  for(var i=0;i<state.length*4;i++)out+=hex.charAt((state[i>>2]>>((i%4)*8+4))&0xF)+hex.charAt((state[i>>2]>>((i%4)*8))&0xF);
+  return out;
+}
+function md5(s){return md5core(unescape(encodeURIComponent(s)))}
+function md5Bytes(b){var s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return md5core(s)}
+
+// ===== CVSS v3.1 =====
+var CVSS_V={AV:{N:.85,A:.62,L:.55,P:.2},AC:{L:.77,H:.44},PR_U:{N:.85,L:.62,H:.27},PR_C:{N:.85,L:.68,H:.5},UI:{N:.85,R:.62},C:{H:.56,L:.22,N:0},I:{H:.56,L:.22,N:0},A:{H:.56,L:.22,N:0}};
+var CVSS_M={AV:{N:'Network',A:'Adjacent',L:'Local',P:'Physical'},AC:{L:'Low',H:'High'},PR:{N:'None',L:'Low',H:'High'},UI:{N:'None',R:'Required'},S:{U:'Unchanged',C:'Changed'},C:{H:'High',L:'Low',N:'None'},I:{H:'High',L:'Low',N:'None'},A:{H:'High',L:'Low',N:'None'}};
+
+function cvssCalc(m){
+  var av=CVSS_V.AV[m.AV],ac=CVSS_V.AC[m.AC],pr=m.S==='U'?CVSS_V.PR_U[m.PR]:CVSS_V.PR_C[m.PR],ui=CVSS_V.UI[m.UI];
+  var c=CVSS_V.C[m.C],i=CVSS_V.I[m.I],a=CVSS_V.A[m.A];
+  var iss=1-((1-c)*(1-i)*(1-a));
+  var imp=m.S==='U'?6.42*iss:7.52*(iss-.029)-3.25*Math.pow(iss-.02,15);
+  var exp=8.22*av*ac*pr*ui;
+  if(imp<=0)return{score:0,imp:0,exp:0};
+  var base=m.S==='U'?Math.min(imp+exp,10):Math.min(1.08*(imp+exp),10);
+  base=Math.ceil(base*10)/10;
+  return{score:base,imp:imp,exp:exp};
+}
+function cvssSev(s){return s>=9?'CRITICAL':s>=7?'HIGH':s>=4?'MEDIUM':s>0?'LOW':'NONE'}
+function cvssVec(m){return 'CVSS:3.1/AV:'+m.AV+'/AC:'+m.AC+'/PR:'+m.PR+'/UI:'+m.UI+'/S:'+m.S+'/C:'+m.C+'/I:'+m.I+'/A:'+m.A}
+function cvssParse(v){
+  if(!v||!v.startsWith('CVSS:'))return null;
+  var p=v.split('/'),m={};
+  if(p.length<8)return null;
+  p.forEach(function(x){var kv=x.split(':');if(kv.length===2)m[kv[0]]=kv[1]});
+  return(m.AV&&m.AC&&m.PR&&m.UI&&m.S&&m.C&&m.I&&m.A)?m:null;
+}
+
+// ===== CVE CALCULATOR =====
+function CVECalculator(){
+  var _a=React.useState('N'),av=_a[0],sAv=_a[1];
+  var _b=React.useState('L'),ac=_b[0],sAc=_b[1];
+  var _c=React.useState('N'),pr=_c[0],sPr=_c[1];
+  var _d=React.useState('N'),ui=_d[0],sUi=_d[1];
+  var _e=React.useState('U'),sc=_e[0],sSc=_e[1];
+  var _f=React.useState('H'),co=_f[0],sCo=_f[1];
+  var _g=React.useState('H'),in_=_g[0],sIn=_g[1];
+  var _h=React.useState('H'),avail=_h[0],sAvail=_h[1];
+  var _i=React.useState(''),vIn=_i[0],sVIn=_i[1];
+  var m={AV:av,AC:ac,PR:pr,UI:ui,S:sc,C:co,I:in_,A:avail};
+  var r=cvssCalc(m),sev=cvssSev(r.score),vec=cvssVec(m);
+  function onVec(e2){
+    var v=e2.target.value.trim(),p=cvssParse(v);
+    if(p){sAv(p.AV);sAc(p.AC);sPr(p.PR);sUi(p.UI);sSc(p.S);sCo(p.C);sIn(p.I);sAvail(p.A)}
+    sVIn(v);
+  }
+  function pill(id,vals,cur,set){
+    return e('div',{className:'t-row',key:id},
+      e('span',{className:'t-row-lbl'},id),
+      Object.keys(vals).map(function(k){return e('button',{key:k,className:'t-pill'+(cur===k?' on':''),onClick:function(){set(k)}},vals[k])}));
+  }
+  return e('div',null,
+    e('div',{className:'t-desc'},'Calculá la severidad de una vulnerabilidad usando CVSS v3.1. Seleccioná cada métrica o pegá un vector string completo.'),
+    e('div',{className:'t-result'},
+      e('div',null,
+        e('div',{className:'t-score'},r.score.toFixed(1)),
+        e('div',{className:'t-sev t-sev-'+sev.toLowerCase()},sev)),
+      e('div',{style:{flex:1,minWidth:200}},
+        e('div',{style:{display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}},
+          e('span',{style:{fontSize:'.62rem',fontFamily:'var(--mono)',color:'var(--text2)',wordBreak:'break-all'}},vec),
+          e('button',{className:'t-copy-btn',onClick:function(){copyText(vec)}},'copiar')),
+        e('div',{style:{display:'flex',gap:14,marginTop:4,fontSize:'.58rem',fontFamily:'var(--mono)',color:'var(--text2)'}},
+          e('span',null,'Impacto: ',r.imp.toFixed(2)),
+          e('span',null,'Explotabilidad: ',r.exp.toFixed(2))))),
+    pill('AV',CVSS_M.AV,av,sAv),
+    pill('AC',CVSS_M.AC,ac,sAc),
+    pill('PR',CVSS_M.PR,pr,sPr),
+    pill('UI',CVSS_M.UI,ui,sUi),
+    pill('S',CVSS_M.S,sc,sSc),
+    pill('C',CVSS_M.C,co,sCo),
+    pill('I',CVSS_M.I,in_,sIn),
+    pill('A',CVSS_M.A,avail,sAvail),
+    e('div',{style:{marginTop:10}},
+      e('div',{className:'t-sub'},'O ingresá un vector string'),
+      e('input',{className:'t-input',type:'text',value:vIn,onChange:onVec,placeholder:'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'})));
+}
+
+// ===== HASH VERIFIER =====
+function shaHex(alg,buf){
+  return crypto.subtle.digest(alg,buf).then(function(b){
+    var u=new Uint8Array(b),h='';
+    for(var i=0;i<u.length;i++)h+=('0'+u[i].toString(16)).slice(-2);
+    return h;
+  });
+}
+function HashVerifier(){
+  var _a=React.useState('text'),mode=_a[0],sMode=_a[1];
+  var _b=React.useState(''),txt=_b[0],sTxt=_b[1];
+  var _c=React.useState(null),file=_c[0],sFile=_c[1];
+  var _d=React.useState({}),res=_d[0],sRes=_d[1];
+  var _e=React.useState(''),cmp=_e[0],sCmp=_e[1];
+  var _f=React.useState({md5:1,sha1:1,sha256:1,sha384:0,sha512:0}),algs=_f[0],sAlgs=_f[1];
+  var _g=React.useState(0),busy=_g[0],sBusy=_g[1];
+  var _h=React.useState(''),fn=_h[0],sFn=_h[1];
+  function tog(a){
+    var n={};Object.keys(algs).forEach(function(k){n[k]=algs[k]});n[a]=n[a]?0:1;sAlgs(n);
+  }
+  function compute(){
+    if(mode==='text'&&!txt)return;
+    if(mode==='file'&&!file)return;
+    sBusy(1);
+    var act=Object.keys(algs).filter(function(k){return algs[k]});
+    function doAll(buf){
+      var ps=[],out={};
+      if(act.indexOf('md5')>=0){var u=new Uint8Array(buf),s='';for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);out.md5=md5core(s)}
+      if(act.indexOf('sha1')>=0)ps.push(shaHex('SHA-1',buf).then(function(h){out.sha1=h}));
+      if(act.indexOf('sha256')>=0)ps.push(shaHex('SHA-256',buf).then(function(h){out.sha256=h}));
+      if(act.indexOf('sha384')>=0)ps.push(shaHex('SHA-384',buf).then(function(h){out.sha384=h}));
+      if(act.indexOf('sha512')>=0)ps.push(shaHex('SHA-512',buf).then(function(h){out.sha512=h}));
+      return Promise.all(ps).then(function(){return out});
+    }
+    if(mode==='text'){
+      doAll(new TextEncoder().encode(txt).buffer).then(function(o){sRes(o);sBusy(0)});
+    }else{
+      var r=new FileReader();
+      r.onload=function(e2){doAll(e2.target.result).then(function(o){sRes(o);sBusy(0)})};
+      r.readAsArrayBuffer(file);
+    }
+  }
+  function onFile(e2){
+    var f=e2.target.files[0];
+    if(f){sFile(f);sFn(f.name);sRes({})}
+  }
+  function handleDrop(e2){
+    e2.preventDefault();
+    var f=e2.dataTransfer.files[0];
+    if(f){sFile(f);sFn(f.name);sRes({})}
+  }
+  var active=Object.keys(algs).filter(function(k){return algs[k]});
+  var algsMap={md5:'MD5',sha1:'SHA-1',sha256:'SHA-256',sha384:'SHA-384',sha512:'SHA-512'};
+  return e('div',null,
+    e('div',{className:'t-desc'},'Calculá el hash de un texto o archivo usando MD5, SHA-1, SHA-256, SHA-384 o SHA-512. También podés verificar contra un valor conocido.'),
+    e('div',{className:'t-tabs'},
+      e('button',{className:'t-tab'+(mode==='text'?' on':''),onClick:function(){sMode('text');sRes({});sFile(null);sFn('');}},'Texto'),
+      e('button',{className:'t-tab'+(mode==='file'?' on':''),onClick:function(){sMode('file');sRes({});sTxt('');}},'Archivo')),
+    mode==='text'
+      ? e('textarea',{className:'t-textarea',value:txt,onChange:function(e2){sTxt(e2.target.value);sRes({})},placeholder:'Ingresá el texto para hashear...'})
+      : e('div',{className:'t-dropzone',onClick:function(){document.getElementById('hf').click()},onDragOver:function(e2){e2.preventDefault();e2.currentTarget.className+=' dragover'},onDragLeave:function(e2){e2.currentTarget.className='t-dropzone'},onDrop:handleDrop},
+          e('p','Soltá un archivo acá o hacé clic para seleccionar'),
+          fn?e('div',{className:'fn'},fn):null,
+          e('input',{id:'hf',type:'file',style:{display:'none'},onChange:onFile})),
+    e('div',{className:'t-algs'},
+      Object.keys(algsMap).map(function(k){
+        return e('label',{key:k},
+          e('input',{type:'checkbox',checked:!!algs[k],onChange:function(){tog(k)}}),
+          algsMap[k]);
+      })),
+    e('button',{className:'t-btn',onClick:compute,disabled:busy},
+      busy?e('span',{className:'t-spinner'}):null,
+      busy?' Calculando...':' Calcular'),
+    Object.keys(res).length?e('div',{className:'t-hash-grid'},
+      active.map(function(k){
+        if(!res[k])return null;
+        var match=null;
+        if(cmp&&cmp.length===res[k].length)match=cmp.toLowerCase()===res[k].toLowerCase();
+        return e('div',{className:'t-hash-row',key:k},
+          e('span',{className:'al'},algsMap[k]),
+          e('span',{className:'hv'},res[k]),
+          match!==null?e('span',{className:match?'match':'nmatch'},match?'✓ COINCIDE':'✗ NO COINCIDE'):null);
+      }),
+      e('div',{className:'t-compare'},
+        e('input',{className:'t-input',type:'text',value:cmp,onChange:function(e2){sCmp(e2.target.value)},placeholder:'Hash conocido para verificar...',style:{width:'auto',flex:1,minWidth:120}}),
+        cmp&&Object.keys(res).length?e('span',{className:active.some(function(k){return res[k]&&cmp.length===res[k].length&&cmp.toLowerCase()===res[k].toLowerCase()})?'mr':'nr'},
+          active.some(function(k){return res[k]&&cmp.length===res[k].length&&cmp.toLowerCase()===res[k].toLowerCase()})?'✓ Coincide':'✗ No coincide'):null))
+      :null);
+}
+
 // ===== FILTER GROUPS =====
 var FILTERS = [
   {id:'all',label:'ALL',sections:[]},
@@ -360,7 +620,7 @@ var FILTERS = [
   {id:'network',label:'NETWORK',sections:['network','queries']},
   {id:'playbooks',label:'PLAYBOOKS',sections:['containment','playbooks']},
   {id:'mitre',label:'MITRE',sections:['mitre']},
-  {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat']}
+  {id:'tools',label:'TOOLS',sections:['forensics','malware','tools','cheat','cve-calc','hash-verify']}
 ];
 
 // ===== EXTERNAL REFERENCES =====
@@ -439,6 +699,8 @@ function renderBlock(block,mitreMatrix){
     case 'tabs': return e(TabSwitcher,{tabs:block.tabs});
     case 'accordion': return e(Accordion,{items:block.items});
     case 'mitre': return e(MitreMatrix,{tactics:mitreMatrix});
+    case 'cve-calculator': return e(CVECalculator,null);
+    case 'hash-verifier': return e(HashVerifier,null);
     case 'sub': return e('div',{className:'sub-title'},block.title);
     default: return null;
   }
