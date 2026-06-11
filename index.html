@@ -233,6 +233,8 @@
   .t-sev-none{background:rgba(255,255,255,.04);color:var(--text2)}
   .t-vector{font-size:.62rem;font-family:var(--mono);color:var(--text2);background:var(--bg);border:1px solid var(--bd);border-radius:4px;padding:5px 10px;word-break:break-all;line-height:1.4}
   .t-copy-btn{background:transparent;border:1px solid var(--bd);color:var(--text2);cursor:pointer;padding:2px 10px;border-radius:4px;font-size:.55rem;font-family:var(--mono);transition:all .12s;flex-shrink:0}
+  .t-bar-wrap{height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+  .t-bar-fill{height:100%;border-radius:2px;transition:width .2s ease,background .2s ease}
   .t-copy-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
   .t-input{background:var(--bg);border:1px solid var(--bd);color:var(--text);padding:7px 10px;border-radius:4px;font-family:var(--mono);font-size:.68rem;width:100%;outline:none;transition:border-color .12s;box-sizing:border-box}
   .t-input:focus{border-color:rgba(38,198,218,.3)}
@@ -492,6 +494,9 @@ function cvssParse(v){
 }
 
 // ===== CVE CALCULATOR =====
+var NVD_MAP={attackVector:'AV',attackComplexity:'AC',privilegesRequired:'PR',userInteraction:'UI',scope:'S',confidentialityImpact:'C',integrityImpact:'I',availabilityImpact:'A'};
+var NVD_VAL={NETWORK:'N',ADJACENT:'A',LOCAL:'L',PHYSICAL:'P',LOW:'L',HIGH:'H',NONE:'N',REQUIRED:'R',UNCHANGED:'U',CHANGED:'C'};
+
 function CVECalculator(){
   var _a=React.useState('N'),av=_a[0],sAv=_a[1];
   var _b=React.useState('L'),ac=_b[0],sAc=_b[1];
@@ -502,13 +507,38 @@ function CVECalculator(){
   var _g=React.useState('H'),in_=_g[0],sIn=_g[1];
   var _h=React.useState('H'),avail=_h[0],sAvail=_h[1];
   var _i=React.useState(''),vIn=_i[0],sVIn=_i[1];
+  var _j=React.useState(''),cveId=_j[0],sCveId=_j[1];
+  var _k=React.useState(0),loading=_k[0],sLoading=_k[1];
+  var _l=React.useState(''),cveInfo=_l[0],sCveInfo=_l[1];
   var m={AV:av,AC:ac,PR:pr,UI:ui,S:sc,C:co,I:in_,A:avail};
   var r=cvssCalc(m),sev=cvssSev(r.score),vec=cvssVec(m);
+
+  function fetchCVE(){
+    var id=cveId.trim().toUpperCase();
+    if(!id.match(/^CVE-\d{4}-\d+$/))return;
+    sLoading(1);sCveInfo('');
+    fetch('https://services.nvd.nist.gov/rest/json/cves/2.0?cveId='+id+'&noRejected=true')
+      .then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.json()})
+      .then(function(d){
+        var c=d.vulnerabilities&&d.vulnerabilities[0]&&d.vulnerabilities[0].cve;
+        if(!c)throw new Error('CVE no encontrado');
+        var cvss=c.metrics&&c.metrics.cvssMetricV31&&c.metrics.cvssMetricV31[0]&&c.metrics.cvssMetricV31[0].cvssData;
+        if(!cvss)throw new Error('Sin datos CVSS v3.1');
+        var map={};Object.keys(NVD_MAP).forEach(function(k){map[NVD_MAP[k]]=NVD_VAL[cvss[k]]||cvss[k]});
+        sAv(map.AV);sAc(map.AC);sPr(map.PR);sUi(map.UI);sSc(map.S);sCo(map.C);sIn(map.I);sAvail(map.A);
+        var desc=c.descriptions&&c.descriptions[0]?c.descriptions[0].value:'';
+        sCveInfo(desc.slice(0,300));
+        sLoading(0);
+      })
+      .catch(function(ex){sCveInfo('Error: '+ex.message);sLoading(0)});
+  }
+
   function onVec(e2){
     var v=e2.target.value.trim(),p=cvssParse(v);
     if(p){sAv(p.AV);sAc(p.AC);sPr(p.PR);sUi(p.UI);sSc(p.S);sCo(p.C);sIn(p.I);sAvail(p.A)}
     sVIn(v);
   }
+
   function metricRow(id,vals,cur,set){
     return e('div',{className:'t-row',key:id},
       e('span',{className:'t-row-lbl'},CVSS_N[id],e('span',{className:'t-row-code'},' ('+id+')')),
@@ -519,8 +549,19 @@ function CVECalculator(){
         }),
         e('span',{className:'t-pill-desc'},CVSS_D[id][cur])));
   }
+
+  var barPct=r.score/10*100;
+  var barCol=sev==='CRITICAL'?'var(--red)':sev==='HIGH'?'var(--orange)':sev==='MEDIUM'?'var(--yellow)':'var(--green)';
+
   return e('div',null,
-    e('div',{className:'t-desc'},'Calculá la severidad de una vulnerabilidad usando CVSS v3.1. Seleccioná cada métrica o pegá un vector string completo.'),
+    e('div',{className:'t-desc'},'Calculá la severidad de una vulnerabilidad usando CVSS v3.1. Seleccioná métricas manualmente, pegá un vector string, o buscá un CVE existente.'),
+
+    e('div',{style:{display:'flex',gap:6,marginBottom:12,alignItems:'center',flexWrap:'wrap'}},
+      e('input',{className:'t-input',type:'text',value:cveId,onChange:function(e2){sCveId(e2.target.value)},placeholder:'CVE-2024-XXXXX...',style:{width:180,flex:'none'}}),
+      e('button',{className:'t-btn',onClick:fetchCVE,disabled:loading},loading?'Buscando...':'Buscar en NVD'),
+      loading?e('span',{style:{fontSize:'.6rem',color:'var(--text2)',fontFamily:'var(--mono)'}},'consultando API...'):null),
+    cveInfo?e('div',{style:{fontSize:'.7rem',color:'var(--text2)',marginBottom:10,lineHeight:1.4,padding:'6px 10px',background:'var(--bg)',borderRadius:'var(--r)'}},cveInfo):null,
+
     e('div',{className:'t-result'},
       e('div',null,
         e('div',{className:'t-score'},r.score.toFixed(1)),
@@ -531,7 +572,10 @@ function CVECalculator(){
           e('button',{className:'t-copy-btn',onClick:function(){copyText(vec)}},'copiar')),
         e('div',{style:{display:'flex',gap:14,marginTop:4,fontSize:'.58rem',fontFamily:'var(--mono)',color:'var(--text2)'}},
           e('span',null,'Impacto: ',r.imp.toFixed(2)),
-          e('span',null,'Explotabilidad: ',r.exp.toFixed(2))))),
+          e('span',null,'Explotabilidad: ',r.exp.toFixed(2))),
+        e('div',{className:'t-bar-wrap',style:{marginTop:6}},
+          e('div',{className:'t-bar-fill',style:{width:barPct+'%',background:barCol}})))),
+
     metricRow('AV',CVSS_M.AV,av,sAv),
     metricRow('AC',CVSS_M.AC,ac,sAc),
     metricRow('PR',CVSS_M.PR,pr,sPr),
@@ -540,6 +584,7 @@ function CVECalculator(){
     metricRow('C',CVSS_M.C,co,sCo),
     metricRow('I',CVSS_M.I,in_,sIn),
     metricRow('A',CVSS_M.A,avail,sAvail),
+
     e('div',{style:{marginTop:10}},
       e('div',{className:'t-sub'},'O ingresá un vector string'),
       e('input',{className:'t-input',type:'text',value:vIn,onChange:onVec,placeholder:'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'})));
